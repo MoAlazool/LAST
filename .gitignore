@@ -1,0 +1,74 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+firebase-service-account.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+pyvenv.cfg
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Replit
+.local/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs / runtime
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Local Uploads
+uploads/
+
+# Session / scratch files (not needed to run the project)
+s.md
+out.txt
+help.txt
+vibeguard-report*.pdf
+test_audio.wav
+test.json
+test-api.js
+check_api.ts
+verify_api.ts
+test_gemini.ts
+test_node_python.ts
+requirements copy.txt

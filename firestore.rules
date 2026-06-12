@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // التحقق مما إذا كان المستخدم مسجلاً للدخول
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // التحقق مما إذا كان المستخدم هو المالك الفعلي للبيانات
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // قواعد قسم المستخدمين
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // قواعد قسم المحاضرات بداخل كل مستخدم
+      match /lectures/{lectureId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // منع الوصول العشوائي لأي بيانات أخرى
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

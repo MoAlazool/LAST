@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --font-sans: "Inter", sans-serif;
+  --font-headline: "Manrope", sans-serif;
+  
+  --color-primary: #F05A22;
+  --color-primary-container: #FFF7ED;
+  --color-surface: #FFFFFF;
+  --color-surface-container-low: #F8FAFC;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-border: #F1F5F9;
+  --color-input: #F1F5F9;
+  --color-ring: #F05A22;
+  --color-background: #FFFFFF;
+  --color-foreground: #09090B;
+  --color-muted: #F8FAFC;
+  --color-muted-foreground: #64748B;
+  --color-accent: #FFF7ED;
+  --color-accent-foreground: #F05A22;
+  /* AI Studio dashboard tokens */
+  --color-on-surface: #09090B;
+  --color-on-surface-variant: #64748B;
+  --color-outline-variant: #F1F5F9;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+:root {
+  /* Legacy mapping for compatibility if needed, but primarily using new tokens */
+  --primary: 20 85% 33%;
+  --primary-foreground: 0 0% 100%;
+  --background: 210 20% 98%;
+  --foreground: 240 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+  --border: 240 6% 90%;
+  --radius: 1rem;
+
+  /* On-surface tokens for light mode */
+  --on-surface: #1a1a1a;
+  --on-surface-variant: #6b7280;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* RTL utility classes */
+[dir="rtl"] .rtl\:flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .rtl\:text-right {
+  text-align: right;
+}
+
+[dir="rtl"] .rtl\:text-left {
+  text-align: left;
+}
+
+.dark {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+  
+  --card: 240 10% 4%;
+  --card-foreground: 0 0% 98%;
+  
+  --popover: 240 10% 4%;
+  --popover-foreground: 0 0% 98%;
+  
+  --primary: 16 88% 54%; /* #F05A22 */
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 215 16% 47%; /* #475569 */
+  --secondary-foreground: 0 0% 98%;
+  
+  --muted: 215 16% 47%;
+  --muted-foreground: 215 16% 65%;
+  
+  --accent: 215 16% 47%;
+  --accent-foreground: 0 0% 98%;
+  
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+  
+  --border: 215 25% 27%;
+  --input: 215 25% 27%;
+  --ring: 16 88% 54%;
+  
+  --sidebar: 240 10% 4%; /* Deep Black #09090B */
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 16 88% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 4% 10%; /* Slightly lighter black for active */
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 5% 15%;
+  --sidebar-ring: 16 88% 54%;
+
+  /* On-surface tokens for dark mode - keeping them accessible even if we prefer light */
+  --on-surface: #F8FAFC;
+  --on-surface-variant: #A1A1AA;
+  --outline-variant: #1E293B;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  /* Apply Tajawal font for Arabic content */
+  [dir="rtl"], [lang="ar"] {
+    font-family: var(--font-arabic), var(--font-sans), sans-serif;
+  }
+  /* Custom scrollbar for a cleaner look */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+/* Custom utility for glassmorphism if needed */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: none;
+}
+.dark .glass {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient animation */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.solar-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-container) 100%
+  );
+}
+
+/* Lecture Mate dashboard — Inverted White Theme */
+.lecture-mate-dashboard-ui {
+  --color-primary: #F05A22;
+  --color-primary-container: #FFF7ED;
+  --color-surface: #FFFFFF;
+  --color-surface-container-low: #F8FAFC;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-on-surface: #09090B;
+  --color-on-surface-variant: #64748B;
+  --color-outline-variant: #F1F5F9;
+  --color-ring: #F05A22;
+}
+
+.dark .lecture-mate-dashboard-ui {
+  --color-surface: #FFFFFF; /* Forcing white even in dark mode for this UI if user insists */
+  --color-on-surface: #09090B;
+  --color-surface-container-low: #F8FAFC;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-outline-variant: #F1F5F9;
+}
+
