@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "lecturemate-project",
+    "defult": "fir-demo-project"
+  },
+  "targets": {},
+  "etags": {}
+}
