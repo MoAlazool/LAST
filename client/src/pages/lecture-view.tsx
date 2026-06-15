@@ -787,38 +787,57 @@ export default function LectureView() {
       toast({ title: t.toast.cannotReprocess, description: t.toast.cannotReprocessDesc, variant: "destructive" });
       return;
     }
+    const transcript = lecture.transcript;
+    const geminiFileUri = lecture.geminiFileUri;
+    const geminiFileMimeType = lecture.geminiFileMimeType;
+    const extractedImages = lecture.extractedImages;
+    // Regenerate Medical / Engineering if the lecture is that category OR already has that content.
+    const regenMedical = isMedicalLecture || hasMedical;
+    const regenEngineering = isEngineeringLecture || hasEngineering;
     try {
       setIsReprocessing(true);
       toast({ title: t.toast.reprocessStarted, description: t.toast.reprocessStartedDesc });
-      await updateLecture({ lectureId: lecture.id, updates: { status: "processing", progress: 40 } });
-      const [summary, quiz, slides, flashcards, formulas, conceptMap, medical, engineering] = await Promise.allSettled([
-        generateSummary(lecture.transcript, selectedModel),
-        generateQuiz(lecture.transcript, selectedModel, "comprehensive", lecture.title),
-        generateSlides(lecture.transcript, lecture.summary as any || lecture.title, lecture.extractedImages),
-        generateFlashcards(lecture.transcript, selectedModel),
-        extractMathFormulas(lecture.transcript, selectedModel),
-        generateConceptMap(lecture.transcript, selectedModel),
-        lecture.category === "medicine"
-          ? generateMedicalInsights(lecture.transcript, selectedModel, lecture.geminiFileUri, lecture.geminiFileMimeType)
-          : Promise.resolve(lecture.medical),
-        lecture.category === "engineering"
-          ? generateEngineeringInsights(lecture.transcript, selectedModel, lecture.geminiFileUri, lecture.geminiFileMimeType)
-          : Promise.resolve(lecture.engineering),
-      ]);
-      await updateLecture({
-        lectureId: lecture.id,
-        updates: {
-          status: "completed",
-          progress: 100,
-          summary: summary.status === "fulfilled" ? summary.value : lecture.summary,
-          slides: slides.status === "fulfilled" ? slides.value : lecture.slides,
-          flashcards: flashcards.status === "fulfilled" ? flashcards.value : lecture.flashcards,
-          formulas: formulas.status === "fulfilled" ? (formulas.value as any) : lecture.formulas,
-          conceptMap: conceptMap.status === "fulfilled" ? (conceptMap.value as any) : lecture.conceptMap,
-          medical: medical.status === "fulfilled" ? (medical.value as any) : lecture.medical,
-          engineering: engineering.status === "fulfilled" ? (engineering.value as any) : lecture.engineering,
-        }
-      });
+
+      // Reset the on-demand quiz so Assessments regenerates from scratch.
+      try {
+        localStorage.removeItem(`quiz_session_${lecture.id}`);
+        localStorage.removeItem(`quiz_levels_${lecture.id}`);
+      } catch { /* ignore */ }
+
+      // Show the processing screen. We do NOT wipe the old results up front — each section is
+      // replaced ONLY when its new result succeeds, so a failed/skipped regen keeps the old
+      // data instead of leaving the section blank (this is what broke Medical Insights before).
+      setForceShowContent(false);
+      await updateLecture({ lectureId: lecture.id, updates: { status: "processing", progress: 40, questions: [] } as any });
+
+      const savePart = async (fields: Record<string, any>) => {
+        try { await updateLecture({ lectureId: lecture.id, updates: fields as any }); } catch { /* ignore */ }
+      };
+
+      const summaryRaw = generateSummary(transcript, selectedModel);
+      const flashcardsRaw = generateFlashcards(transcript, selectedModel);
+
+      const summaryP = summaryRaw.then((summary) => savePart({ summary }));
+      const flashcardsP = flashcardsRaw.then((flashcards) => savePart({ flashcards }));
+      const formulasP = extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+        .then((formulas) => savePart({ formulas }));
+      const conceptP = flashcardsRaw
+        .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards))
+        .then((conceptMap) => savePart({ conceptMap }));
+      const slidesP = summaryRaw
+        .then((summary) => generateSlides(transcript, summary as any, extractedImages))
+        .then((slides) => savePart({ slides }));
+      const medicalP = regenMedical
+        ? generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+            .then((medical) => savePart({ medical }))
+        : Promise.resolve();
+      const engineeringP = regenEngineering
+        ? generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+            .then((engineering) => savePart({ engineering }))
+        : Promise.resolve();
+
+      await Promise.allSettled([summaryP, flashcardsP, formulasP, conceptP, slidesP, medicalP, engineeringP]);
+      await updateLecture({ lectureId: lecture.id, updates: { status: "completed", progress: 100 } });
       toast({ title: t.toast.reprocessComplete, description: t.toast.reprocessCompleteDesc });
     } catch (err: any) {
       toast({ title: t.toast.reprocessFailed, description: err.message, variant: "destructive" });
@@ -880,6 +899,44 @@ export default function LectureView() {
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] space-y-4">
           <h2 className="text-2xl font-black text-[#1d1d1f] dark:text-white">{t.notFound}</h2>
           <Button onClick={() => setLocation("/")}>{t.backToDashboard}</Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // No usable transcript (extraction failed / link had no speech) → don't leave the user
+  // hunting in the Transcription tab; show a clear message + a way to delete the lecture.
+  const transcriptMissing = !lecture.transcript || lecture.transcript.trim().length < 30;
+  if (lecture.status === "failed" || (lecture.status !== "processing" && transcriptMissing)) {
+    return (
+      <AppLayout currentTab={activeTab}>
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] text-center px-6 space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+          <div className="w-20 h-20 rounded-full bg-amber-50 flex items-center justify-center">
+            <span className="material-symbols-outlined text-amber-500 text-4xl">subtitles_off</span>
+          </div>
+          <div className="space-y-2 max-w-md">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              {language === "ar" ? "لا يوجد تفريغ نصي" : "No transcription found"}
+            </h2>
+            <p className="text-slate-500 leading-relaxed">
+              {language === "ar"
+                ? "تعذّر استخراج أي نص من هذا الرابط أو الملف، لذلك لا يمكن إنشاء أدوات الدراسة. جرّب رابطاً أو ملفاً آخر يحتوي على كلام واضح."
+                : "We couldn't extract any transcript from this link or file, so study tools can't be generated. Try another link or file with clear speech."}
+            </p>
+          </div>
+          <div className={cn("flex flex-col sm:flex-row gap-3", isRTL && "sm:flex-row-reverse")}>
+            <Button variant="outline" onClick={() => setLocation("/")} className="rounded-xl font-bold">
+              {language === "ar" ? "العودة للرئيسية" : "Back to home"}
+            </Button>
+            <Button
+              onClick={async () => { try { await deleteLecture(lecture.id); } catch { /* ignore */ } setLocation("/"); }}
+              disabled={isDeleting}
+              className="rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete</span>
+              {isDeleting ? (language === "ar" ? "جاري الحذف..." : "Deleting...") : (language === "ar" ? "حذف المحاضرة" : "Delete lecture")}
+            </Button>
+          </div>
         </div>
       </AppLayout>
     );
@@ -1280,6 +1337,8 @@ export default function LectureView() {
                   documentPageCount={lecture.documentPageCount || (Array.isArray(lecture.slides) && lecture.slides.length > 0 ? lecture.slides.length : undefined)}
                   userId={user?.uid}
                   lectureSourceType={lecture.sourceType}
+                  transcriptChunks={lecture.transcriptChunks || []}
+                  slides={lecture.slides || []}
                   relatedLectures={lectures
                     .filter(l => l.id !== lecture.id && l.status === "completed")
                     .map(l => ({

@@ -74,7 +74,7 @@ export default function NewAnalysis({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
-  const [tab, setTab] = useState<"file" | "link">("file");
+  const [tab, setTab] = useState<"file" | "link">("link");
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [url, setUrl] = useState("");
@@ -202,7 +202,7 @@ export default function NewAnalysis({
           className="relative grid grid-cols-2 gap-1 p-1 rounded-2xl bg-surface-container-low border border-outline-variant/50 mb-6"
           role="tablist"
         >
-          {(["file", "link"] as const).map((key) => {
+          {(["link", "file"] as const).map((key) => {
             const active = tab === key;
             const Icon = key === "file" ? CloudUpload : Link2;
             return (

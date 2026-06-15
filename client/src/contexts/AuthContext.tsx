@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
-    setLocation("/dashboard");
+    setLocation("/");
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
@@ -49,12 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (displayName && userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
     }
-    setLocation("/dashboard");
+    setLocation("/");
   };
 
   const signInWithGoogle = async () => {
     await signInWithPopup(auth, googleProvider);
-    setLocation("/dashboard");
+    setLocation("/");
   };
 
   const signOut = async () => {

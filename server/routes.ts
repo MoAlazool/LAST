@@ -425,7 +425,7 @@ RULES:
 
   // Helper for Gemini requests with retry logic and model fallback
   const callGeminiWithRetry = async (genAI: any, prompt: string | any[], preferredModel = "gemini-3.5-flash", retries = 3, temperature?: number, responseMimeType?: string) => {
-    const modelsToTry = ["gemini-3.5-flash"];
+    const modelsToTry = ["gemini-3.5-flash", "gemini-2.5-flash"];
     let lastError: any;
 
     let currentModelIndex = 0;

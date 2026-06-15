@@ -89,19 +89,23 @@ export function AgentChatView({
     userId,
     lectureSourceType,
     relatedLectures,
-}: { 
-    transcript: string, 
-    title: string, 
-    lectureId?: string, 
-    mode?: "gpu" | "api", 
-    minimal?: boolean, 
-    initialMessage?: string, 
+    transcriptChunks,
+    slides,
+}: {
+    transcript: string,
+    title: string,
+    lectureId?: string,
+    mode?: "gpu" | "api",
+    minimal?: boolean,
+    initialMessage?: string,
     onClose?: () => void,
     sourceUrl?: string,
     documentPageCount?: number,
     userId?: string,
     lectureSourceType?: string,
     relatedLectures?: { id: string; title: string; summary?: string | string[]; category?: string; sourceType?: string }[],
+    transcriptChunks?: { text: string; page_number: number }[],
+    slides?: { title?: string; subtitle?: string; lead?: string; content?: string[]; quote?: string }[],
 }) {
     const { language, isRTL } = useLanguage();
     const isAr = language === "ar";
@@ -177,9 +181,11 @@ export function AgentChatView({
     type PendingContext =
         | { kind: "selection"; text: string; page?: number }
         | { kind: "moment"; time: string; seconds?: number; nearbyText?: string }
+        | { kind: "page"; page: number; text: string; isSlide?: boolean }
         | null;
     const [pendingContext, setPendingContext] = useState<PendingContext>(null);
     const [pdfFallback, setPdfFallback] = useState(false);
+    const [showPagePicker, setShowPagePicker] = useState(false);
     const viewerContainerRef = useRef<HTMLDivElement>(null);
     const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
@@ -350,6 +356,12 @@ export function AgentChatView({
             const ref = isAr ? `🎬 بخصوص اللحظة ${pendingContext.time}` : `🎬 Re: moment ${pendingContext.time}`;
             display = typed ? `${ref}\n\n${typed}` : ref;
             if (!aiText) aiText = isAr ? "اشرح ما الذي يُشرح في هذه اللحظة من الفيديو." : "Explain what's being covered at this moment in the video.";
+        } else if (pendingContext?.kind === "page") {
+            const unit = pendingContext.isSlide ? (isAr ? "الشريحة" : "slide") : (isAr ? "صفحة" : "page");
+            extra = { selection: { text: pendingContext.text, page: pendingContext.page } };
+            const ref = isAr ? `📄 بخصوص ${unit} ${pendingContext.page}` : `📄 Re: ${unit} ${pendingContext.page}`;
+            display = typed ? `${ref}\n\n${typed}` : ref;
+            if (!aiText) aiText = isAr ? `اشرح محتوى ${unit} ${pendingContext.page} بالتفصيل.` : `Explain the content of ${unit} ${pendingContext.page} in detail.`;
         }
 
         const img = selectedImage;
@@ -378,6 +390,27 @@ export function AgentChatView({
     // Video moment — stage the timestamp so the student can type a specific question about it.
     const handleAskMoment = ({ time, seconds, nearbyText }: VideoMomentPayload) => {
         setPendingContext({ kind: "moment", time, seconds, nearbyText });
+        inputRef.current?.focus();
+    };
+
+    // --- Per-page / per-slide context (PDF, PPTX, DOCX) ---
+    const isSlideDoc = /\.(pptx?|ppsx)\b/i.test(`${lectureSourceType || ""} ${sourceUrl || ""} ${title || ""}`) || lectureSourceType === "pptx";
+    const pageCount = documentPageCount
+        || (transcriptChunks && transcriptChunks.length ? Math.max(0, ...transcriptChunks.map(c => c.page_number || 0)) : 0)
+        || (slides ? slides.length : 0);
+
+    const getPageText = (page: number): string => {
+        const chunks = (transcriptChunks || []).filter(c => c.page_number === page);
+        if (chunks.length) return chunks.map(c => c.text).filter(Boolean).join("\n\n").trim();
+        const slide = (slides || [])[page - 1];
+        if (slide) return [slide.title, slide.subtitle, slide.lead, ...(slide.content || []), slide.quote].filter(Boolean).join("\n").trim();
+        return "";
+    };
+
+    // Stage a specific page/slide so the student can ask about it.
+    const stagePage = (page: number) => {
+        setPendingContext({ kind: "page", page, text: getPageText(page), isSlide: isSlideDoc });
+        setShowPagePicker(false);
         inputRef.current?.focus();
     };
 
@@ -552,7 +585,7 @@ export function AgentChatView({
                                         </p>
                                     </div>
                                 ) : inferredDocumentKind === "pdf" ? (
-                                    <PdfReader url={sourceUrl} language={language} isRTL={isRTL} onAsk={handleAskSelection} onFallback={() => setPdfFallback(true)} />
+                                    <PdfReader url={sourceUrl} language={language} isRTL={isRTL} onAsk={handleAskSelection} onFallback={() => setPdfFallback(true)} onAskPage={stagePage} />
                                 ) : isVideoKind ? (
                                     <LectureVideo
                                         url={sourceUrl}
@@ -745,18 +778,22 @@ export function AgentChatView({
                                     )}
                                 >
                                     <div className="w-7 h-7 rounded-xl bg-[#F05A22]/15 flex items-center justify-center shrink-0 text-[#F05A22]">
-                                        {pendingContext.kind === "moment" ? <Film className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                                        {pendingContext.kind === "moment" ? <Film className="w-3.5 h-3.5" /> : pendingContext.kind === "page" ? <BookOpen className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[10px] font-black uppercase tracking-wider text-[#F05A22]">
                                             {pendingContext.kind === "moment"
                                                 ? (isAr ? `لحظة الفيديو · ${pendingContext.time}` : `Video moment · ${pendingContext.time}`)
-                                                : (isAr ? `تحديد · صفحة ${pendingContext.page ?? "?"}` : `Selection · page ${pendingContext.page ?? "?"}`)}
+                                                : pendingContext.kind === "page"
+                                                    ? (pendingContext.isSlide ? (isAr ? `الشريحة ${pendingContext.page}` : `Slide ${pendingContext.page}`) : (isAr ? `صفحة ${pendingContext.page}` : `Page ${pendingContext.page}`))
+                                                    : (isAr ? `تحديد · صفحة ${pendingContext.page ?? "?"}` : `Selection · page ${pendingContext.page ?? "?"}`)}
                                         </p>
                                         <p className="text-xs text-slate-600 truncate leading-snug">
-                                            {pendingContext.kind === "selection"
-                                                ? `"${truncate(pendingContext.text, 90)}"`
-                                                : (isAr ? "اكتب سؤالك عن هذه اللحظة" : "Type your question about this moment")}
+                                            {pendingContext.kind === "moment"
+                                                ? (isAr ? "اكتب سؤالك عن هذه اللحظة" : "Type your question about this moment")
+                                                : pendingContext.kind === "page"
+                                                    ? (pendingContext.text ? `"${truncate(pendingContext.text, 90)}"` : (isAr ? "اكتب سؤالك عن هذه الصفحة" : "Type your question about this page"))
+                                                    : `"${truncate(pendingContext.text, 90)}"`}
                                         </p>
                                     </div>
                                     <button
@@ -820,24 +857,78 @@ export function AgentChatView({
                                     className="w-full bg-transparent border-none focus:ring-0 text-slate-900 py-4 px-4 text-sm placeholder:text-slate-400"
                                     dir="auto"
                                 />
-                                <div className="flex items-center justify-end p-2 gap-2">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => imageInputRef.current?.click()}
-                                        className={cn(
-                                            "p-2 transition-colors rounded-lg",
-                                            selectedImage ? "text-[#F05A22] bg-[#F05A22]/10" : "text-slate-400 hover:text-[#F05A22]"
-                                        )}
-                                    >
-                                        <Paperclip className="w-5 h-5" />
-                                    </button>
-                                    <button 
-                                        type="submit"
-                                        disabled={(!input.trim() && !selectedImage) || isLoading}
-                                        className="bg-[#F05A22] hover:bg-[#D44A1B] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-[#F05A22]/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
-                                    >
-                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                                    </button>
+                                <div className="flex items-center justify-between p-2 gap-2">
+                                    {/* Page / slide picker (PDF, PPTX, DOCX) */}
+                                    {hasDocumentContext && pageCount > 0 && !isVideoKind ? (
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPagePicker((v) => !v)}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold transition-colors",
+                                                    showPagePicker ? "text-[#F05A22] bg-[#F05A22]/10" : "text-slate-400 hover:text-[#F05A22]"
+                                                )}
+                                                title={isSlideDoc ? (isAr ? "اسأل عن شريحة" : "Ask about a slide") : (isAr ? "اسأل عن صفحة" : "Ask about a page")}
+                                            >
+                                                <BookOpen className="w-4 h-4" />
+                                                <span className="hidden sm:inline">{isSlideDoc ? (isAr ? "شريحة" : "Slide") : (isAr ? "صفحة" : "Page")}</span>
+                                            </button>
+                                            <AnimatePresence>
+                                                {showPagePicker && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                                                        className={cn("absolute bottom-full mb-2 z-40 w-64 max-h-60 overflow-y-auto bg-white rounded-2xl border border-slate-200 shadow-2xl p-3 custom-scrollbar", isRTL ? "right-0" : "left-0")}
+                                                    >
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 px-1", isRTL && "text-right")}>
+                                                            {isSlideDoc ? (isAr ? "اختر شريحة" : "Pick a slide") : (isAr ? "اختر صفحة" : "Pick a page")}
+                                                        </p>
+                                                        <div className="grid grid-cols-5 gap-1.5">
+                                                            {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => {
+                                                                const active = pendingContext?.kind === "page" && pendingContext.page === n;
+                                                                return (
+                                                                    <button
+                                                                        key={n}
+                                                                        type="button"
+                                                                        onClick={() => stagePage(n)}
+                                                                        className={cn(
+                                                                            "h-9 rounded-lg text-xs font-black tabular-nums transition-all",
+                                                                            active ? "bg-[#F05A22] text-white shadow" : "bg-slate-50 text-slate-600 border border-slate-100 hover:bg-[#F05A22]/10 hover:text-[#F05A22]"
+                                                                        )}
+                                                                    >
+                                                                        {n}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ) : (
+                                        <div />
+                                    )}
+
+                                    <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                                        <button
+                                            type="button"
+                                            onClick={() => imageInputRef.current?.click()}
+                                            className={cn(
+                                                "p-2 transition-colors rounded-lg",
+                                                selectedImage ? "text-[#F05A22] bg-[#F05A22]/10" : "text-slate-400 hover:text-[#F05A22]"
+                                            )}
+                                        >
+                                            <Paperclip className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={(!input.trim() && !selectedImage && !pendingContext) || isLoading}
+                                            className="bg-[#F05A22] hover:bg-[#D44A1B] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-[#F05A22]/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                                        >
+                                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </form>

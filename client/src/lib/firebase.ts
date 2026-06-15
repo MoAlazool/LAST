@@ -7,13 +7,13 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyABsJutQQyzmfPm4rwiJ1TJiqMOOBcadSs",
-  authDomain: "lecturematepr.firebaseapp.com",
-  projectId: "lecturematepr",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lecturematepr.appspot.com",
-  messagingSenderId: "319579725299",
-  appId: "1:319579725299:web:92a6ae847ed2c841c68686",
-  measurementId: "G-SJLFJF58DY"
+  apiKey: "AIzaSyAB26QpvSMFey43NgnbhEdg1hmVWipRrw0",
+  authDomain: "lecturemate-d0187.firebaseapp.com",
+  projectId: "lecturemate-d0187",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lecturemate-d0187.firebasestorage.app",
+  messagingSenderId: "236572081094",
+  appId: "1:236572081094:web:a109d4ac3e102bd07f90c7",
+  measurementId: "G-981T13LPV5"
 };
 
 // Initialize Firebase

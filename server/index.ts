@@ -1,3 +1,5 @@
+// Load .env BEFORE any other import so modules (e.g. firebaseStorage) see env vars at load time.
+import "dotenv/config";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -105,7 +107,8 @@ app.use((req, res, next) => {
   // Default to 8080 if not specified.
   // this serves both the API and the client.
 
-  const PORT = 5000;
+  // Hosts like Railway/Render inject the port via $PORT; fall back to 5000 locally.
+  const PORT = Number(process.env.PORT) || 5000;
   httpServer.listen(PORT, "0.0.0.0", () => {
     log(`serving on port ${PORT}`);
   });

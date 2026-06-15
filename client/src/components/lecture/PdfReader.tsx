@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+// Vite resolves the worker from node_modules to a real served asset URL.
+// (new URL("pdfjs-dist/...", import.meta.url) does NOT resolve bare specifiers → 404 → fallback.)
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,11 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Configure the pdf.js worker (Vite resolves this URL at build time).
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export interface PdfAskPayload {
   text: string;
@@ -32,6 +31,7 @@ interface PdfReaderProps {
   isRTL?: boolean;
   onAsk: (payload: PdfAskPayload) => void;
   onFallback?: () => void;
+  onAskPage?: (page: number) => void;
 }
 
 interface PopoverState {
@@ -40,7 +40,7 @@ interface PopoverState {
   left: number;
 }
 
-export default function PdfReader({ url, language = "en", isRTL = false, onAsk, onFallback }: PdfReaderProps) {
+export default function PdfReader({ url, language = "en", isRTL = false, onAsk, onFallback, onAskPage }: PdfReaderProps) {
   const isAr = language === "ar";
 
   // Cross-origin PDFs must go through our same-origin proxy or PDF.js can't fetch them (CORS).
@@ -66,6 +66,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
   const t = {
     explain: isAr ? "اشرح هذا" : "Explain",
     ask: isAr ? "اسأل عن هذا" : "Ask about this",
+    askPage: isAr ? "اسأل عن الصفحة" : "Ask about page",
     page: isAr ? "صفحة" : "Page",
     of: isAr ? "من" : "of",
     hint: isAr ? "ظلّل أي نص لتشرحه أو تسأل عنه" : "Highlight any text to explain or ask about it",
@@ -166,6 +167,17 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
             {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
+
+        {onAskPage && (
+          <button
+            onClick={() => onAskPage(page)}
+            className="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-bold text-[#F05A22] bg-[#F05A22]/10 hover:bg-[#F05A22] hover:text-white transition-colors"
+            title={t.askPage}
+          >
+            <MessageSquareQuote className="w-3.5 h-3.5" />
+            <span>{t.askPage}</span>
+          </button>
+        )}
 
         <div className="flex items-center gap-1">
           <button

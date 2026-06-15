@@ -73,10 +73,12 @@ export function useLectureProcessor() {
       if (isProcessingStopped && processingLectureId === lectureId) return;
 
       const flashcards = await generateFlashcards(transcript, selectedModel);
+      await updateLecture({ lectureId, updates: { progress: 92, flashcards } }); // show as soon as ready
 
       if (isProcessingStopped && processingLectureId === lectureId) return;
 
-      let formulas = await extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType);
+      const formulas = await extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType);
+      await updateLecture({ lectureId, updates: { progress: 95, formulas } });
 
       // Medical Insights / Engineering Lab are only generated for their respective categories.
       const medical = category === "medicine"
@@ -86,7 +88,7 @@ export function useLectureProcessor() {
         ? await generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
         : undefined;
 
-      await updateLecture({ lectureId, updates: { progress: 100, flashcards, formulas, medical, engineering, status: "completed", modelType: selectedModel } });
+      await updateLecture({ lectureId, updates: { progress: 100, medical, engineering, status: "completed", modelType: selectedModel } });
 
       setProcessingLectureId(null);
       setIsProcessingStopped(false);
@@ -169,51 +171,57 @@ export function useLectureProcessor() {
 
       await updateLecture({ lectureId, updates: { progress: 45 } });
 
-      // Step 2: Parallelized AI Processing
-      // Phase 1: Run independent generation tasks in parallel.
-      // Medical Insights are only generated for medical lectures.
-      const [summary, flashcards, formulas, medical, engineering] = await Promise.all([
-        generateSummary(transcript, selectedModel),
-        generateFlashcards(transcript, selectedModel),
-        extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType),
-        category === "medicine"
-          ? generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-          : Promise.resolve(undefined),
-        category === "engineering"
-          ? generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-          : Promise.resolve(undefined)
-      ]);
+      // Step 2: AI processing — each task is saved to the lecture the MOMENT it finishes,
+      // so the UI reveals each module progressively (the poller picks it up within ~1.5s)
+      // instead of everything appearing at once at the end. Quiz is generated on-demand,
+      // so it starts empty.
+      await updateLecture({ lectureId, updates: { progress: 50, questions: [] } });
 
-      await updateLecture({
-        lectureId,
-        updates: {
-          progress: 80,
-          summary,
-          questions: [],
-          flashcards,
-          formulas,
-          medical,
-          engineering
+      const stopped = () => isProcessingStopped && processingLectureId === lectureId;
+      let progress = 50;
+      const savePart = async (fields: Record<string, any>) => {
+        if (stopped()) return;
+        progress = Math.min(95, progress + 6);
+        try {
+          await updateLecture({ lectureId, updates: { progress, ...fields } });
+        } catch (e) {
+          console.warn("[processLecture] partial save failed:", e);
         }
-      });
+      };
 
-      if (isProcessingStopped && processingLectureId === lectureId) return;
+      // Independent tasks — run concurrently, each pushes its own result as soon as ready.
+      const summaryP = generateSummary(transcript, selectedModel)
+        .then(async (summary) => { await savePart({ summary }); return summary; });
+      const flashcardsP = generateFlashcards(transcript, selectedModel)
+        .then(async (flashcards) => { await savePart({ flashcards }); return flashcards; });
+      const formulasP = extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+        .then(async (formulas) => { await savePart({ formulas }); return formulas; });
+      const medicalP = category === "medicine"
+        ? generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+            .then(async (medical) => { await savePart({ medical }); return medical; })
+        : Promise.resolve(undefined);
+      const engineeringP = category === "engineering"
+        ? generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+            .then(async (engineering) => { await savePart({ engineering }); return engineering; })
+        : Promise.resolve(undefined);
 
-      // Phase 2: Run dependent tasks in parallel
-      const [slides, conceptMap] = await Promise.all([
-        generateSlides(transcript, summary),
-        generateConceptMap(transcript, selectedModel, flashcards)
-      ]);
+      // Dependent tasks — kick off as soon as their input is ready (don't wait for the rest).
+      const slidesP = summaryP
+        .then((summary) => generateSlides(transcript, summary))
+        .then(async (slides) => { await savePart({ slides }); return slides; });
+      const conceptMapP = flashcardsP
+        .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards))
+        .then(async (conceptMap) => { await savePart({ conceptMap }); return conceptMap; });
+
+      // Wait for everything to settle — one failed/slow task no longer aborts the others,
+      // and whatever succeeded is already saved and visible.
+      await Promise.allSettled([summaryP, flashcardsP, formulasP, medicalP, engineeringP, slidesP, conceptMapP]);
+
+      if (stopped()) return;
 
       await updateLecture({
         lectureId,
-        updates: { 
-          progress: 100, 
-          slides,
-          conceptMap,
-          status: "completed", 
-          modelType: selectedModel 
-        },
+        updates: { progress: 100, status: "completed", modelType: selectedModel },
       });
 
       setProcessingLectureId(null);

@@ -61,7 +61,7 @@ function StatTile({
   tint: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-white border border-slate-200/70 p-4 flex items-center gap-3.5 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_12px_28px_rgba(0,0,0,0.05)] transition-all duration-300 group">
+    <div className="rounded-[22px] bg-white border border-slate-200/70 p-4 flex items-center gap-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(0,0,0,0.08)] transition-all duration-300 group">
       <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110", tint)}>
         {icon}
       </div>
@@ -309,7 +309,7 @@ export default function DashboardOverview() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F7F6F2]" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="flex min-h-screen bg-surface" dir={isRTL ? "rtl" : "ltr"}>
       <Sidebar />
       <main className={cn("flex-1 min-h-screen flex flex-col", isRTL ? "mr-64" : "ml-64")}>
         <Header />
@@ -404,7 +404,7 @@ export default function DashboardOverview() {
           {/* Insights: weekly activity + subject breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Weekly activity */}
-            <div className="lg:col-span-2 rounded-[26px] bg-white border border-slate-200/70 p-6">
+            <div className="lg:col-span-2 rounded-[26px] bg-white border border-slate-200/70 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
               <div className={cn("flex items-center justify-between mb-5", isRTL && "flex-row-reverse")}>
                 <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
                   <BarChart3 size={17} className="text-[#F05A22]" />
@@ -436,7 +436,7 @@ export default function DashboardOverview() {
             </div>
 
             {/* By subject */}
-            <div className="rounded-[26px] bg-white border border-slate-200/70 p-6">
+            <div className="rounded-[26px] bg-white border border-slate-200/70 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
               <div className={cn("flex items-center gap-2 mb-5", isRTL && "flex-row-reverse")}>
                 <Layers size={17} className="text-violet-500" />
                 <h3 className="font-black text-slate-900">{t.bySubject}</h3>

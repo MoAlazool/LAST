@@ -1,0 +1,48 @@
+# Slim CPU image for Railway / Render — runs the single Node server that serves
+# BOTH the built React client and the /api backend, plus the Python helpers.
+# (The repo's other Dockerfile is the heavy GPU/CUDA image; this one is for normal hosts.)
+FROM node:20-bookworm-slim
+
+# System dependencies:
+#  - python3 + pip   -> server/scripts/*.py (PyMuPDF, yt-dlp, youtube-transcript-api)
+#  - ffmpeg          -> audio/video handling
+#  - libreoffice     -> .ppt/.pptx/.docx -> PDF conversion for the document viewer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 python3-pip python3-venv \
+      ffmpeg \
+      libreoffice-impress libreoffice-writer \
+      curl ca-certificates fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Python deps (CPU-only). We intentionally SKIP torch / faster-whisper (GPU "gpu" mode)
+# to keep the image small — the deployed app uses "api" mode (Gemini) for transcription.
+RUN pip3 install --no-cache-dir --break-system-packages \
+      PyMuPDF \
+      yt-dlp \
+      youtube-transcript-api \
+      requests \
+      Pillow \
+      google-generativeai \
+      google-genai
+
+# Install Node deps first (better layer caching). Dev deps are needed for the build step.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# App source + build (client -> dist/public, server -> dist/index.mjs)
+COPY . .
+RUN npm run build
+
+ENV NODE_ENV=production
+ENV PYTHON_CMD=python3
+# Railway/Render set $PORT at runtime; this is just the local-docker default.
+ENV PORT=5000
+EXPOSE 5000
+
+# Health check (matches /api/health)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl -fsS "http://localhost:${PORT}/api/health" || exit 1
+
+CMD ["node", "dist/index.mjs"]

@@ -12,3 +12,6 @@ google-generativeai>=0.8.0
 google-genai>=0.4.0
 requests>=2.31.0
 Pillow>=10.0.0
+
+# PDF text/content extraction (server/scripts/extract_pdf_content.py imports `fitz`)
+PyMuPDF>=1.24.0

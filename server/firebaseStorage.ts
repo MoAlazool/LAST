@@ -9,19 +9,31 @@ const __dirname = path.dirname(__filename);
 
 // Initialize Firebase Admin if not already initialized
 let app;
+let saProjectId: string | undefined; // project id read from the service account (most reliable)
 if (getApps().length === 0) {
   try {
-    // Try to use service account key from environment or file
-    const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
-      path.join(__dirname, "..", "firebase-service-account.json");
+    // Resolve the service account from (in order):
+    //  1. FIREBASE_SERVICE_ACCOUNT_KEY as INLINE JSON  (cloud deploy — Render/Railway/etc. secret)
+    //  2. FIREBASE_SERVICE_ACCOUNT_KEY as a file PATH
+    //  3. ./firebase-service-account.json at the project root (local dev)
+    let serviceAccount: any = null;
+    const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (saEnv && saEnv.trim().startsWith("{")) {
+      serviceAccount = JSON.parse(saEnv);
+    } else {
+      const serviceAccountPath = saEnv || path.join(__dirname, "..", "firebase-service-account.json");
+      if (existsSync(serviceAccountPath)) {
+        serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+      }
+    }
 
-    if (existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+    if (serviceAccount) {
+      saProjectId = serviceAccount.project_id;
       app = initializeApp({
         credential: cert(serviceAccount),
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "lecturematepr.appspot.com",
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || (saProjectId ? `${saProjectId}.firebasestorage.app` : "lecturematepr.appspot.com"),
       });
-      console.log("[Firebase Storage] Initialized with service account key");
+      console.log(`[Firebase Storage] Initialized with service account key (project: ${saProjectId})`);
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       // Use credentials from environment variable
       app = initializeApp({
@@ -52,7 +64,7 @@ let isBucketVerified = false;
 const verifyBucket = async () => {
   if (!app) return;
 
-  const projectID = process.env.FIREBASE_PROJECT_ID || "lecturematepr";
+  const projectID = process.env.FIREBASE_PROJECT_ID || saProjectId || "lecturematepr";
   const customBucket = process.env.FIREBASE_STORAGE_BUCKET;
   
   // List of possible bucket names to try
