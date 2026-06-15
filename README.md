@@ -26,12 +26,12 @@ Fully bilingual (Arabic / English) with proper RTL/LTR handling and Arabic-font 
 - 📹 **YouTube** — Transcript extraction, time-range slicing, key-frame capture via OpenCV
 - 🎙️ **Audio uploads** — Local Whisper (`faster-whisper`) transcription
 - 📄 **PDF (incl. scanned Arabic)** — High-precision extraction via **PyMuPDF** with automatic **Gemini Vision OCR fallback** when text is garbage/empty
-- 🖼️ **PowerPoint (PPT/PPTX)** — Silent conversion to PDF via PowerPoint COM (`pywin32` on Windows) → fed to Gemini Vision for perfect formula extraction
+- 🖼️ **PowerPoint (PPT/PPTX)** — Converted to PDF (**LibreOffice**, cross-platform; PowerPoint COM on Windows) → rendered in the in-page viewer and fed to Gemini Vision for formula/figure extraction
 - 🖱️ **Direct text paste** — Skip extraction and go straight to processing
 
 ### 🤖 AI-Generated Study Material
-- 📝 **Summary** — Long-form abstractive summary with markdown + LaTeX support
-- ❓ **Quiz** — Multiple-choice questions with explanations
+- 📝 **Smart Summary** — Readable, article-style walkthrough of the whole lecture (so reading replaces watching), plus key takeaways, **study tips**, **self-check questions**, and key terms (markdown + LaTeX)
+- ❓ **Assessments** — Multi-level quizzes (Beginner / Intermediate / Advanced) with **Practice** (timed) and **Learn** (per-answer explanations + AI tutor) modes; progress is saved and every generated level is kept
 - 🎬 **Slides** — Professional `.pptx` deck (5 themes, Arabic-aware fonts) using pptxgenjs + custom slide renderer
 - 🃏 **Flashcards** — Term/definition cards with **full LaTeX rendering** (`react-markdown` + `remark-math` + `rehype-katex`)
 - 🧮 **Formulas** — Auto-extracted math formulas with KaTeX rendering and step-by-step solutions
@@ -43,12 +43,16 @@ Fully bilingual (Arabic / English) with proper RTL/LTR handling and Arabic-font 
 - 🛠️ **Engineering Lab** — Specialized view for engineering content
 - 💡 **Solution Steps** — Worked-example renderer with code-block + math support
 
-### 💬 Dual Chat Tutors
-- **Lecture-Specific Agent** — Grounded in the current lecture's transcript and assets
-- **General Assistant** — Site-wide help and general study questions
+### 💬 AI Agent (interactive tutor)
+- Grounded in the current lecture's transcript and assets
+- **Highlight any text in a PDF → "Explain / Ask"** — in-page **PDF.js** reader with a real selectable text layer (cross-origin PDFs proxied for CORS)
+- **Pause a video at any moment → "Ask about this moment"** — captures the timestamp + nearby transcript
+- **Pick a specific page or slide** and ask about it (PDF / PPTX / DOCX)
+- Replies in the **same language you write in**, with correct per-message RTL/LTR alignment
 - Persistent chat history per lecture (Firestore)
 
 ### 🎨 UX
+- 🛬 **SaaS landing page** + split-screen **sign-in / multi-step onboarding sign-up**
 - 🌐 **Bilingual UI** (Arabic / English) with auto language detection
 - 🔄 **RTL/LTR** layout switching
 - 🎨 **5 Slide Themes** — Clean, Dark, Academic, Modern, Tech
@@ -80,7 +84,7 @@ Fully bilingual (Arabic / English) with proper RTL/LTR handling and Arabic-font 
 | Diagrams | Mermaid + React Flow (@xyflow/react) + Dagre |
 | Rich Editor | TipTap 3 (image, color, text-align, text-style extensions) |
 | 3D | 3Dmol.js (molecule viewer) |
-| PDF | jsPDF, pdf-parse, mammoth |
+| PDF | **react-pdf / pdf.js** (interactive selectable viewer), jsPDF, mammoth |
 | Forms | react-hook-form + Zod |
 | Charts | Recharts |
 | Markdown | react-markdown + react-syntax-highlighter |
@@ -280,23 +284,6 @@ The app runs at **http://localhost:5000** (server) and the Vite client dev serve
 
 ---
 
-## 🆕 What's New (Feb 26, 2026 cycle)
-
-> Full changelog in [`UPDATES_FEB_26_2026.md`](UPDATES_FEB_26_2026.md).
-
-- **Vision-captioned images** — Every extracted image now gets a Gemini 2.5 Flash explanation, with lazy loading and sparkle UI cues.
-- **PyMuPDF Arabic PDF pipeline** — Replaces fragile JS PDF parsing; one-pass text + image extraction with proper Arabic font handling.
-- **Zero-failure OCR** — Garbage-text detector (`text_cleaner.py`) auto-triggers Gemini Vision OCR for scanned / mis-encoded Arabic PDFs.
-- **YouTube key-frame extraction** — OpenCV pulls representative frames so every YouTube lecture returns transcript **+ images**.
-- **PPTX → PDF auto-conversion** — Silent COM bridge via `pywin32` produces a perfect PDF that Gemini Vision can read end-to-end.
-- **LaTeX flashcards** — `$inline$` and `$$block$$` math now renders correctly on both card sides (KaTeX).
-- **Port-conflict guard** — Auto-detects and kills orphaned servers holding `0.0.0.0:5000`.
-- **Node 24 verified** — Deprecation warnings silenced, `tsx --watch` runs cleanly.
-- **Firebase ADC** — Standardized Application Default Credentials for Storage.
-- **Stable child-process management** — Whisper / Python processes terminate cleanly on Stop.
-
----
-
 ## 🧪 Development
 
 ```bash
@@ -312,22 +299,29 @@ npm run db:push      # drizzle-kit push (if using Postgres)
 
 ## 🚢 Deployment
 
-### Docker
-```bash
-docker-compose up --build
-```
+> **Heads-up:** the backend is a real Node server that runs Python (`yt-dlp`, `PyMuPDF`),
+> `ffmpeg`, and LibreOffice, and makes long (>60s) AI calls — so it **cannot** run on
+> static/serverless-only hosts like **Netlify or Firebase Hosting**. It needs a container host.
 
-### Firebase Hosting (client) + your choice of backend host
-```bash
-npm run deploy:hosting        # client only
-npm run deploy                # client + Functions/whatever firebase.json points at
-```
+### Railway (recommended) — full guide in [`DEPLOY.md`](DEPLOY.md)
+The app deploys as **one container** that serves the client + API together.
+1. Railway → **Deploy from GitHub repo** → it auto-builds with **`Dockerfile.railway`** (via `railway.json`).
+2. Set env vars: `NODE_ENV=production`, `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `PYTHON_CMD=python3`, and **`FIREBASE_SERVICE_ACCOUNT_KEY`** = the service-account JSON pasted inline (so uploads persist in **Firebase Storage**).
+3. Add your `*.up.railway.app` domain to **Firebase → Auth → Authorized domains**.
 
-### Backend hosts that work well
-- **Cloud Run** — containerized, autoscaling
-- **Railway / Render** — easiest PaaS path
-- **RunPod / Vast.ai** — for GPU + Ollama (see `RUNPOD_SETUP.md`, `RUNPOD_QUICKSTART.md`)
-- **VPS** — `start.sh` / `startup.sh` are ready-to-go launchers
+`Dockerfile.railway` is a slim **CPU** image (Node + Python + ffmpeg + LibreOffice); the
+heavy GPU/CUDA `Dockerfile` + `docker-compose.yml` remain for GPU/Ollama hosts.
+
+### Other backend hosts
+- **Render / Fly.io / Cloud Run** — same single-container approach (`Dockerfile.railway`).
+- **RunPod / Vast.ai** — for GPU + Ollama (see `RUNPOD_SETUP.md`, `RUNPOD_QUICKSTART.md`).
+- **VPS** — `start.sh` / `startup.sh` are ready-to-go launchers.
+
+### Local production test
+```bash
+docker build -f Dockerfile.railway -t lecturemate .
+docker run -p 5000:5000 --env-file .env lecturemate   # → http://localhost:5000
+```
 
 ### GPU / Ollama setup
 - `GPU_SETUP.md` — local GPU configuration
@@ -348,13 +342,18 @@ npm run deploy                # client + Functions/whatever firebase.json points
 | `OLLAMA_URL` | — | `http://localhost:11434` | Local Ollama endpoint |
 | `OLLAMA_MODEL` | — | `qwen2.5:7b` | Local model to use |
 | `PYTHON_CMD` | — | `python3` | Override Python interpreter |
-| `FIREBASE_PROJECT_ID` | — | — | Server-side Firebase Admin |
-| `FIREBASE_STORAGE_BUCKET` | — | — | For uploaded asset storage |
-| `FIREBASE_SERVICE_ACCOUNT_KEY` | — | — | Inline JSON credentials |
-| `GOOGLE_APPLICATION_CREDENTIALS` | — | — | Path to ADC JSON |
+| `FIREBASE_PROJECT_ID` | ☁️ cloud | — | Server-side Firebase Admin project |
+| `FIREBASE_STORAGE_BUCKET` | ☁️ cloud | — | Bucket for uploaded assets |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | ☁️ cloud | — | **Inline JSON** service-account (or a file path); locally you can drop `./firebase-service-account.json` instead |
+| `GOOGLE_APPLICATION_CREDENTIALS` | — | — | Path to ADC JSON (alternative auth) |
+| `PORT` | — | `5000` | Injected by the host (Railway/Render) — leave blank locally |
 | `CUDA_VISIBLE_DEVICES` | — | — | GPU selection |
 
-A complete template lives in [`.env.example`](.env.example).
+> ☁️ = required when deploying to the cloud (so uploaded files persist in Firebase Storage
+> instead of an ephemeral disk). Optional for local dev, which can use local `./uploads`.
+
+A complete template lives in [`.env.example`](.env.example). **Never commit `.env` or
+`firebase-service-account.json`** — both are git-ignored; provide them as host env vars.
 
 ---
 
