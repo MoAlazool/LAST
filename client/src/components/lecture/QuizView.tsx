@@ -363,8 +363,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
               <button
                 onClick={() => setStage("ready")}
                 className={cn(
-                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[#F05A22]/30 bg-white text-[#F05A22] font-black text-sm hover:bg-[#F05A22] hover:text-white hover:border-[#F05A22] transition-all shadow-sm active:scale-95",
-                  isRTL && "flex-row-reverse"
+                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[#F05A22]/30 bg-white text-[#F05A22] font-black text-sm hover:bg-[#F05A22] hover:text-white hover:border-[#F05A22] transition-all shadow-sm active:scale-95"
                 )}
               >
                 {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
@@ -413,7 +412,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                 <p className="text-sm text-[#777] leading-relaxed mb-8 min-h-[4.5rem] font-medium">{c.data.desc}</p>
                 <div className="space-y-3 mb-10 w-full">
                   {c.data.points.map((p, i) => (
-                    <div key={i} className={cn("flex items-center gap-3 text-[13px] font-bold text-[#444]", isRTL && "flex-row-reverse")}>
+                    <div key={i} className={cn("flex items-center gap-3 text-[13px] font-bold text-[#444]")}>
                       <CheckCircle className="w-4 h-4 text-[#C64B1D]" />
                       <span>{p}</span>
                     </div>
@@ -518,13 +517,13 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
               <p className="text-sm text-[#777] leading-relaxed mb-6 min-h-[2.5rem] font-medium">{m.data.desc}</p>
               <div className="space-y-2.5 mb-7">
                 {m.data.points.map((p, i) => (
-                  <div key={i} className={cn("flex items-center gap-2.5 text-[13px] font-bold text-[#444]", isRTL && "flex-row-reverse")}>
+                  <div key={i} className={cn("flex items-center gap-2.5 text-[13px] font-bold text-[#444]")}>
                     <CheckCircle className="w-4 h-4 text-[#10B981]" />
                     <span>{p}</span>
                   </div>
                 ))}
               </div>
-              <div className={cn("inline-flex items-center gap-2 font-black text-sm text-[#F05A22] group-hover:gap-3 transition-all", isRTL && "flex-row-reverse")}>
+              <div className={cn("inline-flex items-center gap-2 font-black text-sm text-[#F05A22] group-hover:gap-3 transition-all")}>
                 {t.mode.begin} <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
               </div>
             </motion.button>
@@ -602,8 +601,8 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
     return (
       <div className={cn("max-w-4xl mx-auto py-10 px-6 bg-[#FDFDFD] min-h-screen", isRTL && "rtl text-right")}>
         {/* Mode + progress strip */}
-        <div className={cn("flex items-center justify-between mb-5", isRTL && "flex-row-reverse")}>
-          <div className={cn("flex items-center gap-2 text-[11px] font-black uppercase tracking-wider", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between mb-5")}>
+          <div className={cn("flex items-center gap-2 text-[11px] font-black uppercase tracking-wider")}>
             <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full", answerMode === "learn" ? "bg-emerald-500/10 text-emerald-600" : "bg-[#F05A22]/10 text-[#F05A22]")}>
               {answerMode === "learn" ? <GraduationCap className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
               {answerMode === "learn" ? t.mode.learn.name : t.mode.practice.name}

@@ -45,7 +45,6 @@ export default function ProcessingModeSelector({
           disabled={disabled}
           className={cn(
             "group inline-flex items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-container-low pl-2.5 pr-2 py-1.5 text-xs font-semibold text-on-surface transition-colors hover:bg-surface-container-high disabled:opacity-50",
-            isRTL && "flex-row-reverse",
           )}
         >
           <span className="grid place-items-center h-5 w-5 rounded-full bg-[#F05A22]/10 text-[#F05A22]">

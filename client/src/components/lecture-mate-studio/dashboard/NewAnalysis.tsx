@@ -182,7 +182,7 @@ export default function NewAnalysis({
 
       <div className="relative z-10 p-6 sm:p-8 lg:p-10">
         {/* Header */}
-        <div className={cn("flex items-start gap-4 mb-6", isRTL && "flex-row-reverse text-right")}>
+        <div className={cn("flex items-start gap-4 mb-6", isRTL && "text-right")}>
           <div className="shrink-0 grid place-items-center h-12 w-12 rounded-2xl bg-[#F05A22]/10 text-[#F05A22]">
             <Sparkles size={24} strokeWidth={2} />
           </div>

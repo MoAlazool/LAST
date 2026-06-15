@@ -19,11 +19,12 @@ import {
     Handle
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { toPng } from 'html-to-image';
+import { toBlob } from 'html-to-image';
 import dagre from 'dagre';
 import { Button } from "@/components/ui/button";
 import { BrainCircuit, ChevronRight, ChevronLeft, Map, Compass, Maximize, Minimize, X, Zap, Download, Maximize2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface ConceptMapViewProps {
@@ -231,6 +232,7 @@ const CustomControlPanel = ({
 
 function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
     const { language, isRTL } = useLanguage();
+    const { toast } = useToast();
 
     const reactFlowInstance = useReactFlow();
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -608,15 +610,22 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
             const mapWidth = maxX - minX + (padding * 2);
             const mapHeight = maxY - minY + (padding * 2);
 
-            // 3. Capture at 2x scale for high quality
-            const scale = 2;
-            const finalWidth = mapWidth * scale;
-            const finalHeight = mapHeight * scale;
+            // 3. Capture at up to 2x for quality, but CAP the output dimensions.
+            // Large maps at 2x — multiplied again by the screen's devicePixelRatio —
+            // easily blow past the browser's max canvas size, which makes html-to-image
+            // silently produce a blank/failed image (the "download does nothing" bug).
+            // We force pixelRatio:1 and clamp the longest side instead.
+            const MAX_DIM = 12000;
+            const scale = Math.max(1, Math.min(2, MAX_DIM / mapWidth, MAX_DIM / mapHeight));
+            const finalWidth = Math.round(mapWidth * scale);
+            const finalHeight = Math.round(mapHeight * scale);
 
-            const dataUrl = await toPng(viewportEl, {
+            const blob = await toBlob(viewportEl, {
                 backgroundColor: '#ffffff',
                 width: finalWidth,
                 height: finalHeight,
+                pixelRatio: 1, // we already apply `scale` manually — don't double up via DPR
+                cacheBust: true,
                 style: {
                     width: `${finalWidth}px`,
                     height: `${finalHeight}px`,
@@ -631,12 +640,25 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                 }
             });
 
+            if (!blob) throw new Error('html-to-image returned an empty blob');
+
+            // Blob + DOM-attached anchor downloads reliably even for large images
+            // (a detached anchor with a multi-MB data: URL is dropped by some browsers).
+            const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.download = `lecture-mindmap-${Date.now()}.png`;
-            link.href = dataUrl;
+            link.href = url;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
         } catch (err) {
             console.error('Failed to download map:', err);
+            toast({
+                title: isRTL ? 'تعذّر تنزيل الصورة' : 'Could not download image',
+                description: isRTL ? 'حدث خطأ أثناء إنشاء صورة الخريطة. حاول مرة أخرى.' : 'Something went wrong creating the map image. Please try again.',
+                variant: 'destructive',
+            });
         }
     };
 

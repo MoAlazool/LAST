@@ -157,9 +157,9 @@ export default function LectureHistoryView() {
       {/* Masthead */}
       <div className={cn("flex flex-col lg:flex-row lg:items-end justify-between gap-5 border-b border-slate-200/70 pb-6", isRTL && "text-right")}>
         <div className="min-w-0">
-          <div className={cn("flex items-center gap-2.5 mb-3", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-2.5 mb-3")}>
             {urlCategory ? (
-              <Link href="/categories" className={cn("font-mono text-[11px] tracking-[0.22em] uppercase text-slate-400 hover:text-[#F05A22] transition-colors flex items-center gap-1.5 no-underline", isRTL && "flex-row-reverse")}>
+              <Link href="/categories" className={cn("font-mono text-[11px] tracking-[0.22em] uppercase text-slate-400 hover:text-[#F05A22] transition-colors flex items-center gap-1.5 no-underline")}>
                 {isRTL ? <ArrowRight size={12} /> : <ArrowLeft size={12} />}
                 {t.backToDomains}
               </Link>
@@ -174,7 +174,7 @@ export default function LectureHistoryView() {
           <h2 className="text-4xl lg:text-[44px] font-black text-slate-900 tracking-tight leading-[1.05]">
             {urlCategory ? `${categoryName} ${t.libraryTitle}` : t.historyTitle}
           </h2>
-          <p className={cn("text-slate-500 mt-2.5 font-medium flex items-center gap-2 flex-wrap", isRTL && "flex-row-reverse")}>
+          <p className={cn("text-slate-500 mt-2.5 font-medium flex items-center gap-2 flex-wrap")}>
             <span><span className="text-slate-900 font-bold tabular-nums">{filteredLectures.length}</span> {t.results}</span>
             {searchQuery && (
               <span className="inline-flex items-center gap-1.5 text-sm bg-slate-100 text-slate-600 rounded-full px-3 py-0.5">
@@ -196,7 +196,7 @@ export default function LectureHistoryView() {
         </div>
 
         {/* Sort toggle (functional) */}
-        <div className={cn("flex items-center gap-1 bg-white border border-slate-200 rounded-full p-1 shrink-0 shadow-sm", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center gap-1 bg-white border border-slate-200 rounded-full p-1 shrink-0 shadow-sm")}>
           {([
             { id: "newest", label: t.newest },
             { id: "oldest", label: t.oldest },
@@ -216,7 +216,7 @@ export default function LectureHistoryView() {
       </div>
 
       {/* Filter chips with counts */}
-      <div className={cn("flex flex-wrap gap-2.5", isRTL && "flex-row-reverse")}>
+      <div className={cn("flex flex-wrap gap-2.5")}>
         {t.filters.map((f) => {
           const isActive = filter === f.id;
           const count = typeCounts[f.id] ?? 0;
@@ -269,7 +269,7 @@ export default function LectureHistoryView() {
       )}
 
       {totalPages > 1 && (
-        <div className={cn("flex items-center justify-center gap-2 pt-8 pb-4", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-center gap-2 pt-8 pb-4")}>
           <button
             aria-label={t.prev}
             disabled={page === 1}
@@ -469,13 +469,13 @@ function HistoryCard({ lecture, onDelete }: { lecture: Lecture, onDelete: () => 
           {lecture.title}
         </h3>
 
-        <div className={cn("flex items-center gap-1.5 text-xs text-on-surface-variant mt-2 mb-5", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center gap-1.5 text-xs text-on-surface-variant mt-2 mb-5")}>
           <CalendarDays size={14} className="text-[#F05A22] shrink-0" />
           <span className="font-medium truncate">{t.analyzed}: {getFormattedDate()}</span>
         </div>
 
         {/* Actions */}
-        <div className={cn("mt-auto flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
+        <div className={cn("mt-auto flex items-center gap-2.5")}>
           <Link
             href={isArchived ? "#" : `/lecture/${lecture.id}`}
             className={cn(

@@ -256,8 +256,8 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
   return (
     <div className="space-y-6" dir={uiDir}>
       {/* Header */}
-      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4", uiDir === "rtl" && "sm:flex-row-reverse")}>
-        <div className={cn("flex items-center gap-3", uiDir === "rtl" && "flex-row-reverse")}>
+      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4")}>
+        <div className={cn("flex items-center gap-3")}>
           <div className="p-2 rounded-xl bg-primary/10">
             <Presentation className="w-6 h-6 text-primary" />
           </div>
@@ -266,7 +266,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
             <p className="text-sm text-muted-foreground font-medium mt-1 line-clamp-1">{displayTitle}</p>
           </div>
         </div>
-        <div className={cn("flex items-center gap-2", uiDir === "rtl" && "flex-row-reverse")}>
+        <div className={cn("flex items-center gap-2")}>
           <Button
             onClick={() => handleDownloadPPTX("image")}
             disabled={isDownloading || editedSlides.length === 0}
@@ -301,7 +301,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
       {/* Theme Selector (collapsed by default) */}
       <Collapsible open={isThemeOpen} onOpenChange={setIsThemeOpen} className="border rounded-2xl bg-card shadow-sm overflow-hidden border-border/50">
         <CollapsibleTrigger className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-          <div className={cn("flex items-center gap-3", uiDir === "rtl" && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-3")}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/60 grid place-items-center text-white shadow">
               <Palette className="w-5 h-5" />
             </div>
@@ -341,7 +341,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
               </button>
             ))}
           </div>
-          <div className={cn("flex items-center gap-4 p-4 bg-muted/40 rounded-2xl border border-dashed border-border/60", uiDir === "rtl" && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-4 p-4 bg-muted/40 rounded-2xl border border-dashed border-border/60")}>
             <div className="flex-1">
               <p className="text-sm font-bold">{language === "ar" ? "لون مميز" : "Accent color"}</p>
               <p className="text-xs text-muted-foreground">{language === "ar" ? "يُطبّق على العناصر التزيينية" : "Applied to decorative highlights"}</p>
@@ -393,11 +393,11 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
       </div>
 
       {/* Controls */}
-      <div className={cn("flex items-center justify-between gap-4 max-w-4xl mx-auto", uiDir === "rtl" && "flex-row-reverse")}>
+      <div className={cn("flex items-center justify-between gap-4 max-w-4xl mx-auto")}>
         <span className="text-sm font-bold text-muted-foreground tabular-nums">
           {currentIndex + 1} / {editedSlides.length}
         </span>
-        <div className={cn("flex gap-2", uiDir === "rtl" && "flex-row-reverse")}>
+        <div className={cn("flex gap-2")}>
           {isEditing ? (
             <>
               <Button size="sm" onClick={handleSaveSlide} disabled={isSaving} className="rounded-xl font-bold gap-2">

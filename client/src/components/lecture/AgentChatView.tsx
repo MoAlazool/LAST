@@ -623,8 +623,8 @@ export function AgentChatView({
                 {/* Right Panel: Chat Interface */}
                 <div className="flex-1 flex flex-col min-w-0 bg-white relative h-full">
                     {/* Chat Header */}
-                    <div className={cn("px-6 pt-6 pb-4 flex items-center justify-between border-b border-slate-100", isRTL && "flex-row-reverse")}>
-                        <div className={cn("flex items-center gap-3 min-w-0", isRTL && "flex-row-reverse")}>
+                    <div className={cn("px-6 pt-6 pb-4 flex items-center justify-between border-b border-slate-100")}>
+                        <div className={cn("flex items-center gap-3 min-w-0")}>
                             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F05A22] to-[#f5793f] flex items-center justify-center shadow-lg shadow-[#F05A22]/20 shrink-0">
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
@@ -641,7 +641,7 @@ export function AgentChatView({
                                 </p>
                             </div>
                         </div>
-                        <div className={cn("flex items-center gap-3", isRTL && "flex-row-reverse")}>
+                        <div className={cn("flex items-center gap-3")}>
                             {hasDocumentContext && !showDocument && (
                                 <button
                                     onClick={() => setShowDocument(true)}
@@ -774,7 +774,7 @@ export function AgentChatView({
                                     exit={{ opacity: 0, y: 8 }}
                                     className={cn(
                                         "mb-3 flex items-start gap-2.5 rounded-2xl border border-[#F05A22]/20 bg-[#F05A22]/5 px-4 py-2.5",
-                                        isRTL && "flex-row-reverse text-right"
+                                        isRTL && "text-right"
                                     )}
                                 >
                                     <div className="w-7 h-7 rounded-xl bg-[#F05A22]/15 flex items-center justify-center shrink-0 text-[#F05A22]">
@@ -910,7 +910,7 @@ export function AgentChatView({
                                         <div />
                                     )}
 
-                                    <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                                    <div className={cn("flex items-center gap-2")}>
                                         <button
                                             type="button"
                                             onClick={() => imageInputRef.current?.click()}

@@ -127,13 +127,13 @@ export default function Landing() {
     if (k === "summary") {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 w-full">
-          <div className={cn("flex items-center gap-2.5 mb-5", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-2.5 mb-5")}>
             <div className="w-8 h-8 rounded-xl bg-[#F05A22]/10 flex items-center justify-center"><Sparkles className="w-4 h-4 text-[#F05A22]" /></div>
             <div className="h-3 w-32 rounded-full bg-slate-800/80" />
           </div>
           <div className="space-y-3.5">
             {[92, 78, 96, 70, 85].map((w, i) => (
-              <div key={i} className={cn("flex items-start gap-2.5", isRTL && "flex-row-reverse")}>
+              <div key={i} className={cn("flex items-start gap-2.5")}>
                 <div className="w-1.5 h-1.5 rounded-full bg-[#F05A22] mt-1.5 shrink-0" />
                 <div className="h-2.5 rounded-full bg-slate-100" style={{ width: `${w}%` }} />
               </div>
@@ -170,7 +170,7 @@ export default function Landing() {
     if (k === "agent") {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-5 w-full space-y-3">
-          <div className={cn("flex items-center gap-2 pb-3 border-b border-slate-100", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-2 pb-3 border-b border-slate-100")}>
             <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#F05A22] to-[#f5793f] flex items-center justify-center"><Bot className="w-3.5 h-3.5 text-white" /></div>
             <span className="text-xs font-black text-slate-800">AI Agent</span>
             <span className="ml-auto inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Online</span>
@@ -183,7 +183,7 @@ export default function Landing() {
             <div className="h-2 w-32 rounded-full bg-white/50" />
             <div className="h-2 w-20 rounded-full bg-white/50" />
           </div>
-          <div className={cn("flex items-center gap-1 px-2", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-1 px-2")}>
             <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" />
             <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: "150ms" }} />
             <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -194,12 +194,12 @@ export default function Landing() {
     if (k === "medical") {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-5 w-full">
-          <div className={cn("flex items-center gap-2.5 mb-4", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-2.5 mb-4")}>
             <div className="w-8 h-8 rounded-xl bg-[#F05A22]/10 flex items-center justify-center"><Stethoscope className="w-4 h-4 text-[#F05A22]" /></div>
             <div className="h-3 w-28 rounded-full bg-slate-800/80" />
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
-            <div className={cn("flex items-center justify-between", isRTL && "flex-row-reverse")}>
+            <div className={cn("flex items-center justify-between")}>
               <span className="text-[9px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 px-2 py-0.5 rounded">{isAr ? "مضاد حيوي" : "Antibiotic"}</span>
               <Pill className="w-4 h-4 text-[#F05A22]" />
             </div>
@@ -207,13 +207,13 @@ export default function Landing() {
             <div className="h-2 w-full rounded-full bg-slate-200" />
             <div>
               <span className="text-[9px] font-black uppercase text-slate-400">{isAr ? "دواعي الاستعمال" : "Indications"}</span>
-              <div className={cn("flex flex-wrap gap-1.5 mt-1.5", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex flex-wrap gap-1.5 mt-1.5")}>
                 {[44, 60, 36].map((w, i) => <span key={i} className="h-5 rounded-md bg-emerald-50 border border-emerald-100" style={{ width: w }} />)}
               </div>
             </div>
             <div>
               <span className="text-[9px] font-black uppercase text-slate-400">{isAr ? "الآثار الجانبية" : "Side effects"}</span>
-              <div className={cn("flex flex-wrap gap-1.5 mt-1.5", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex flex-wrap gap-1.5 mt-1.5")}>
                 {[50, 38].map((w, i) => <span key={i} className="h-5 rounded-md bg-amber-50 border border-amber-100" style={{ width: w }} />)}
               </div>
             </div>
@@ -254,14 +254,14 @@ export default function Landing() {
     // quiz
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 w-full">
-        <div className={cn("flex items-center justify-between mb-4", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between mb-4")}>
           <span className="text-[10px] font-black uppercase tracking-wider text-[#F05A22]">{isAr ? "السؤال ٢ / ١٠" : "Question 2 / 10"}</span>
           <span className="text-[10px] font-bold text-slate-400">00:24</span>
         </div>
         <div className="h-3 w-3/4 rounded-full bg-slate-800/80 mb-5" />
         <div className="space-y-2.5">
           {[{ c: false }, { c: true }, { c: false }, { c: false }].map((o, i) => (
-            <div key={i} className={cn("flex items-center gap-3 p-3 rounded-xl border-2", o.c ? "border-emerald-400 bg-emerald-50" : "border-slate-100 bg-white", isRTL && "flex-row-reverse")}>
+            <div key={i} className={cn("flex items-center gap-3 p-3 rounded-xl border-2", o.c ? "border-emerald-400 bg-emerald-50" : "border-slate-100 bg-white")}>
               <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0", o.c ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400")}>
                 {o.c ? <Check className="w-3.5 h-3.5" /> : String.fromCharCode(65 + i)}
               </span>
@@ -277,17 +277,17 @@ export default function Landing() {
     <div className="min-h-screen bg-[#FAFAF8] text-slate-900 antialiased" dir={isRTL ? "rtl" : "ltr"}>
       {/* NAV */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#FAFAF8]/80 border-b border-slate-200/60">
-        <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between", isRTL && "flex-row-reverse")}>
-          <Link href="/landing" className={cn("flex items-center gap-2.5 no-underline", isRTL && "flex-row-reverse")}>
+        <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between")}>
+          <Link href="/landing" className={cn("flex items-center gap-2.5 no-underline")}>
             <div className="w-9 h-9 rounded-xl bg-[#F05A22] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#F05A22]/20">L</div>
             <span className="text-lg font-black tracking-tight">Lecture<span className="text-[#F05A22]">Mate</span></span>
           </Link>
-          <nav className={cn("hidden md:flex items-center gap-8", isRTL && "flex-row-reverse")}>
+          <nav className={cn("hidden md:flex items-center gap-8")}>
             <a href="#features" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors no-underline">{t.navFeatures}</a>
             <a href="#showcase" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors no-underline">{t.navShowcase}</a>
             <a href="#how" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors no-underline">{t.navHow}</a>
           </nav>
-          <div className={cn("flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-2.5")}>
             <button onClick={toggleLanguage} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 border border-slate-200 rounded-full px-3 py-1.5 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors">
               <Globe className="w-3.5 h-3.5" />{isAr ? "EN" : "عربي"}
             </button>
@@ -330,7 +330,7 @@ export default function Landing() {
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className={cn("mt-9 flex flex-col sm:flex-row items-center justify-center gap-3", isRTL && "sm:flex-row-reverse")}
+              className={cn("mt-9 flex flex-col sm:flex-row items-center justify-center gap-3")}
             >
               <Link href="/sign-up" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-[#F05A22] text-white font-black text-base px-7 py-3.5 rounded-full shadow-xl shadow-slate-900/15 transition-all active:scale-95 no-underline">
                 {t.ctaPrimary}
@@ -454,14 +454,14 @@ export default function Landing() {
                       transition={{ duration: 0.55, ease: "easeOut" }}
                       className={cn(flip && "lg:order-2", isRTL ? "text-right" : "text-left")}
                     >
-                      <div className={cn("inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5 mb-5", isRTL && "flex-row-reverse")}>
+                      <div className={cn("inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5 mb-5")}>
                         <s.icon className="w-3.5 h-3.5" /> {s.tag}
                       </div>
                       <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight">{s.title}</h3>
                       <p className="mt-4 text-slate-500 font-medium text-[15px] leading-relaxed">{s.desc}</p>
                       <ul className="mt-6 space-y-3">
                         {s.points.map((p, i) => (
-                          <li key={i} className={cn("flex items-center gap-3 text-sm font-bold text-slate-700", isRTL && "flex-row-reverse")}>
+                          <li key={i} className={cn("flex items-center gap-3 text-sm font-bold text-slate-700")}>
                             <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><Check className="w-3 h-3" /></span>
                             {p}
                           </li>
@@ -537,8 +537,8 @@ export default function Landing() {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-200/60 py-10">
-        <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4", isRTL && "sm:flex-row-reverse")}>
-          <div className={cn("flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
+        <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4")}>
+          <div className={cn("flex items-center gap-2.5")}>
             <div className="w-8 h-8 rounded-lg bg-[#F05A22] flex items-center justify-center text-white font-black">L</div>
             <span className="font-black tracking-tight">Lecture<span className="text-[#F05A22]">Mate</span></span>
           </div>

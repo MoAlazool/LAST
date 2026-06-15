@@ -10,14 +10,14 @@ export function AppLayout({ children, currentTab, lectureNav }: { children: Reac
   const { isRTL } = useLanguage();
 
   return (
-    <div className={`flex min-h-screen bg-background font-sans ${isRTL ? "flex-row-reverse" : ""}`}>
+    <div className="flex min-h-screen bg-background font-sans">
       {/* Desktop Sidebar */}
       <Sidebar currentTab={currentTab} lectureNav={lectureNav} />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
-        <div className={`md:hidden flex items-center justify-between p-4 border-b bg-sidebar ${isRTL ? "flex-row-reverse" : ""}`}>
-          <Link href="/" className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""} cursor-pointer hover:opacity-80 transition-opacity`}>
+        <div className="md:hidden flex items-center justify-between p-4 border-b bg-sidebar">
+          <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
               <Video size={18} strokeWidth={3} />
             </div>

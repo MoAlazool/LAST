@@ -1517,12 +1517,14 @@ Output ONLY the transcript text, split into ~1-minute segments. Start each segme
           }
 
           if (!transcript || transcript.trim().length < 50) {
-            console.log(`[API] PDF text is empty or too short. Escalating to Gemini PDF extraction.`);
-            throw new Error("PDF text too short or empty for standard parsing");
+            console.log(`[API] PDF text is empty or too short. Will rely on the Gemini Vision document read below.`);
+            transcript = transcript || "";
           }
         } catch (err) {
-          console.log(`[API] PyMuPDF failed or returned little text. Escalating to Gemini PDF extraction.`);
-          throw err;
+          // Don't abort — the Gemini Vision document read below produces the real
+          // transcript (equations, image-only slides, etc.). Keep whatever text/images
+          // PyMuPDF already gathered.
+          console.log(`[API] PyMuPDF failed or returned little text. Falling back to Gemini Vision document read.`);
         }
       } else if (fileExt === ".docx" || fileExt === ".doc") {
         const result = await mammoth.extractRawText({ path: uploadedFilePath });
@@ -1670,7 +1672,44 @@ Output ONLY the transcript text, split into ~1-minute segments. Start each segme
         }
       }
 
+      // ── Best-quality transcript for documents: full Gemini Vision read ─────────
+      // Local parsers (PyMuPDF / officeparser / mammoth) only capture EMBEDDED text,
+      // so they silently drop equations and any image-only slide/page — which made the
+      // document transcript far worse than a YouTube transcript. Gemini reads the
+      // actual file (every page in order, equations as LaTeX, figures described), so
+      // for documents we prefer its complete read whenever the file reached Gemini.
+      if (isDocumentInfo && geminiFileUri && process.env.GEMINI_API_KEY) {
+        try {
+          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+          const visionPrompt = `You are an expert academic note-taker. The attached file is a lecture document (slides, PDF, or notes).
+Read EVERY page/slide IN ORDER and produce a COMPLETE, faithful, plain-text transcript of all of its educational content.
 
+Strict rules:
+- Include the text of every page/slide, in reading order. Do NOT skip any page, even sparse ones.
+- Transcribe ALL mathematical formulas and equations EXACTLY using inline LaTeX (e.g. $P(x|\\omega_i)$ or $$H = -\\int p(x)\\ln p(x)\\,dx$$). Never drop an equation or replace it with a placeholder like "." or "x".
+- For any meaningful diagram, chart, figure, or table, add a concise description on its own line as "[Figure: ...]".
+- Keep slide/section titles as short headings.
+- Do NOT summarize, add opinions, or invent content that is not in the document.
+- Write in the SAME language as the document (detect it automatically).
+
+Return ONLY the transcript text.`;
+          const visionTranscript = await callGeminiWithRetry(genAI, [
+            { fileData: { fileUri: geminiFileUri, mimeType: geminiFileMimeType || "application/pdf" } },
+            { text: visionPrompt },
+          ]);
+          const cleaned = (visionTranscript || "").trim();
+          // Prefer the Vision read when it returned real content (it reads the whole
+          // file, so it is essentially always richer than the embedded-text parse).
+          if (cleaned.length >= 200 && cleaned.length >= Math.floor((transcript?.trim().length || 0) * 0.5)) {
+            console.log(`[API] Gemini Vision document read: ${cleaned.length} chars (local parser had ${transcript?.trim().length || 0}).`);
+            transcript = cleaned;
+          } else {
+            console.log(`[API] Kept local parser transcript (Gemini Vision returned ${cleaned.length} chars).`);
+          }
+        } catch (visionErr: any) {
+          console.warn(`[API] Gemini Vision document read failed, keeping local text:`, visionErr?.message);
+        }
+      }
 
       if (transcript && typeof transcript === 'string' && transcript.length > 0) {
         console.log(`[API] Successfully extracted text from document: ${originalFilename} (${transcript.length} chars)`);
@@ -2838,7 +2877,18 @@ Analyze the content and return ONLY the category name(one word) in lowercase.
         try {
           console.log("[API] Using Gemini API for flashcards generation");
           const genAI = new GoogleGenerativeAI(geminiApiKey);
-          const flashcardPrompt = `Create 10-15 study flashcards in JSON format: { "flashcards": [{ "id": 1, "term": "...", "definition": "..." }] }. Use the same language as transcript. Transcript: ${transcript.substring(0, 20000)}`;
+          const flashcardPrompt = `You are an expert educational content creator. Create 10-15 high-quality study flashcards from the transcript below.
+
+RULES:
+- Write ALL terms and definitions in the SAME language as the transcript. Do NOT translate.
+- "term" = a clean concept/keyword name (e.g. "Maximum Likelihood Estimation"). Never phrase it as a question.
+- "definition" = concise and easy to memorize (about 10-30 words), accurate, plain text.
+- MATH (very important): wrap EVERY mathematical symbol, variable, formula, or equation in LaTeX delimiters — inline $...$ or block $$...$$. For example write $\\sigma_1^2$ and $\\frac{x_1^2}{\\sigma_1^2} + \\frac{x_2^2}{\\sigma_2^2} = C$. NEVER output bare LaTeX such as \\sigma or x_1^2 without surrounding $...$, and never write math as plain ASCII like "x_1^2 / sigma_1^2".
+- Do NOT use markdown bold (**...**) or italics.
+- Return ONLY valid JSON in this exact shape: { "flashcards": [{ "id": 1, "term": "...", "definition": "..." }] }
+
+Transcript:
+${transcript.substring(0, 20000)}`;
           const aiResponse = await callGeminiWithRetry(genAI, flashcardPrompt, "gemini-3.5-flash", 3, undefined, "application/json");
           const strictCleaned = cleanGeminiJson(aiResponse);
           let parsedResponse;

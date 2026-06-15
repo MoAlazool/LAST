@@ -116,18 +116,18 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
     <div id="premium-summary-container" className="py-6 px-1 sm:px-3" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-4xl mx-auto">
         {/* Top bar */}
-        <div className={cn("flex items-center justify-between gap-3 mb-6", isRTL && "flex-row-reverse")}>
-          <div className={cn("flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
-            <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between gap-3 mb-6")}>
+          <div className={cn("flex items-center gap-2.5")}>
+            <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5")}>
               <FileText className="w-3.5 h-3.5" /> {t.tag}
             </span>
-            <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold text-slate-400", isRTL && "flex-row-reverse")}>
+            <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold text-slate-400")}>
               <Clock className="w-3.5 h-3.5" /> {t.readTime(readMin)}
             </span>
           </div>
           <button
             onClick={handleExportPDF}
-            className={cn("no-print inline-flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors", isRTL && "flex-row-reverse")}
+            className={cn("no-print inline-flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors")}
           >
             <Download className="w-4 h-4" /> {t.download}
           </button>
@@ -151,14 +151,14 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
           {/* Walkthrough sections */}
           {sections.length > 0 && (
             <div className="mt-10">
-              <h2 className={cn("text-xl font-black text-slate-900 mb-7 flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
+              <h2 className="text-xl font-black text-slate-900 mb-7 flex items-center gap-2.5">
                 <span className="w-1.5 h-6 rounded-full bg-[#F05A22]" />
                 {t.inLecture}
               </h2>
               <div className="space-y-8">
                 {sections.map((s, i) => (
                   <div key={i}>
-                    <h3 className={cn("text-[17px] font-black text-slate-900 mb-2 flex items-baseline gap-2.5", isRTL && "flex-row-reverse")}>
+                    <h3 className="text-[17px] font-black text-slate-900 mb-2 flex items-baseline gap-2.5">
                       <span className="font-mono text-sm text-[#F05A22] shrink-0">{String(i + 1).padStart(2, "0")}</span>
                       <span>{s.heading}</span>
                     </h3>
@@ -177,12 +177,12 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
               {/* Key takeaways */}
               {points.length > 0 && (
                 <div className="rounded-2xl bg-slate-50 border border-slate-100 p-6">
-                  <h2 className={cn("text-sm font-black text-slate-900 mb-4 flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                  <h2 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
                     <Check className="w-4 h-4 text-emerald-600" /> {t.takeaways}
                   </h2>
                   <ul className="space-y-3">
                     {points.map((p, i) => (
-                      <li key={i} className={cn("flex items-start gap-2.5", isRTL && "flex-row-reverse")}>
+                      <li key={i} className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-2" />
                         <div className="text-[14px] leading-relaxed text-slate-700 font-medium flex-1">
                           <TextWithMath text={p} />
@@ -196,12 +196,12 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
               {/* Study tips */}
               {studyTips.length > 0 && (
                 <div className="rounded-2xl bg-[#FFF7ED] border border-[#F05A22]/15 p-6">
-                  <h2 className={cn("text-sm font-black text-slate-900 mb-4 flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                  <h2 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
                     <Lightbulb className="w-4 h-4 text-[#F05A22]" /> {t.studyTips}
                   </h2>
                   <ul className="space-y-3">
                     {studyTips.map((p, i) => (
-                      <li key={i} className={cn("flex items-start gap-2.5", isRTL && "flex-row-reverse")}>
+                      <li key={i} className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22] shrink-0 mt-2" />
                         <div className="text-[14px] leading-relaxed text-slate-700 font-medium flex-1">
                           <TextWithMath text={p} />
@@ -215,12 +215,12 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
               {/* Test yourself */}
               {selfCheck.length > 0 && (
                 <div className="rounded-2xl bg-white border border-slate-200/70 p-6">
-                  <h2 className={cn("text-sm font-black text-slate-900 mb-4 flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                  <h2 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
                     <HelpCircle className="w-4 h-4 text-violet-500" /> {t.selfCheck}
                   </h2>
                   <ul className="space-y-3">
                     {selfCheck.map((q, i) => (
-                      <li key={i} className={cn("flex items-start gap-2.5", isRTL && "flex-row-reverse")}>
+                      <li key={i} className="flex items-start gap-2.5">
                         <span className="text-xs font-black text-violet-500 shrink-0 mt-0.5 tabular-nums">{i + 1}.</span>
                         <div className="text-[14px] leading-relaxed text-slate-600 font-medium flex-1">
                           <TextWithMath text={q} />
@@ -234,7 +234,7 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
               {/* Key terms */}
               {defs.length > 0 && (
                 <div className="rounded-2xl bg-white border border-slate-200/70 p-6">
-                  <h2 className={cn("text-sm font-black text-slate-900 mb-4 flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                  <h2 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-slate-400" /> {t.terms}
                   </h2>
                   <dl className="space-y-3.5">

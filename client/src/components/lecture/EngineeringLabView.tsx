@@ -313,12 +313,12 @@ function CodeList({ items, isAr }: { items: CodeSnippet[]; isAr: boolean }) {
                 return (
                 <motion.div key={x.id || idx} {...cardMotion(idx)} className="rounded-[24px] border border-[#F1F5F9] bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                     {/* Header: title + language + line count */}
-                    <div className={cn("flex items-center justify-between gap-3 mb-4", isAr && "flex-row-reverse")}>
-                        <div className={cn("flex items-center gap-2 min-w-0", isAr && "flex-row-reverse")}>
+                    <div className={cn("flex items-center justify-between gap-3 mb-4")}>
+                        <div className={cn("flex items-center gap-2 min-w-0")}>
                             <Code2 className="w-5 h-5 text-primary shrink-0" />
                             <h3 className="font-bold text-xl text-slate-900 truncate">{x.title}</h3>
                         </div>
-                        <div className={cn("flex items-center gap-2 shrink-0", isAr && "flex-row-reverse")}>
+                        <div className={cn("flex items-center gap-2 shrink-0")}>
                             {x.language && (
                                 <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">{x.language}</span>
                             )}
@@ -332,7 +332,7 @@ function CodeList({ items, isAr }: { items: CodeSnippet[]; isAr: boolean }) {
 
                     {/* Key concepts */}
                     {x.concepts && x.concepts.length > 0 && (
-                        <div className={cn("flex flex-wrap gap-1.5 mt-4", isAr && "flex-row-reverse")} dir="ltr">
+                        <div className={cn("flex flex-wrap gap-1.5 mt-4")} dir="ltr">
                             {x.concepts.map((c, i) => (
                                 <span key={i} className="text-xs font-mono bg-[#FFF7ED] text-primary border border-primary/10 px-2 py-0.5 rounded-md">{c}</span>
                             ))}
@@ -353,7 +353,7 @@ function CodeList({ items, isAr }: { items: CodeSnippet[]; isAr: boolean }) {
                             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">{isAr ? "شرح سطراً بسطر" : "Line-by-line"}</p>
                             <div className="rounded-2xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
                                 {x.breakdown.map((b, i) => (
-                                    <div key={i} className={cn("flex flex-col sm:flex-row gap-1 sm:gap-3 p-3 hover:bg-slate-50/60 transition-colors", isAr && "sm:flex-row-reverse")}>
+                                    <div key={i} className={cn("flex flex-col sm:flex-row gap-1 sm:gap-3 p-3 hover:bg-slate-50/60 transition-colors")}>
                                         <code dir="ltr" className="shrink-0 sm:w-2/5 text-xs font-mono text-primary bg-primary/[0.04] rounded-md px-2 py-1 whitespace-pre-wrap break-words self-start">{b.part}</code>
                                         <span className={cn("text-sm text-slate-600 leading-relaxed flex-1", isAr && "text-right")}>{b.note}</span>
                                     </div>

@@ -802,7 +802,7 @@ export default function Home() {
                     {/* Time Range Selector */}
                     {url && (
                       <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className={`flex items-center gap-3 mb-4 ${language === "ar" ? "flex-row-reverse" : ""}`}>
+                        <div className="flex items-center gap-3 mb-4">
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input 
                               type="checkbox" 

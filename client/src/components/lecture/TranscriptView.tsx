@@ -186,20 +186,17 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
 
   const paragraphs = useMemo(() => {
     if (!text) return [];
-    
-    // If we have transcript chunks, use them for better organization
-    if (transcriptChunks && transcriptChunks.length > 0) {
-      return transcriptChunks.map(chunk => chunk.text).filter(t => t.trim().length > 0);
-    }
-    
-    // Split by double newline (YouTube transcript format) first
+
+    // Always render the extracted transcript text itself. For documents this is the
+    // full Gemini Vision read (every page in order, equations as LaTeX, figures
+    // described) — far richer than the old per-page parser chunks. Split into
+    // readable blocks on blank lines, falling back to single newlines.
     let blocks = text.split(/\n{2,}/).filter(p => p.trim().length > 0);
-    // If still one big block, try single newlines
     if (blocks.length <= 1 && text.length > 500) {
-      blocks = text.split(/\n/).filter(p => p.trim().length > 40);
+      blocks = text.split(/\n/).filter(p => p.trim().length > 0);
     }
     return blocks;
-  }, [text, transcriptChunks]);
+  }, [text]);
 
   // Parse real [MM:SS] marker from the start of a paragraph
   const parseTimestamp = (para: string): { timeStr: string; body: string } => {
@@ -233,20 +230,20 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
   return (
     <div className="space-y-4 font-body animate-in fade-in duration-500 pb-20" dir={uiDir}>
       {/* Header Panel — Transformed to Digital Curator Light Style */}
-      <div className={`relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12 bg-white p-6 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F05A22]/10 overflow-hidden ${language === "ar" ? "md:flex-row-reverse" : ""}`}>
+      <div className={`relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12 bg-white p-6 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F05A22]/10 overflow-hidden`}>
         {/* Background Decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#F05A22]/[0.03] rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#F05A22]/[0.02] rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none"></div>
         
         <div className="space-y-4 max-w-2xl relative z-10">
-          <div className={`flex items-center gap-2 text-[#F05A22] font-black text-[10px] uppercase tracking-widest ${language === "ar" ? "flex-row-reverse" : ""}`}>
+          <div className={`flex items-center gap-2 text-[#F05A22] font-black text-[10px] uppercase tracking-widest`}>
             <Sparkles className="w-4 h-4" />
             <span>{language === "ar" ? "النص المستخرج" : "Extracted Content"}</span>
           </div>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-black font-headline tracking-tight text-[#111827] leading-tight">
             {titleParts.main} <span className="text-[#F05A22]">{titleParts.highlight}</span>
           </h2>
-          <div className={`flex flex-wrap gap-3 pt-2 ${language === "ar" ? "flex-row-reverse" : ""}`}>
+          <div className={`flex flex-wrap gap-3 pt-2`}>
             <span className="px-5 py-2 bg-[#F05A22]/5 rounded-full text-xs font-bold text-[#111827] border border-[#F05A22]/10 flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-[#F05A22]" /> {readTimeMins} {language === "ar" ? "دقيقة" : "min read"}
             </span>
@@ -273,7 +270,7 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
       </div>
 
       {/* Stats Cards Section - Now Horizontal and Above Transcript */}
-      <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-6 mb-12", language === "ar" ? "md:flex-row-reverse" : "")}>
+      <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-6 mb-12")}>
          {/* Document Info Card */}
          <div className="bg-white rounded-[1.5rem] p-6 border border-[#F05A22]/10 shadow-[0_5px_20px_rgba(0,0,0,0.02)]">
            <h3 className="text-[10px] font-black text-[#F05A22] uppercase tracking-[0.2em] mb-8">{language === "ar" ? "المعلومات الأساسية" : "Document Info"}</h3>
@@ -328,16 +325,12 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
           )}
           {paragraphs.map((p, idx) => {
             const { timeStr: realTimeStr, body: paraBody } = parseTimestamp(p);
-            const seconds = idx * 20; // Fallback simulated timestamp
-            const min = String(Math.floor(seconds / 60)).padStart(2, '0');
-            const sec = String(seconds % 60).padStart(2, '0');
-            const fallbackTimeStr = `${min}:${sec}`;
-            const timeStr = realTimeStr || fallbackTimeStr;
+            // Real [MM:SS] markers only exist for spoken media (YouTube/audio/video).
+            // For documents there is no timeline, so show a clean section number instead
+            // of a fabricated timestamp.
+            const sectionLabel = String(idx + 1).padStart(2, "0");
+            const timeStr = realTimeStr || sectionLabel;
             const processedText = processMath(paraBody);
-
-            // Show page/slide label for chunks
-            const chunkPageNumber = transcriptChunks && transcriptChunks[idx] ? transcriptChunks[idx].page_number : null;
-            const isPresentation = transcriptChunks && transcriptChunks.length > 0;
 
             // Highlight certain paragraphs based on length and position
             const isHighlighted = idx > 0 && idx % 7 === 2 && p.length > 80;
@@ -359,27 +352,18 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
                 )}>
                   {isHighlighted && <div className={`absolute ${language === "ar" ? "-right-3" : "-left-3"} top-14 bottom-14 w-1.5 bg-[#F05A22] rounded-full shadow-[0_0_25px_rgba(232,93,26,0.5)]`}></div>}
                   
-                  <div className={`flex items-start gap-8 md:gap-16 ${language === "ar" ? "flex-row-reverse" : ""}`}>
+                  <div className={`flex items-start gap-8 md:gap-16`}>
                     {/* Timestamp / Page label column */}
                     <div className="w-16 shrink-0 pt-2 text-center opacity-60 group-hover/p:opacity-100 transition-opacity">
-                      {isPresentation && chunkPageNumber ? (
-                        <span className={cn(
-                          "text-xs font-black font-headline tracking-[0.15em] transition-all block",
-                          isHighlighted ? "text-[#F05A22]" : "text-[#111827]/40"
-                        )}>
-                          {language === "ar" ? `ص${chunkPageNumber}` : `P${chunkPageNumber}`}
-                        </span>
-                      ) : (
-                        <span className={cn(
-                          "text-xs font-black font-headline tracking-[0.2em] transition-all",
-                          isHighlighted ? "text-[#F05A22]" : "text-[#111827]/40"
-                        )}>{timeStr}</span>
-                      )}
+                      <span className={cn(
+                        "text-xs font-black font-headline tracking-[0.2em] transition-all",
+                        isHighlighted ? "text-[#F05A22]" : "text-[#111827]/40"
+                      )}>{timeStr}</span>
                     </div>
                     
                     {/* Text content */}
                     <div className={cn("flex-1", contentTextAlign === "right" ? "text-right" : "text-left")} dir={contentDir}>
-                      {isHighlighted && <div className={`flex items-center gap-2 mb-6 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+                      {isHighlighted && <div className={`flex items-center gap-2 mb-6`}>
                          <div className="h-px bg-[#F05A22]/20 flex-1"></div>
                          <h4 className="text-[9px] font-black text-[#F05A22] uppercase tracking-[0.3em] italic">{language === "ar" ? "رؤية مركزية" : "Curator Insight"}</h4>
                       </div>}

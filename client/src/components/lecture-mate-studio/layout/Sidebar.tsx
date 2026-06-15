@@ -43,7 +43,7 @@ export default function Sidebar() {
       isRTL ? "right-0 border-l" : "left-0 border-r"
     )} dir={isRTL ? "rtl" : "ltr"}>
       <div className="px-6 mb-10">
-        <div className={cn("flex items-center justify-between gap-2", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between gap-2")}>
           <Link href="/" className="no-underline block hover:opacity-90 transition-opacity">
             <h1 className="text-xl font-black text-slate-900 tracking-tighter">
               Lecture<span className="text-primary">Mate</span>
@@ -75,7 +75,7 @@ export default function Sidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3.5 py-3 px-5 transition-all duration-200 no-underline rounded-xl group relative",
-                isRTL ? "flex-row-reverse text-right" : "flex-row text-left",
+                isRTL ? "text-right" : "flex-row text-left",
                 isActive
                   ? "bg-primary/10 text-primary font-bold shadow-sm"
                   : "text-slate-500 hover:text-primary hover:bg-slate-50"
@@ -97,8 +97,7 @@ export default function Sidebar() {
         <Link
           href="/profile"
           className={cn(
-            "flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors no-underline border border-transparent hover:border-slate-200",
-            isRTL && "flex-row-reverse"
+            "flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors no-underline border border-transparent hover:border-slate-200"
           )}
         >
           <Avatar className="w-9 h-9 border-2 border-white shadow-sm shrink-0">
@@ -121,7 +120,7 @@ export default function Sidebar() {
           onClick={() => void signOut()}
           className={cn(
             "flex items-center gap-3 text-slate-500 hover:text-red-600 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors w-full bg-transparent border-0 cursor-pointer",
-            isRTL && "flex-row-reverse text-right"
+            isRTL && "text-right"
           )}
         >
           <LogOut size={18} />

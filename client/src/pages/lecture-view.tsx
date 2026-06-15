@@ -70,6 +70,41 @@ export default function LectureView() {
   const [popupTab, setPopupTab] = useState("summary");
   const [forceShowContent, setForceShowContent] = useState(false);
 
+  // Inline title / subtitle editing
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [subtitleDraft, setSubtitleDraft] = useState("");
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
+
+  const startEditTitle = () => {
+    setTitleDraft(lecture?.title || "");
+    setSubtitleDraft(lecture?.subtitle || "");
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = async () => {
+    if (!lecture?.id) return;
+    const newTitle = titleDraft.trim();
+    if (!newTitle) return;
+    setIsSavingTitle(true);
+    try {
+      await updateLecture({
+        lectureId: lecture.id,
+        updates: { title: newTitle, subtitle: subtitleDraft.trim() },
+      });
+      setIsEditingTitle(false);
+      toast({ title: language === "ar" ? "تم تحديث العنوان" : "Title updated" });
+    } catch (err: any) {
+      toast({
+        title: language === "ar" ? "فشل التحديث" : "Update failed",
+        description: err?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingTitle(false);
+    }
+  };
+
   // Determine visibility states based on lecture data with safety checks
   const sourceHint = `${lecture?.title || ""} ${lecture?.sourceUrl || ""} ${lecture?.sourceType || ""}`.toLowerCase();
   const isPresentation = /\.(pptx?|ppsx)\b/.test(sourceHint) || lecture?.sourceType === "pptx";
@@ -924,7 +959,7 @@ export default function LectureView() {
                 : "We couldn't extract any transcript from this link or file, so study tools can't be generated. Try another link or file with clear speech."}
             </p>
           </div>
-          <div className={cn("flex flex-col sm:flex-row gap-3", isRTL && "sm:flex-row-reverse")}>
+          <div className={cn("flex flex-col sm:flex-row gap-3")}>
             <Button variant="outline" onClick={() => setLocation("/")} className="rounded-xl font-bold">
               {language === "ar" ? "العودة للرئيسية" : "Back to home"}
             </Button>
@@ -1012,11 +1047,11 @@ export default function LectureView() {
           {/* Lecture info + reprocess card */}
           <div className="mb-10 max-w-[1400px] mx-auto" dir={isRTL ? "rtl" : "ltr"}>
             <div className="bg-surface-container-lowest rounded-[2.5rem] p-6 md:p-9 border border-outline-variant/30 shadow-[0_20px_60px_rgba(0,0,0,0.03)]">
-              <div className={cn("flex flex-col lg:flex-row lg:items-center justify-between gap-7", isRTL && "lg:flex-row-reverse")}>
+              <div className={cn("flex flex-col lg:flex-row lg:items-center justify-between gap-7")}>
                 {/* Info */}
                 <div className={cn("min-w-0 flex-1", isRTL ? "text-right" : "text-left")}>
-                  <div className={cn("flex items-center gap-2.5 mb-3 flex-wrap", isRTL && "flex-row-reverse")}>
-                    <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider", isCompleted ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600", isRTL && "flex-row-reverse")}>
+                  <div className={cn("flex items-center gap-2.5 mb-3 flex-wrap")}>
+                    <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider", isCompleted ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600")}>
                       <span className="relative flex h-2 w-2">
                         {!isCompleted && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />}
                         <span className={cn("relative inline-flex rounded-full h-2 w-2", isCompleted ? "bg-emerald-500" : "bg-amber-500")} />
@@ -1027,22 +1062,79 @@ export default function LectureView() {
                       <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#F05A22]/10 text-[#F05A22]">{lecture.category}</span>
                     )}
                   </div>
-                  <h1 className="text-2xl lg:text-4xl font-black tracking-tight text-on-surface leading-tight line-clamp-2">
-                    {lecture.title}
-                  </h1>
-                  <div className={cn("flex flex-wrap gap-x-7 gap-y-2 mt-4 text-sm font-bold text-on-surface-variant", isRTL && "flex-row-reverse")}>
-                    <span className={cn("flex items-center gap-1.5", isRTL && "flex-row-reverse")}>
+                  {isEditingTitle ? (
+                    <div className="space-y-2.5">
+                      <input
+                        value={titleDraft}
+                        onChange={(e) => setTitleDraft(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setIsEditingTitle(false); }}
+                        autoFocus
+                        maxLength={200}
+                        placeholder={isRTL ? "عنوان المحاضرة" : "Lecture title"}
+                        dir={isRTL ? "rtl" : "ltr"}
+                        className="w-full bg-surface border-2 border-[#F05A22]/30 focus:border-[#F05A22] outline-none rounded-2xl px-4 py-3 text-xl lg:text-3xl font-black tracking-tight text-on-surface"
+                      />
+                      <input
+                        value={subtitleDraft}
+                        onChange={(e) => setSubtitleDraft(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setIsEditingTitle(false); }}
+                        maxLength={300}
+                        placeholder={isRTL ? "وصف فرعي (اختياري)" : "Subtitle / short description (optional)"}
+                        dir={isRTL ? "rtl" : "ltr"}
+                        className="w-full bg-surface border border-outline-variant/40 focus:border-[#F05A22] outline-none rounded-xl px-4 py-2.5 text-sm font-bold text-on-surface-variant"
+                      />
+                      <div className={cn("flex items-center gap-2 pt-1")}>
+                        <button
+                          onClick={handleSaveTitle}
+                          disabled={isSavingTitle || !titleDraft.trim()}
+                          className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F05A22] text-white text-xs font-black uppercase tracking-wider hover:bg-[#d84d1a] transition-all active:scale-95 disabled:opacity-50")}
+                        >
+                          <span className={cn("material-symbols-outlined text-[18px]", isSavingTitle && "animate-spin")}>{isSavingTitle ? "progress_activity" : "check"}</span>
+                          {isRTL ? "حفظ" : "Save"}
+                        </button>
+                        <button
+                          onClick={() => setIsEditingTitle(false)}
+                          className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface border border-outline-variant/40 text-on-surface-variant text-xs font-black uppercase tracking-wider hover:bg-surface-container-low transition-all active:scale-95")}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">close</span>
+                          {isRTL ? "إلغاء" : "Cancel"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={cn("group/title flex items-start gap-2.5")}>
+                      <div className="min-w-0">
+                        <h1 className="text-2xl lg:text-4xl font-black tracking-tight text-on-surface leading-tight line-clamp-2">
+                          {lecture.title}
+                        </h1>
+                        {lecture.subtitle && (
+                          <p className="mt-1.5 text-sm lg:text-base font-bold text-on-surface-variant line-clamp-2">
+                            {lecture.subtitle}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={startEditTitle}
+                        title={isRTL ? "تعديل العنوان" : "Edit title"}
+                        className="shrink-0 mt-1 w-9 h-9 rounded-xl border border-outline-variant/40 bg-surface flex items-center justify-center text-on-surface-variant hover:text-[#F05A22] hover:border-[#F05A22]/40 transition-all opacity-0 group-hover/title:opacity-100 focus:opacity-100"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                      </button>
+                    </div>
+                  )}
+                  <div className={cn("flex flex-wrap gap-x-7 gap-y-2 mt-4 text-sm font-bold text-on-surface-variant")}>
+                    <span className={cn("flex items-center gap-1.5")}>
                       <span className="material-symbols-outlined text-[18px] text-[#F05A22]">{typeMeta.icon}</span>{typeMeta.label}
                     </span>
-                    <span className={cn("flex items-center gap-1.5", isRTL && "flex-row-reverse")}>
+                    <span className={cn("flex items-center gap-1.5")}>
                       <span className="material-symbols-outlined text-[18px] text-[#F05A22]">notes</span>{wordCount.toLocaleString(isRTL ? "ar-EG" : "en-US")} {isRTL ? "كلمة" : "words"}
                     </span>
                     {imageCount > 0 && (
-                      <span className={cn("flex items-center gap-1.5", isRTL && "flex-row-reverse")}>
+                      <span className={cn("flex items-center gap-1.5")}>
                         <span className="material-symbols-outlined text-[18px] text-[#F05A22]">image</span>{imageCount} {isRTL ? "صورة" : "images"}
                       </span>
                     )}
-                    <span className={cn("flex items-center gap-1.5", isRTL && "flex-row-reverse")}>
+                    <span className={cn("flex items-center gap-1.5")}>
                       <span className="material-symbols-outlined text-[18px] text-[#F05A22]">analytics</span>{completedCount}/{visibleTasks.length} {isRTL ? "وحدة" : "modules"}
                     </span>
                   </div>
@@ -1067,7 +1159,7 @@ export default function LectureView() {
                   <button
                     onClick={handleReprocess}
                     disabled={isReprocessing}
-                    className={cn("w-full py-3 rounded-2xl bg-on-surface text-white font-black text-sm flex items-center justify-center gap-2 hover:bg-[#F05A22] transition-all active:scale-[0.98] disabled:opacity-60", isRTL && "flex-row-reverse")}
+                    className={cn("w-full py-3 rounded-2xl bg-on-surface text-white font-black text-sm flex items-center justify-center gap-2 hover:bg-[#F05A22] transition-all active:scale-[0.98] disabled:opacity-60")}
                   >
                     <span className={cn("material-symbols-outlined text-[18px]", isReprocessing && "animate-spin")}>{isReprocessing ? "progress_activity" : "auto_awesome"}</span>
                     {isReprocessing ? (isRTL ? "جاري المعالجة..." : "Reprocessing...") : (isRTL ? "إعادة المعالجة" : "Reprocess")}
@@ -1077,7 +1169,7 @@ export default function LectureView() {
                     <button
                       onClick={handleStopProcessing}
                       disabled={isUpdating}
-                      className={cn("w-full mt-2 py-2.5 rounded-2xl bg-red-50 text-red-600 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-red-100 transition-all active:scale-[0.98] disabled:opacity-60", isRTL && "flex-row-reverse")}
+                      className={cn("w-full mt-2 py-2.5 rounded-2xl bg-red-50 text-red-600 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-red-100 transition-all active:scale-[0.98] disabled:opacity-60")}
                     >
                       <span className="material-symbols-outlined text-[18px]">stop_circle</span>
                       {isUpdating ? (isRTL ? "جاري الإيقاف..." : "Stopping...") : (isRTL ? "إيقاف المعالجة" : "Stop processing")}
@@ -1359,7 +1451,7 @@ export default function LectureView() {
           <DialogContent className="max-w-5xl w-[95vw] h-[90vh] overflow-y-auto p-0 border-none bg-transparent">
             <div className="bg-background rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full border">
               <DialogHeader className="p-4 border-b bg-card">
-                <DialogTitle className={cn("flex items-center gap-2", isRTL ? "flex-row-reverse" : "flex-row")}>
+                <DialogTitle className={cn("flex items-center gap-2", "flex-row")}>
                   {popupTab === "transcript" && <><FileText className="w-5 h-5 text-[#F05A22]" /> {t.transcript}</>}
                   {popupTab === "summary" && <><List className="w-5 h-5 text-[#F05A22]" /> {t.summary}</>}
                   {popupTab === "conceptMap" && <><BrainCircuit className="w-5 h-5 text-[#F05A22]" /> {t.conceptMap}</>}

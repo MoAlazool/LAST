@@ -35,7 +35,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
   const BackArrow = isRTL ? ArrowRight : ArrowLeft;
 
   return (
-    <div className={cn("min-h-screen w-full flex bg-[#FAFAF8]", isRTL && "flex-row-reverse")} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={cn("min-h-screen w-full flex bg-[#FAFAF8]")} dir={isRTL ? "rtl" : "ltr"}>
       {/* Marketing panel */}
       <div className="hidden lg:flex lg:w-[46%] xl:w-1/2 relative overflow-hidden bg-[#17120F] text-white p-12 xl:p-16 flex-col justify-between">
         {/* texture + glow */}
@@ -67,7 +67,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
                 initial={{ opacity: 0, x: isRTL ? 12 : -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + i * 0.08 }}
-                className={cn("flex items-center gap-3.5", isRTL && "flex-row-reverse")}
+                className={cn("flex items-center gap-3.5")}
               >
                 <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-[#F05A22] shrink-0">
                   <f.icon className="w-4 h-4" />
@@ -87,17 +87,17 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
       {/* Form panel */}
       <div className="flex-1 lg:w-[54%] xl:w-1/2 flex flex-col">
-        <div className={cn("flex items-center justify-between p-5 sm:p-6", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between p-5 sm:p-6")}>
           <Link
             href="/landing"
-            className={cn("inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-[#F05A22] transition-colors no-underline", isRTL && "flex-row-reverse")}
+            className={cn("inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-[#F05A22] transition-colors no-underline")}
           >
             <BackArrow className="w-4 h-4" />
             {t.backHome}
           </Link>
           <button
             onClick={toggleLanguage}
-            className={cn("inline-flex items-center gap-2 text-xs font-bold text-slate-500 border border-slate-200 rounded-full px-3.5 py-2 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors bg-white", isRTL && "flex-row-reverse")}
+            className={cn("inline-flex items-center gap-2 text-xs font-bold text-slate-500 border border-slate-200 rounded-full px-3.5 py-2 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors bg-white")}
           >
             <Globe className="w-3.5 h-3.5" />
             {isAr ? "EN" : "عربي"}

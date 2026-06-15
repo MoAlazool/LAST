@@ -41,7 +41,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 flex-1 overflow-y-auto">
-        <div className={cn("flex items-center justify-between gap-2 mb-10", isRTL && "flex-row-reverse")}>
+        <div className={cn("flex items-center justify-between gap-2 mb-10")}>
           <Link href="/" className="no-underline block hover:opacity-90 transition-opacity">
             <h1 className="text-xl font-black text-slate-900 tracking-tighter">
               Lecture<span className="text-primary">Mate</span>
@@ -68,8 +68,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                   "flex items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-medium transition-all duration-200 cursor-pointer group no-underline",
                   isActive
                     ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-[#F05A22] border border-[#F05A22]/10"
-                    : "text-muted-foreground hover:bg-[#F9F9F9] hover:text-[#111827]",
-                  isRTL && "flex-row-reverse"
+                    : "text-muted-foreground hover:bg-[#F9F9F9] hover:text-[#111827]"
                 )}
               >
                 <link.icon
@@ -104,7 +103,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                       isActive
                         ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-[#F05A22] border border-[#F05A22]/10"
                         : "text-muted-foreground hover:bg-[#F9F9F9] hover:text-[#111827]",
-                      isRTL ? "flex-row-reverse text-right" : "flex-row"
+                      isRTL ? "text-right" : "flex-row"
                     )}
                   >
                     <span
@@ -126,7 +125,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                 onClick={lectureNav.onBack}
                 className={cn(
                   "mt-4 w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 cursor-pointer border border-[#F05A22]/20 text-[#F05A22] hover:bg-[#F05A22] hover:text-white hover:border-[#F05A22] group",
-                  isRTL ? "flex-row-reverse text-right" : "flex-row"
+                  isRTL ? "text-right" : "flex-row"
                 )}
               >
                 <span className={cn("material-symbols-outlined text-[20px] shrink-0", isRTL && "-scale-x-100")}>arrow_back</span>
@@ -143,8 +142,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
         <Link
           href="/profile"
           className={cn(
-            "flex items-center gap-3 p-3 rounded-2xl bg-sidebar-accent/50 cursor-pointer hover:bg-sidebar-accent transition-all duration-200 border border-transparent hover:border-sidebar-border no-underline",
-            isRTL && "flex-row-reverse"
+            "flex items-center gap-3 p-3 rounded-2xl bg-sidebar-accent/50 cursor-pointer hover:bg-sidebar-accent transition-all duration-200 border border-transparent hover:border-sidebar-border no-underline"
           )}
         >
           <Avatar className="w-10 h-10 border-2 border-white shadow-sm shrink-0">

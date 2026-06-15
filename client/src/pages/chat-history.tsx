@@ -124,7 +124,7 @@ export default function ChatHistoryPage() {
     <AppLayout currentTab="chat">
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8 max-w-5xl mx-auto w-full" dir={isRTL ? "rtl" : "ltr"}>
         {/* Header */}
-        <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8", isRTL && "md:flex-row-reverse")}>
+        <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8")}>
           <div>
             <p className="text-[#F05A22] font-black text-[10px] uppercase tracking-widest mb-2">
               {language === "ar" ? "الوكيل الذكي" : "AI Agent"}
@@ -209,8 +209,7 @@ export default function ChatHistoryPage() {
                   {/* Session header */}
                   <div
                     className={cn(
-                      "flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors",
-                      isRTL && "flex-row-reverse"
+                      "flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors"
                     )}
                     onClick={() => setExpandedId(isExpanded ? null : session.lectureId)}
                   >
@@ -218,11 +217,11 @@ export default function ChatHistoryPage() {
                       <LectureTypeIcon type={session.lectureType} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={cn("flex items-center gap-2 mb-0.5", isRTL && "flex-row-reverse")}>
+                      <div className={cn("flex items-center gap-2 mb-0.5")}>
                         <p className="font-bold text-slate-900 text-sm truncate max-w-[280px]">{session.lectureTitle}</p>
                         <LectureTypeBadge type={session.lectureType} />
                       </div>
-                      <div className={cn("flex items-center gap-3 text-[11px] text-slate-400", isRTL && "flex-row-reverse")}>
+                      <div className={cn("flex items-center gap-3 text-[11px] text-slate-400")}>
                         <span className="flex items-center gap-1">
                           <MessageSquare className="w-3 h-3" />
                           {userMessages.length} {t.messages}
@@ -233,7 +232,7 @@ export default function ChatHistoryPage() {
                         </span>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-2 shrink-0", isRTL && "flex-row-reverse")}>
+                    <div className={cn("flex items-center gap-2 shrink-0")}>
                       <Link href={`/lecture/${session.lectureId}?tab=chat`}>
                         <button
                           onClick={e => e.stopPropagation()}
@@ -265,7 +264,7 @@ export default function ChatHistoryPage() {
                         className="overflow-hidden"
                       >
                         <div className="flex items-center justify-between px-5 py-3 bg-red-50 border-t border-red-100">
-                          <div className={cn("flex items-center gap-2 text-red-600 text-sm font-medium", isRTL && "flex-row-reverse")}>
+                          <div className={cn("flex items-center gap-2 text-red-600 text-sm font-medium")}>
                             <AlertTriangle className="w-4 h-4" />
                             {t.confirmDelete}
                           </div>

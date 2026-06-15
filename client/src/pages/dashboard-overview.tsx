@@ -318,7 +318,7 @@ export default function DashboardOverview() {
           {/* Masthead */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-slate-200/80 pb-7">
             <div className="min-w-0">
-              <div className={cn("flex items-center gap-2.5 mb-3", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex items-center gap-2.5 mb-3")}>
                 <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-slate-400">
                   {format(new Date(), "EEE, d MMM")}
                 </span>
@@ -340,7 +340,7 @@ export default function DashboardOverview() {
 
               {stats.total > 0 && (
                 <div className="mt-5 max-w-xs">
-                  <div className={cn("flex items-center justify-between text-[11px] font-bold mb-1.5", isRTL && "flex-row-reverse")}>
+                  <div className={cn("flex items-center justify-between text-[11px] font-bold mb-1.5")}>
                     <span className="text-slate-400 uppercase tracking-wider">{t.completeLabel}</span>
                     <span className="text-[#F05A22] tabular-nums">{stats.completion}%</span>
                   </div>
@@ -354,8 +354,8 @@ export default function DashboardOverview() {
               )}
             </div>
 
-            <div className={cn("flex items-center gap-3 shrink-0", isRTL && "flex-row-reverse")}>
-              <div className={cn("flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2.5 shadow-sm", isRTL && "flex-row-reverse")}>
+            <div className={cn("flex items-center gap-3 shrink-0")}>
+              <div className={cn("flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2.5 shadow-sm")}>
                 <Flame className="w-4 h-4 text-[#F05A22]" />
                 <span className="text-sm font-black text-slate-900 tabular-nums">{stats.streak}</span>
                 <span className="text-xs text-slate-400 font-medium">{t.dayStreak}</span>
@@ -363,8 +363,7 @@ export default function DashboardOverview() {
               <Link
                 href="/"
                 className={cn(
-                  "no-underline inline-flex items-center gap-2 bg-slate-900 hover:bg-[#F05A22] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg shadow-slate-900/10 hover:shadow-[#F05A22]/25 transition-all active:scale-95",
-                  isRTL && "flex-row-reverse"
+                  "no-underline inline-flex items-center gap-2 bg-slate-900 hover:bg-[#F05A22] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg shadow-slate-900/10 hover:shadow-[#F05A22]/25 transition-all active:scale-95"
                 )}
               >
                 <Sparkles size={16} />
@@ -405,8 +404,8 @@ export default function DashboardOverview() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Weekly activity */}
             <div className="lg:col-span-2 rounded-[26px] bg-white border border-slate-200/70 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-              <div className={cn("flex items-center justify-between mb-5", isRTL && "flex-row-reverse")}>
-                <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex items-center justify-between mb-5")}>
+                <div className={cn("flex items-center gap-2")}>
                   <BarChart3 size={17} className="text-[#F05A22]" />
                   <h3 className="font-black text-slate-900">{t.weeklyActivity}</h3>
                 </div>
@@ -414,7 +413,7 @@ export default function DashboardOverview() {
                   <span className="text-slate-900 tabular-nums">{weeklyTotal}</span> {t.uploadsWord} · {t.thisWeek}
                 </span>
               </div>
-              <div className={cn("flex items-end gap-2 sm:gap-3 h-36", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex items-end gap-2 sm:gap-3 h-36")}>
                 {weekly.map((d, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 h-full">
                     <span className="text-[10px] font-bold text-slate-400 tabular-nums h-3">{d.count > 0 ? d.count : ""}</span>
@@ -437,7 +436,7 @@ export default function DashboardOverview() {
 
             {/* By subject */}
             <div className="rounded-[26px] bg-white border border-slate-200/70 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-              <div className={cn("flex items-center gap-2 mb-5", isRTL && "flex-row-reverse")}>
+              <div className={cn("flex items-center gap-2 mb-5")}>
                 <Layers size={17} className="text-violet-500" />
                 <h3 className="font-black text-slate-900">{t.bySubject}</h3>
               </div>
@@ -449,7 +448,7 @@ export default function DashboardOverview() {
                 <div className="space-y-3.5">
                   {categories.map((c, i) => (
                     <div key={i}>
-                      <div className={cn("flex items-center justify-between mb-1.5", isRTL && "flex-row-reverse")}>
+                      <div className={cn("flex items-center justify-between mb-1.5")}>
                         <span className="text-[13px] font-bold text-slate-700 capitalize truncate">{c.name}</span>
                         <span className="text-[11px] font-black text-slate-400 tabular-nums shrink-0">{c.count}</span>
                       </div>
@@ -472,7 +471,7 @@ export default function DashboardOverview() {
               href="#"
               className={cn(
                 "no-underline flex items-center gap-4 rounded-[24px] bg-white border border-amber-200/80 p-5 shadow-sm",
-                isRTL && "flex-row-reverse text-right"
+                isRTL && "text-right"
               )}
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
@@ -493,8 +492,8 @@ export default function DashboardOverview() {
 
           {/* Recent Uploads */}
           <div>
-            <div className={cn("flex items-center justify-between mb-5", isRTL && "flex-row-reverse")}>
-              <div className={cn("flex items-center gap-2.5", isRTL && "flex-row-reverse")}>
+            <div className={cn("flex items-center justify-between mb-5")}>
+              <div className={cn("flex items-center gap-2.5")}>
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">{t.recent}</h2>
                 {!isLoading && recentLectures.length > 0 && (
                   <span className="font-mono text-xs text-slate-400 bg-slate-100 rounded-full px-2 py-0.5">
@@ -505,8 +504,7 @@ export default function DashboardOverview() {
               <Link
                 href="/history"
                 className={cn(
-                  "no-underline group flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-[#F05A22] transition-colors",
-                  isRTL && "flex-row-reverse"
+                  "no-underline group flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-[#F05A22] transition-colors"
                 )}
               >
                 {t.viewAll}

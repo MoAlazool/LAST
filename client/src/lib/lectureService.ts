@@ -34,6 +34,7 @@ function firestoreToLecture(docData: any, id: string): Lecture {
   return {
     id,
     title: docData.title || "",
+    subtitle: docData.subtitle || undefined,
     thumbnailUrl: docData.thumbnailUrl || "",
     duration: docData.duration || "0:00",
     date: docData.date || new Date().toLocaleDateString(),
@@ -67,6 +68,7 @@ function lectureToFirestore(lecture: Partial<Lecture>): any {
 
   // Only include fields that are explicitly provided (not undefined or null)
   if (lecture.title !== undefined && lecture.title !== null) data.title = lecture.title;
+  if (lecture.subtitle !== undefined && lecture.subtitle !== null) data.subtitle = lecture.subtitle;
   if (lecture.thumbnailUrl !== undefined && lecture.thumbnailUrl !== null) data.thumbnailUrl = lecture.thumbnailUrl;
   if (lecture.duration !== undefined && lecture.duration !== null) data.duration = lecture.duration;
   if (lecture.date !== undefined && lecture.date !== null) data.date = lecture.date;
@@ -100,6 +102,7 @@ function updatesToFirestore(updates: Partial<Lecture>): any {
 
   // Only include fields that are explicitly provided (not undefined)
   if (updates.title !== undefined && updates.title !== null) data.title = updates.title;
+  if (updates.subtitle !== undefined && updates.subtitle !== null) data.subtitle = updates.subtitle;
   if (updates.thumbnailUrl !== undefined && updates.thumbnailUrl !== null) data.thumbnailUrl = updates.thumbnailUrl;
   if (updates.duration !== undefined && updates.duration !== null) data.duration = updates.duration;
   if (updates.date !== undefined && updates.date !== null) data.date = updates.date;

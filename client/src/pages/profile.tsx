@@ -160,7 +160,7 @@ export default function Profile() {
           <nav className="flex flex-col space-y-1">
             <Button 
               variant={activeTab === "general" ? "secondary" : "ghost"} 
-              className={cn("justify-start", isRTL && "flex-row-reverse")}
+              className={cn("justify-start")}
               onClick={() => setActiveTab("general")}
             >
               <User className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
@@ -168,7 +168,7 @@ export default function Profile() {
             </Button>
             <Button 
               variant={activeTab === "billing" ? "secondary" : "ghost"} 
-              className={cn("justify-start", isRTL && "flex-row-reverse")}
+              className={cn("justify-start")}
               onClick={() => setActiveTab("billing")}
             >
               <CreditCard className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
@@ -176,7 +176,7 @@ export default function Profile() {
             </Button>
             <Button 
               variant={activeTab === "security" ? "secondary" : "ghost"} 
-              className={cn("justify-start", isRTL && "flex-row-reverse")}
+              className={cn("justify-start")}
               onClick={() => setActiveTab("security")}
             >
               <Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
@@ -192,7 +192,7 @@ export default function Profile() {
                   <CardDescription>{t.profileDesc}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                <div className={cn("flex items-center gap-4", isRTL && "flex-row-reverse")}>
+                <div className={cn("flex items-center gap-4")}>
                   <Avatar className="h-20 w-20 border-2 border-primary/20">
                     <AvatarImage src={user.photoURL || undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
@@ -254,9 +254,9 @@ export default function Profile() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Current Plan */}
-                  <div className={cn("flex items-center justify-between p-4 border rounded-lg bg-secondary/10", isRTL && "flex-row-reverse")}>
+                  <div className={cn("flex items-center justify-between p-4 border rounded-lg bg-secondary/10")}>
                     <div className="space-y-1">
-                      <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
+                      <div className={cn("flex items-center gap-2")}>
                         <span className="font-semibold">{t.proPlan}</span>
                         <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">{t.active}</Badge>
                       </div>

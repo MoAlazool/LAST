@@ -260,6 +260,7 @@ export type LectureCategory =
 export interface Lecture {
   id: string;
   title: string;
+  subtitle?: string; // User-editable subtitle / short description
   thumbnailUrl: string;
   duration: string;
   date: string;

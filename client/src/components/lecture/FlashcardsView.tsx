@@ -37,6 +37,53 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+// Flashcard answers sometimes arrive with BARE LaTeX (e.g. "\sigma_1^2", "x_1^2 = C")
+// without $...$ delimiters, so remark-math never renders them and you see raw backslashes.
+// Wrap contiguous math spans in $...$ so KaTeX picks them up; text that already contains
+// $ is left untouched (it's already delimited).
+function prepareMath(raw?: string): string {
+  if (!raw) return "";
+  if (raw.includes("$")) return raw;
+  const tokens = raw.split(/(\s+)/);
+  const isMathChar = (s: string) => /^[A-Za-z0-9()[\]{}^_\\/+\-*=.,|<>]+$/.test(s);
+  const hasSignal = (s: string) =>
+    /\\[A-Za-z]+/.test(s) ||                      // \sigma \frac \int
+    /[A-Za-z0-9)\]}][\^_]/.test(s) ||             // x^2  a_1
+    /[A-Za-z0-9)]\s*=\s*[A-Za-z0-9(\\]/.test(s);  // a = b
+  const out: string[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    const tok = tokens[i];
+    if (tok.trim() && isMathChar(tok)) {
+      let j = i;
+      const group: string[] = [];
+      let signal = false;
+      while (j < tokens.length) {
+        const tj = tokens[j];
+        if (tj.trim() === "") {
+          if (tokens[j + 1] && isMathChar(tokens[j + 1])) { group.push(tj); j++; continue; }
+          break;
+        }
+        if (!isMathChar(tj)) break;
+        if (hasSignal(tj)) signal = true;
+        group.push(tj);
+        j++;
+      }
+      let joined = group.join("").trim();
+      const trail = joined.match(/[.,;:]+$/)?.[0] || "";
+      if (trail) joined = joined.slice(0, joined.length - trail.length);
+      if (signal && joined.length > 1) {
+        out.push(`$${joined}$${trail} `);
+        i = j;
+        continue;
+      }
+    }
+    out.push(tok);
+    i++;
+  }
+  return out.join("");
+}
+
 interface Flashcard {
   id: number | string;
   term: string;
@@ -340,9 +387,9 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
              <div className="w-full max-w-4xl space-y-12">
                 {/* THE CARD */}
                 <div className="relative group w-full">
-                   <div 
+                   <div
                      className={cn(
-                       "relative min-h-[280px] w-full transition-all duration-700 [transform-style:preserve-3d]",
+                       "relative min-h-[320px] md:min-h-[400px] w-full transition-all duration-700 [transform-style:preserve-3d]",
                        isFlipped ? "[transform:rotateX(180deg)]" : ""
                      )}
                    >
@@ -367,9 +414,11 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                             <BrainCircuit className="w-8 h-8 text-primary/30" />
                          </div>
 
-                         <h3 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight max-w-2xl">
-                            {activeCard.term}
-                         </h3>
+                         <div className="text-2xl md:text-4xl font-black text-slate-900 leading-tight max-w-2xl max-h-[40vh] overflow-y-auto custom-scrollbar break-words [overflow-wrap:anywhere] [&_p]:m-0">
+                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                               {prepareMath(activeCard.term)}
+                            </ReactMarkdown>
+                         </div>
 
                          <button 
                            onClick={() => setIsFlipped(true)}
@@ -389,12 +438,17 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                                 </button>
                              </div>
                              
-                             <div className="flex flex-1 items-center justify-center overflow-hidden py-4">
-                                <div className="w-full h-full overflow-y-auto px-2 custom-scrollbar flex flex-col items-center justify-center">
-                                   <div className="text-xl md:text-2xl text-slate-800 leading-relaxed font-medium text-center">
-                                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                         {activeCard.definition}
-                                      </ReactMarkdown>
+                             <div className="flex flex-1 overflow-hidden py-2">
+                                {/* Scroll container fills the card; the inner min-h-full block
+                                    centers short answers but grows + scrolls (from the top, no
+                                    clipping) for long ones. */}
+                                <div className="w-full h-full overflow-y-auto px-2 custom-scrollbar">
+                                   <div className="min-h-full flex items-center justify-center">
+                                      <div className="prose-katex w-full text-lg md:text-2xl text-slate-800 leading-relaxed font-medium text-center break-words [overflow-wrap:anywhere]">
+                                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                            {prepareMath(activeCard.definition)}
+                                         </ReactMarkdown>
+                                      </div>
                                    </div>
                                 </div>
                              </div>
