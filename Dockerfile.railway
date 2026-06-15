@@ -27,11 +27,20 @@ RUN pip3 install --no-cache-dir --break-system-packages \
       google-generativeai \
       google-genai
 
+# Skip flaky/large binary downloads in postinstall scripts:
+#  - youtube-dl-exec would fetch yt-dlp from GitHub (got a 504); we use the pip yt-dlp instead.
+#  - puppeteer would fetch ~170MB Chromium; it's only used for optional slide-image rendering.
+ENV YOUTUBE_DL_SKIP_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
 # Install Node deps first (better layer caching). Dev deps are needed for the build step.
 # Use `npm install` (not `npm ci`) so the build is resilient to cross-platform optional-dep
 # lockfile drift (e.g. bufferutil / proxy-agent), which makes `npm ci` hard-fail.
 COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund
+RUN npm install --no-audit --no-fund \
+    # Point youtube-dl-exec at the system (pip) yt-dlp binary.
+    && mkdir -p node_modules/youtube-dl-exec/bin \
+    && ln -sf "$(command -v yt-dlp)" node_modules/youtube-dl-exec/bin/yt-dlp
 
 # App source + build (client -> dist/public, server -> dist/index.mjs)
 COPY . .
