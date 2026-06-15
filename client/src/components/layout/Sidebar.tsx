@@ -41,21 +41,19 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 flex-1 overflow-y-auto">
-        <div className={cn("flex items-center justify-between mb-10", isRTL && "flex-row-reverse")}>
-          <Link href="/" className={cn("flex flex-col cursor-pointer hover:opacity-80 transition-opacity", isRTL && "items-end")}>
-            <span className="font-extrabold text-[20px] tracking-tight text-[#F05A22]">
-              {t.brand}
-            </span>
-            <span className="font-semibold text-[11.5px] text-[#222]">
-              {t.subBrand}
-            </span>
+        <div className={cn("flex items-center justify-between gap-2 mb-10", isRTL && "flex-row-reverse")}>
+          <Link href="/" className="no-underline block hover:opacity-90 transition-opacity">
+            <h1 className="text-xl font-black text-slate-900 tracking-tighter">
+              Lecture<span className="text-primary">Mate</span>
+            </h1>
           </Link>
           <button
+            type="button"
             onClick={toggleLanguage}
-            className="w-6 h-6 rounded-full border border-sidebar-border flex items-center justify-center hover:bg-[#FFF7ED] transition-colors group/lang"
+            className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:bg-primary/5 hover:border-primary/30 transition-colors shrink-0 group/lang"
             title={language === "ar" ? "تبديل اللغة" : "Toggle language"}
           >
-            <Globe className="w-3.5 h-3.5 text-[#F05A22] group-hover/lang:scale-110 transition-transform" />
+            <Globe className="w-3.5 h-3.5 text-primary group-hover/lang:scale-110 transition-transform" />
           </button>
         </div>
 

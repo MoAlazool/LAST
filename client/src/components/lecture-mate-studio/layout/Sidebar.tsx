@@ -45,14 +45,9 @@ export default function Sidebar() {
       <div className="px-6 mb-10">
         <div className={cn("flex items-center justify-between gap-2", isRTL && "flex-row-reverse")}>
           <Link href="/" className="no-underline block hover:opacity-90 transition-opacity">
-            <div className={cn("flex items-center gap-3", isRTL && "flex-row-reverse")}>
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20">
-                L
-              </div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tighter">
-                Lecture<span className="text-primary">Mate</span>
-              </h1>
-            </div>
+            <h1 className="text-xl font-black text-slate-900 tracking-tighter">
+              Lecture<span className="text-primary">Mate</span>
+            </h1>
           </Link>
           <button
             type="button"

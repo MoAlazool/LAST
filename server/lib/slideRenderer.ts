@@ -71,6 +71,10 @@ export async function renderSlidesToPngs(slides: Slide[], themeName: string, cus
   try {
     browser = await puppeteer.launch({
       headless: "new" as any,
+      // In containers we install the system Chromium and point Puppeteer at it via
+      // PUPPETEER_EXECUTABLE_PATH (the bundled download is skipped to keep the image small).
+      // Locally this is unset, so Puppeteer uses its own downloaded Chrome.
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=none"],
     });
     const page = await browser.newPage();
@@ -141,6 +145,10 @@ export async function renderSlidesHybrid(slides: Slide[], themeName: string, cus
   try {
     browser = await puppeteer.launch({
       headless: "new" as any,
+      // In containers we install the system Chromium and point Puppeteer at it via
+      // PUPPETEER_EXECUTABLE_PATH (the bundled download is skipped to keep the image small).
+      // Locally this is unset, so Puppeteer uses its own downloaded Chrome.
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=none"],
     });
     const page = await browser.newPage();
