@@ -7,6 +7,7 @@
     "dev:client": "vite dev --port 8080",
     "dev": "cross-env NODE_ENV=development tsx --watch server/index.ts",
     "build": "tsx script/build.ts",
+    "build:netlify": "vite build && node script/netlify-redirects.mjs",
     "start": "cross-env NODE_ENV=production node dist/index.mjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",

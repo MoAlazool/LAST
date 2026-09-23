@@ -2,8 +2,9 @@
 
 LectureMate is a **single Node server** that serves the React client **and** the `/api`
 backend, and shells out to Python (`yt-dlp`, `PyMuPDF`) + `ffmpeg` + LibreOffice.
-It therefore needs a real container host — **not** a static host like Netlify.
-This guide uses **Railway** with the included `Dockerfile.railway`.
+It therefore needs a real container host for the backend. This guide uses **Railway** with the
+included `Dockerfile.railway`. The React client can additionally be hosted on **Netlify**
+(see "Frontend on Netlify" below) while the backend stays on Railway.
 
 ## 1. Prerequisites
 - A GitHub repo with this code (e.g. https://github.com/MoAlazool/LAST).
@@ -51,3 +52,36 @@ docker build -f Dockerfile.railway -t lecturemate .
 docker run -p 5000:5000 --env-file .env lecturemate
 # open http://localhost:5000
 ```
+
+## Frontend on Netlify (optional; backend stays on Railway)
+
+Netlify serves the static React client; every `/api` call goes **directly** to the Railway
+backend (Netlify's proxy stops requests after ~26 s, and AI processing takes longer).
+Uploaded files (`/uploads/*`) are proxied through Netlify so image paths keep working.
+
+1. Deploy the backend on Railway first (steps above) and note its URL, e.g.
+   `https://lecturemate-production.up.railway.app`.
+2. Netlify → **Add new site → Import an existing project** → pick this GitHub repo.
+   `netlify.toml` already sets the build command (`npm run build:netlify`), publish folder
+   (`dist/public`) and Node 22 — keep the defaults Netlify shows.
+3. Netlify → **Site configuration → Environment variables**:
+
+   | Variable | Value |
+   |---|---|
+   | `VITE_API_BASE_URL` | the Railway backend URL (https, no trailing slash) |
+
+   The build **fails on purpose** if this is missing, so a site without a backend is never published.
+4. Railway → backend service → **Variables**, allow the Netlify site to call the API:
+
+   | Variable | Value |
+   |---|---|
+   | `CORS_ORIGINS` | `https://<your-site>.netlify.app` (comma-separate extra domains, e.g. a custom domain) |
+   | `CORS_ALLOW_NETLIFY_PREVIEWS` | `true` *(optional — also allow `*.netlify.app` deploy previews)* |
+
+5. Firebase Console → **Authentication → Settings → Authorized domains** → add
+   `<your-site>.netlify.app` (and any custom domain), otherwise sign-in is blocked.
+6. Trigger a deploy on Netlify. After changing `VITE_API_BASE_URL`, redeploy — it is baked
+   into the client at build time.
+
+Verify: open the Netlify URL, sign in, check the "free analyses left" counter loads under
+**New Analysis** (that request goes to the backend), then run one analysis end to end.

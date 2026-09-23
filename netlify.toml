@@ -1,0 +1,29 @@
+# Netlify hosts the React client only. The Express backend (Python, ffmpeg, Chromium,
+# long-running AI jobs) runs on a container host such as Railway (see Dockerfile.railway).
+# Required Netlify environment variable: VITE_API_BASE_URL = https://<your-backend-host>
+# Backend must allow this site: CORS_ORIGINS = https://<your-site>.netlify.app
+
+[build]
+  command = "npm run build:netlify"
+  publish = "dist/public"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # requirements.txt is for the backend; Netlify installs it anyway — pin a Python with wheels.
+  PYTHON_VERSION = "3.11"
+  # Skip large postinstall downloads the client build doesn't need.
+  PUPPETEER_SKIP_DOWNLOAD = "true"
+  YOUTUBE_DL_SKIP_DOWNLOAD = "true"
+  NPM_FLAGS = "--no-audit --no-fund"
+
+# Hashed build assets never change — cache them for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

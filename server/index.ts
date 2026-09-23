@@ -22,6 +22,29 @@ process.on("uncaughtException", (err) => {
 const app = express();
 const httpServer = createServer(app);
 
+// CORS — needed when the client is hosted on another domain (e.g. Netlify) and calls this
+// server directly. Allowed origins: CORS_ORIGINS (comma-separated, e.g.
+// "https://lecturemate.netlify.app,https://www.example.com"); set CORS_ALLOW_NETLIFY_PREVIEWS=true
+// to also accept *.netlify.app deploy previews. Same-origin requests are unaffected.
+const corsOrigins = (process.env.CORS_ORIGINS || "").split(",").map((o) => o.trim().replace(/\/+$/, "")).filter(Boolean);
+const allowNetlifyPreviews = process.env.CORS_ALLOW_NETLIFY_PREVIEWS === "true";
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = !!origin && (corsOrigins.includes(origin) || (allowNetlifyPreviews && /^https:\/\/[a-z0-9-]+(--[a-z0-9-]+)?\.netlify\.app$/i.test(origin)));
+  if (allowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin!);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", req.headers["access-control-request-headers"] || "Content-Type, Authorization");
+    // headers the client reads from responses (PPTX download name + render status)
+    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition, X-Slides-Render, X-Slides-Render-Error");
+    res.setHeader("Access-Control-Max-Age", "86400");
+  }
+  if (req.method === "OPTIONS" && allowed) return res.sendStatus(204);
+  next();
+});
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
