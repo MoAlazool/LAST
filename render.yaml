@@ -1,12 +1,12 @@
 # Render Blueprint — one Docker web service that serves both the website and the API.
-# Uses the CPU image (Dockerfile.railway: Node 22, Python, ffmpeg, LibreOffice, Chromium).
-# The root Dockerfile is the GPU/RunPod image and is NOT meant for Render.
+# Uses the CPU image (Dockerfile: Node 22, Python, ffmpeg, LibreOffice, Chromium).
+# Dockerfile.gpu is the GPU/RunPod image and is NOT meant for Render.
 services:
   - type: web
     name: lecturemate
     runtime: docker
     plan: free
-    dockerfilePath: ./Dockerfile.railway
+    dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
     autoDeploy: true

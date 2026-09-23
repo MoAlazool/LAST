@@ -1,5 +1,5 @@
 # Netlify hosts the React client only. The Express backend (Python, ffmpeg, Chromium,
-# long-running AI jobs) runs on a container host such as Railway (see Dockerfile.railway).
+# long-running AI jobs) runs on a container host such as Railway (see Dockerfile).
 # Required Netlify environment variable: VITE_API_BASE_URL = https://<your-backend-host>
 # Backend must allow this site: CORS_ORIGINS = https://<your-site>.netlify.app
 

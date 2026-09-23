@@ -4,7 +4,7 @@ services:
   lecture-assistant:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.gpu
     image: lecture-assistant:latest
     container_name: lecture-assistant
     ports:

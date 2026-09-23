@@ -228,7 +228,7 @@ The app runs at **http://localhost:5000** (server) and the Vite client dev serve
 │   └── slides/                      # Shared slide renderer (client + server)
 ├── script/build.ts                  # Production build orchestrator
 ├── docs/                            # Per-feature update notes
-├── Dockerfile, docker-compose.yml   # Containerized deployment
+├── Dockerfile (CPU), Dockerfile.gpu, docker-compose.yml   # Containerized deployment
 ├── firebase.json, *.rules           # Firebase Hosting + Firestore/Storage rules
 ├── requirements.txt                 # Python deps
 ├── package.json
@@ -305,21 +305,21 @@ npm run db:push      # drizzle-kit push (if using Postgres)
 
 ### Railway (recommended) — full guide in [`DEPLOY.md`](DEPLOY.md)
 The app deploys as **one container** that serves the client + API together.
-1. Railway → **Deploy from GitHub repo** → it auto-builds with **`Dockerfile.railway`** (via `railway.json`).
+1. Railway → **Deploy from GitHub repo** → it auto-builds with **`Dockerfile`** (via `railway.json`).
 2. Set env vars: `NODE_ENV=production`, `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `PYTHON_CMD=python3`, and **`FIREBASE_SERVICE_ACCOUNT_KEY`** = the service-account JSON pasted inline (so uploads persist in **Firebase Storage**).
 3. Add your `*.up.railway.app` domain to **Firebase → Auth → Authorized domains**.
 
-`Dockerfile.railway` is a slim **CPU** image (Node + Python + ffmpeg + LibreOffice); the
-heavy GPU/CUDA `Dockerfile` + `docker-compose.yml` remain for GPU/Ollama hosts.
+`Dockerfile` is a slim **CPU** image (Node + Python + ffmpeg + LibreOffice); the
+heavy GPU/CUDA `Dockerfile.gpu` + `docker-compose.yml` remain for GPU/Ollama hosts.
 
 ### Other backend hosts
-- **Render / Fly.io / Cloud Run** — same single-container approach (`Dockerfile.railway`).
+- **Render / Fly.io / Cloud Run** — same single-container approach (`Dockerfile`).
 - **RunPod / Vast.ai** — for GPU + Ollama (see `RUNPOD_SETUP.md`, `RUNPOD_QUICKSTART.md`).
 - **VPS** — `start.sh` / `startup.sh` are ready-to-go launchers.
 
 ### Local production test
 ```bash
-docker build -f Dockerfile.railway -t lecturemate .
+docker build -t lecturemate .
 docker run -p 5000:5000 --env-file .env lecturemate   # → http://localhost:5000
 ```
 

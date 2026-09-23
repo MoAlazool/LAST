@@ -308,7 +308,7 @@ lsof -ti:5000 | xargs kill -9
 
 ## ملفات Docker المتوفرة
 
-- `Dockerfile`: ملف بناء Docker الرئيسي
+- `Dockerfile.gpu`: ملف بناء Docker للـ GPU (RunPod)
 - `docker-compose.yml`: ملف تكوين Docker Compose
 - `.dockerignore`: ملفات مستبعدة من Docker build
 - `startup.sh`: سكريبت بدء التشغيل

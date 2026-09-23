@@ -3,7 +3,7 @@
 LectureMate is a **single Node server** that serves the React client **and** the `/api`
 backend, and shells out to Python (`yt-dlp`, `PyMuPDF`) + `ffmpeg` + LibreOffice.
 It therefore needs a real container host for the backend. This guide uses **Railway** with the
-included `Dockerfile.railway`. The React client can additionally be hosted on **Netlify**
+included `Dockerfile`. The React client can additionally be hosted on **Netlify**
 (see "Frontend on Netlify" below) while the backend stays on Railway.
 
 ## 1. Prerequisites
@@ -13,7 +13,7 @@ included `Dockerfile.railway`. The React client can additionally be hosted on **
 
 ## 2. Create the Railway service
 1. Go to https://railway.app → **New Project → Deploy from GitHub repo** → pick your repo.
-2. Railway reads `railway.json` and builds with **`Dockerfile.railway`** automatically.
+2. Railway reads `railway.json` and builds with **`Dockerfile`** automatically.
 
 ## 3. Set environment variables (Railway → service → Variables)
 | Variable | Value |
@@ -48,7 +48,7 @@ included `Dockerfile.railway`. The React client can additionally be hosted on **
 
 ## Local production test (optional)
 ```bash
-docker build -f Dockerfile.railway -t lecturemate .
+docker build -t lecturemate .
 docker run -p 5000:5000 --env-file .env lecturemate
 # open http://localhost:5000
 ```
