@@ -1,6 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download, Copy, FileText, Sparkles, Clock, Bot } from "lucide-react";
+import { Download, Copy, FileText, Clock, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { jsPDF } from "jspdf";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -195,8 +195,20 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
     if (blocks.length <= 1 && text.length > 500) {
       blocks = text.split(/\n/).filter(p => p.trim().length > 0);
     }
+
+    // Fallback: Whisper/GPU video transcripts arrive as one unbroken blob with no
+    // line breaks, so the splits above yield a single giant block (shown as "01").
+    // When that happens, fall back to the structured chunks (per-30s for video,
+    // per-page for documents) so the transcript is broken into readable sections.
+    if (blocks.length <= 1 && transcriptChunks && transcriptChunks.length > 1) {
+      const chunkBlocks = transcriptChunks
+        .map(c => (c?.text || "").trim())
+        .filter(t => t.length > 0);
+      if (chunkBlocks.length > 1) return chunkBlocks;
+    }
+
     return blocks;
-  }, [text]);
+  }, [text, transcriptChunks]);
 
   // Parse real [MM:SS] marker from the start of a paragraph
   const parseTimestamp = (para: string): { timeStr: string; body: string } => {
@@ -230,27 +242,26 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
   return (
     <div className="space-y-4 font-body animate-in fade-in duration-500 pb-20" dir={uiDir}>
       {/* Header Panel — Transformed to Digital Curator Light Style */}
-      <div className={`relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12 bg-white p-6 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F05A22]/10 overflow-hidden`}>
+      <div className={`relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12 bg-white p-6 md:p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-primary/10 overflow-hidden`}>
         {/* Background Decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#F05A22]/[0.03] rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#F05A22]/[0.02] rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/[0.02] rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none"></div>
         
         <div className="space-y-4 max-w-2xl relative z-10">
-          <div className={`flex items-center gap-2 text-[#F05A22] font-black text-[10px] uppercase tracking-widest`}>
-            <Sparkles className="w-4 h-4" />
+          <div className={`flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest`}>
+            <FileText className="w-4 h-4" />
             <span>{language === "ar" ? "النص المستخرج" : "Extracted Content"}</span>
           </div>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-black font-headline tracking-tight text-[#111827] leading-tight">
-            {titleParts.main} <span className="text-[#F05A22]">{titleParts.highlight}</span>
+            {titleParts.main} <span className="text-primary">{titleParts.highlight}</span>
           </h2>
           <div className={`flex flex-wrap gap-3 pt-2`}>
-            <span className="px-5 py-2 bg-[#F05A22]/5 rounded-full text-xs font-bold text-[#111827] border border-[#F05A22]/10 flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-[#F05A22]" /> {readTimeMins} {language === "ar" ? "دقيقة" : "min read"}
+            <span className="px-5 py-2 bg-primary/5 rounded-full text-xs font-bold text-[#111827] border border-primary/10 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-primary" /> {readTimeMins} {language === "ar" ? "دقيقة" : "min read"}
             </span>
-            <span className="px-5 py-2 bg-[#F05A22]/5 rounded-full text-xs font-bold text-[#111827] border border-[#F05A22]/10 flex items-center gap-2">
-              <FileText className="w-3.5 h-3.5 text-[#F05A22]" /> {wordCount} {language === "ar" ? "كلمة" : "words"}
+            <span className="px-5 py-2 bg-primary/5 rounded-full text-xs font-bold text-[#111827] border border-primary/10 flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5 text-primary" /> {wordCount} {language === "ar" ? "كلمة" : "words"}
             </span>
-            <span className="px-5 py-2 bg-[#F05A22] text-white rounded-full text-xs font-black shadow-lg shadow-[#F05A22]/20 flex items-center gap-2">
+            <span className="px-5 py-2 bg-primary text-white rounded-full text-xs font-black shadow-lg shadow-primary/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> {language === "ar" ? "مؤرشف آلياً" : "AI Indexed"}
             </span>
           </div>
@@ -258,11 +269,11 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
         
         {/* Action Controls */}
         <div className="flex flex-row items-center gap-3 w-full md:w-auto shrink-0 relative z-10">
-          <Button onClick={handleCopy} className="bg-white border border-[#F05A22]/20 text-[#111827] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all px-6 py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 flex-1 md:flex-none">
-            <Copy className="w-4 h-4 text-[#F05A22]" />
+          <Button onClick={handleCopy} className="bg-white border border-primary/20 text-[#111827] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all px-6 py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 flex-1 md:flex-none">
+            <Copy className="w-4 h-4 text-primary" />
             {t.copy}
           </Button>
-          <Button onClick={handleExportPDF} className="bg-[#F05A22] text-white shadow-lg shadow-[#F05A22]/20 hover:shadow-[#F05A22]/40 hover:-translate-y-1 transition-all px-6 py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 flex-1 md:flex-none">
+          <Button onClick={handleExportPDF} className="bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all px-6 py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 flex-1 md:flex-none">
             <Download className="w-4 h-4 text-white" />
             {t.exportPDF}
           </Button>
@@ -272,20 +283,20 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
       {/* Stats Cards Section - Now Horizontal and Above Transcript */}
       <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-6 mb-12")}>
          {/* Document Info Card */}
-         <div className="bg-white rounded-[1.5rem] p-6 border border-[#F05A22]/10 shadow-[0_5px_20px_rgba(0,0,0,0.02)]">
-           <h3 className="text-[10px] font-black text-[#F05A22] uppercase tracking-[0.2em] mb-8">{language === "ar" ? "المعلومات الأساسية" : "Document Info"}</h3>
+         <div className="bg-white rounded-[1.5rem] p-6 border border-primary/10 shadow-[0_5px_20px_rgba(0,0,0,0.02)]">
+           <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-8">{language === "ar" ? "المعلومات الأساسية" : "Document Info"}</h3>
            <div className="flex flex-col sm:flex-row gap-8">
               <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl border-2 border-[#F05A22]/10 overflow-hidden flex items-center justify-center bg-white text-[#F05A22] shadow-sm">
+                <div className="w-14 h-14 rounded-2xl border-2 border-primary/10 overflow-hidden flex items-center justify-center bg-white text-primary shadow-sm">
                    <span className="material-symbols-outlined text-2xl">face</span>
                 </div>
                 <div>
                   <p className="text-base font-black text-[#111827] leading-none">{language === "ar" ? "المحاضر" : "Main Presenter"}</p>
-                  <p className="text-[11px] text-[#F05A22] font-bold uppercase tracking-widest mt-2">{language === "ar" ? "صوت متحدث" : "Assumed Speaker"}</p>
+                  <p className="text-[11px] text-primary font-bold uppercase tracking-widest mt-2">{language === "ar" ? "صوت متحدث" : "Assumed Speaker"}</p>
                 </div>
               </div>
               <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl border-2 border-[#F05A22]/10 overflow-hidden flex items-center justify-center bg-white text-[#F05A22]/40 shadow-sm">
+                <div className="w-14 h-14 rounded-2xl border-2 border-primary/10 overflow-hidden flex items-center justify-center bg-white text-primary/40 shadow-sm">
                    <span className="material-symbols-outlined text-2xl">subscriptions</span>
                 </div>
                 <div>
@@ -297,10 +308,9 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
          </div>
 
          {/* Learning Pulse Card */}
-         <div className="relative bg-white rounded-[1.5rem] p-6 shadow-md border border-[#F05A22]/20 overflow-hidden group flex flex-col justify-center">
-            <div className="absolute -right-4 -top-4 w-40 h-40 bg-[#F05A22]/10 rounded-full blur-[40px] group-hover:scale-150 transition-transform duration-1000"></div>
+         <div className="relative bg-white rounded-[1.5rem] p-6 shadow-md border border-primary/20 overflow-hidden group flex flex-col justify-center">
             <h3 className="text-[10px] font-black text-[#111827]/30 uppercase tracking-[0.2em] relative mb-6 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#F05A22] text-sm">bolt</span>
+              <span className="material-symbols-outlined text-primary text-sm">bolt</span>
               {language === "ar" ? "نبض التعلم" : "Learning Pulse"}
             </h3>
             <div className="relative h-2 w-full bg-[#111827]/5 rounded-full mb-4 overflow-hidden">
@@ -308,7 +318,7 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
                  initial={{ width: 0 }}
                  animate={{ width: '45%' }}
                  transition={{ duration: 1, delay: 0.5 }}
-                 className="absolute left-0 top-0 h-full bg-[#F05A22] rounded-full shadow-[0_0_15px_rgba(232,93,26,0.3)]"
+                 className="absolute left-0 top-0 h-full bg-primary rounded-full shadow-[0_0_15px_rgba(232,93,26,0.3)]"
               ></motion.div>
             </div>
             <p className="text-sm font-black text-[#111827] relative">
@@ -348,24 +358,24 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
               <div key={idx} className="space-y-6 group/p">
                 <div className={cn(
                   "relative transition-all duration-700",
-                   isHighlighted ? "bg-[#FFF9F5] p-6 md:p-8 rounded-[2rem] shadow-[0_20px_40px_rgba(240,90,34,0.05)] border-2 border-[#F05A22]/10" : "px-4 py-2"
+                   isHighlighted ? "bg-[#FFF9F5] p-6 md:p-8 rounded-[2rem] shadow-[0_20px_40px_rgba(240,90,34,0.05)] border-2 border-primary/10" : "px-4 py-2"
                 )}>
-                  {isHighlighted && <div className={`absolute ${language === "ar" ? "-right-3" : "-left-3"} top-14 bottom-14 w-1.5 bg-[#F05A22] rounded-full shadow-[0_0_25px_rgba(232,93,26,0.5)]`}></div>}
+                  {isHighlighted && <div className={`absolute ${language === "ar" ? "-right-3" : "-left-3"} top-14 bottom-14 w-1.5 bg-primary rounded-full shadow-[0_0_25px_rgba(232,93,26,0.5)]`}></div>}
                   
                   <div className={`flex items-start gap-8 md:gap-16`}>
                     {/* Timestamp / Page label column */}
                     <div className="w-16 shrink-0 pt-2 text-center opacity-60 group-hover/p:opacity-100 transition-opacity">
                       <span className={cn(
                         "text-xs font-black font-headline tracking-[0.2em] transition-all",
-                        isHighlighted ? "text-[#F05A22]" : "text-[#111827]/40"
+                        isHighlighted ? "text-primary" : "text-[#111827]/40"
                       )}>{timeStr}</span>
                     </div>
                     
                     {/* Text content */}
                     <div className={cn("flex-1", contentTextAlign === "right" ? "text-right" : "text-left")} dir={contentDir}>
                       {isHighlighted && <div className={`flex items-center gap-2 mb-6`}>
-                         <div className="h-px bg-[#F05A22]/20 flex-1"></div>
-                         <h4 className="text-[9px] font-black text-[#F05A22] uppercase tracking-[0.3em] italic">{language === "ar" ? "رؤية مركزية" : "Curator Insight"}</h4>
+                         <div className="h-px bg-primary/20 flex-1"></div>
+                         <h4 className="text-[9px] font-black text-primary uppercase tracking-[0.3em] italic">{language === "ar" ? "رؤية مركزية" : "Curator Insight"}</h4>
                       </div>}
                       
                       <div className={cn(
@@ -377,8 +387,8 @@ export function TranscriptView({ text, title, images, transcriptChunks }: Transc
                           rehypePlugins={[rehypeKatex]}
                           components={{
                             p: ({ children }) => <span className="block mb-2">{children}</span>,
-                            strong: ({ children }) => <strong className="font-extrabold text-[#F05A22] bg-[#feecdc]/40 px-1.5 rounded-sm">{children}</strong>,
-                            em: ({ children }) => <em className="italic text-[#F05A22] opacity-90 border-b border-[#F05A22]/20">{children}</em>
+                            strong: ({ children }) => <strong className="font-extrabold text-primary bg-[#feecdc]/40 px-1.5 rounded-sm">{children}</strong>,
+                            em: ({ children }) => <em className="italic text-primary opacity-90 border-b border-primary/20">{children}</em>
                           }}
                         >
                           {processedText}

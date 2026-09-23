@@ -40,18 +40,23 @@ const MAP: Record<string, LucideIcon> = {
   motor: Settings, sensor: Activity, activity: Activity, rocket: Rocket, launch: Rocket,
 };
 
-export function pickIcon(name?: string): LucideIcon {
-  if (!name) return Circle;
+/** Resolves an icon keyword; null when nothing matches (callers then show no icon at all). */
+export function matchIcon(name?: string): LucideIcon | null {
+  if (!name) return null;
   const key = name.toLowerCase().trim();
   if (MAP[key]) return MAP[key];
-  // try keyword contains
   for (const k of Object.keys(MAP)) {
     if (key.includes(k)) return MAP[k];
   }
-  return Circle;
+  return null;
 }
 
-export function SlideIcon({ name, size = 22 }: { name?: string; size?: number }): React.ReactElement {
-  const Ico = pickIcon(name);
-  return <Ico size={size} strokeWidth={2.4} />;
+export function pickIcon(name?: string): LucideIcon {
+  return matchIcon(name) || Circle;
+}
+
+/** Renders the icon for a keyword, or nothing — never a generic placeholder shape. */
+export function SlideIcon({ name, size = 22 }: { name?: string; size?: number }): React.ReactElement | null {
+  const Ico = matchIcon(name);
+  return Ico ? <Ico size={size} strokeWidth={2.2} /> : null;
 }

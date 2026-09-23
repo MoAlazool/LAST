@@ -64,7 +64,7 @@ export default function LandingShowcase() {
       {/* How it works */}
       <section className={cn(isRTL && "text-right")}>
         <div className="text-center mb-8">
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#F05A22]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
             {t.stepsKicker}
           </span>
           <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-on-surface mt-2">
@@ -84,9 +84,9 @@ export default function LandingShowcase() {
                 transition={{ delay: i * 0.08 }}
                 className="relative flex sm:flex-col items-center sm:text-center gap-4 sm:gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6"
               >
-                <div className="relative shrink-0 grid place-items-center h-12 w-12 rounded-2xl bg-[#F05A22]/10 text-[#F05A22]">
+                <div className="relative shrink-0 grid place-items-center h-12 w-12 rounded-2xl bg-primary/10 text-primary">
                   <Icon size={24} strokeWidth={2} />
-                  <span className="absolute -top-2 -right-2 grid place-items-center h-5 w-5 rounded-full bg-[#F05A22] text-white text-[10px] font-bold">
+                  <span className="absolute -top-2 -right-2 grid place-items-center h-5 w-5 rounded-full bg-primary text-white text-[10px] font-bold">
                     {i + 1}
                   </span>
                 </div>
@@ -113,7 +113,7 @@ export default function LandingShowcase() {
       {/* What you get */}
       <section className={cn(isRTL && "text-right")}>
         <div className="text-center mb-8 max-w-2xl mx-auto">
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#F05A22]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
             {t.featuresKicker}
           </span>
           <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-on-surface mt-2">
@@ -134,9 +134,9 @@ export default function LandingShowcase() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ delay: (i % 4) * 0.05 }}
-                className="group flex flex-col items-center text-center gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6 hover:border-[#F05A22]/40 hover:shadow-[0_8px_30px_rgba(240,90,34,0.08)] transition-all"
+                className="group flex flex-col items-center text-center gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6 hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(240,90,34,0.08)] transition-all"
               >
-                <div className="grid place-items-center h-11 w-11 rounded-xl bg-[#F05A22]/10 text-[#F05A22] group-hover:scale-110 transition-transform">
+                <div className="grid place-items-center h-11 w-11 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                   <Icon size={22} strokeWidth={2} />
                 </div>
                 <span className="text-sm font-semibold text-on-surface">{f.label}</span>

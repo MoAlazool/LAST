@@ -59,7 +59,7 @@ export default function Header() {
       <div className="flex items-center gap-5">
         <button 
           onClick={toggleLanguage}
-          className="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-[#F05A22] transition-all flex items-center gap-2 border-0 bg-transparent cursor-pointer font-bold text-xs"
+          className="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-all flex items-center gap-2 border-0 bg-transparent cursor-pointer font-bold text-xs"
           title={language === "ar" ? "Switch to English" : "التحويل للعربية"}
         >
           <Languages size={18} />
@@ -80,7 +80,7 @@ export default function Header() {
             onChange={handleSearchChange}
             placeholder={t.search}
             className={cn(
-              "bg-surface-container-lowest rounded-full py-2.5 border border-outline-variant/50 focus:ring-2 focus:ring-[#F05A22]/25 focus:border-transparent w-[220px] sm:w-64 text-sm text-on-surface placeholder:text-on-surface-variant/70 shadow-sm",
+              "bg-surface-container-lowest rounded-full py-2.5 border border-outline-variant/50 focus:ring-2 focus:ring-primary/25 focus:border-transparent w-[220px] sm:w-64 text-sm text-on-surface placeholder:text-on-surface-variant/70 shadow-sm",
               isRTL ? "pr-10 pl-4 text-right" : "pl-10 pr-4 text-left"
             )}
           />
@@ -88,7 +88,7 @@ export default function Header() {
 
         <Link
           href="/profile"
-          className="text-on-surface-variant hover:text-[#F05A22] transition-colors rounded-full p-0.5 inline-flex no-underline overflow-hidden"
+          className="text-on-surface-variant hover:text-primary transition-colors rounded-full p-0.5 inline-flex no-underline overflow-hidden"
           aria-label={t.account}
         >
           {user?.photoURL ? (

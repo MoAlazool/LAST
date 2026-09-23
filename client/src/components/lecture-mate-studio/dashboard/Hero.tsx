@@ -30,7 +30,7 @@ export default function Hero() {
           className="text-4xl sm:text-5xl font-extrabold text-on-surface leading-[1.12] tracking-tight mb-6 font-headline"
         >
           {t.titlePrefix}{" "}
-          <span className="text-[#F05A22]">{t.titleSuffix}</span>
+          <span className="text-primary">{t.titleSuffix}</span>
         </motion.h2>
 
         <motion.p
@@ -47,7 +47,7 @@ export default function Hero() {
       </div>
 
       <div className={cn(
-        "hidden lg:block absolute w-[520px] h-[520px] bg-[#F05A22]/[0.06] rounded-full blur-3xl pointer-events-none",
+        "hidden lg:block absolute w-[520px] h-[520px] bg-primary/[0.06] rounded-full blur-3xl pointer-events-none",
         isRTL ? "-right-24 -top-24" : "-left-24 -top-24"
       )} />
 
@@ -63,7 +63,7 @@ export default function Hero() {
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-[#F05A22]/[0.08] mix-blend-multiply pointer-events-none" />
+        <div className="absolute inset-0 bg-primary/[0.08] mix-blend-multiply pointer-events-none" />
       </motion.div>
     </section>
   );

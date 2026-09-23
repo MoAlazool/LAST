@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Question } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, ArrowLeft, Bot, X, Timer, Sparkles, Search, BookText, PlayCircle, Globe, Zap, GraduationCap } from "lucide-react";
+import { CheckCircle, ArrowRight, ArrowLeft, Bot, X, Timer, Search, BookText, PlayCircle, Globe, Zap, GraduationCap, Flag, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -296,6 +296,15 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
     }
   };
 
+  const handleFinishNow = () => {
+    const confirmMsg = language === "ar"
+      ? "هل تريد إنهاء الاختبار الآن؟ سيتم احتساب الأسئلة التي لم تُجب عليها كخطأ."
+      : "Finish the quiz now? Unanswered questions will be counted as incorrect.";
+    if (window.confirm(confirmMsg)) {
+      setStage("complete");
+    }
+  };
+
   const handleOptionSelect = (idx: number) => {
     if (isAnswered || !currentQuestion) return;
     setSelectedOption(idx);
@@ -333,8 +342,8 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px] space-y-8 bg-white">
         <div className="relative w-24 h-24">
-          <div className="absolute inset-0 rounded-full border-4 border-[#F05A22]/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border-4 border-[#F05A22] border-t-transparent animate-spin" />
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping" />
+          <div className="absolute inset-2 rounded-full border-4 border-primary border-t-transparent animate-spin" />
         </div>
         <div className="text-center space-y-2">
           <h3 className="text-2xl font-black text-[#1A1A1A] tracking-tight">
@@ -363,7 +372,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
               <button
                 onClick={() => setStage("ready")}
                 className={cn(
-                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[#F05A22]/30 bg-white text-[#F05A22] font-black text-sm hover:bg-[#F05A22] hover:text-white hover:border-[#F05A22] transition-all shadow-sm active:scale-95"
+                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-primary/30 bg-white text-primary font-black text-sm hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm active:scale-95"
                 )}
               >
                 {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
@@ -392,7 +401,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                 whileHover={{ y: -10 }}
                 className={cn(
                   "bg-white rounded-[40px] p-10 flex flex-col items-center text-center relative overflow-hidden border",
-                  generated ? "border-2 border-emerald-200" : c.popular ? "shadow-[0_30px_70px_rgba(0,0,0,0.08)] border-2 border-[#F05A22]/10" : "shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-[#F0F0F0]",
+                  generated ? "border-2 border-emerald-200" : c.popular ? "shadow-[0_30px_70px_rgba(0,0,0,0.08)] border-2 border-primary/10" : "shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-[#F0F0F0]",
                 )}
               >
                 <div className={cn("absolute top-6 flex items-center gap-2", isRTL ? "left-10" : "right-10")}>
@@ -402,7 +411,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                     </Badge>
                   )}
                   {c.popular && !generated && (
-                    <Badge className="bg-[#FFF1ED] text-[#F05A22] border-none font-black text-[10px] py-1 px-3 uppercase">
+                    <Badge className="bg-[#FFF1ED] text-primary border-none font-black text-[10px] py-1 px-3 uppercase">
                       {language === "ar" ? "الأكثر شيوعاً" : "Popular"}
                     </Badge>
                   )}
@@ -424,7 +433,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                       {t.start}
                       <span className="text-[11px] font-bold opacity-80 tabular-nums">({count})</span>
                     </Button>
-                    <button onClick={() => handleGenerate(c.lvl)} className="w-full text-xs font-bold text-[#A0A0A0] hover:text-[#F05A22] transition-colors py-1 border-0 bg-transparent cursor-pointer">
+                    <button onClick={() => handleGenerate(c.lvl)} className="w-full text-xs font-bold text-[#A0A0A0] hover:text-primary transition-colors py-1 border-0 bg-transparent cursor-pointer">
                       {t.regenerate}
                     </button>
                   </div>
@@ -454,7 +463,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
           <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} className="w-24 h-24 rounded-full bg-[#F0FFF4] border-4 border-white shadow-xl flex items-center justify-center mx-auto mb-8">
             <CheckCircle className="w-12 h-12 text-[#10B981]" />
           </motion.div>
-          <span className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-[#F05A22] bg-[#F05A22]/10 px-4 py-1.5 rounded-full mb-4">
+          <span className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">
             {t.ready.tag}
           </span>
           <h1 className="text-3xl font-black text-[#1A1A1A] tracking-tight mb-3">{t.ready.title}</h1>
@@ -463,14 +472,14 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
             {level && (
               <>
                 {" · "}
-                <span className="font-bold text-[#F05A22]">{t.levelNames[level]}</span>
+                <span className="font-bold text-primary">{t.levelNames[level]}</span>
               </>
             )}
           </p>
           <p className="text-xs text-[#A0A0A0] font-medium mb-8">{t.ready.saved}</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={() => setStage("mode")} className="h-14 px-10 rounded-2xl bg-[#1A1A1A] hover:bg-[#F05A22] text-white font-black text-base transition-all shadow-xl shadow-black/10 flex items-center gap-2">
+            <Button onClick={() => setStage("mode")} className="h-14 px-10 rounded-2xl bg-[#1A1A1A] hover:bg-primary text-white font-black text-base transition-all shadow-xl shadow-black/10 flex items-center gap-2">
               {t.ready.startNow}
               <ArrowRight className={cn("w-5 h-5", isRTL && "rotate-180")} />
             </Button>
@@ -483,7 +492,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
             </Button>
           </div>
 
-          <button onClick={() => setStage("menu")} className="mt-6 text-xs font-bold text-[#A0A0A0] hover:text-[#F05A22] transition-colors border-0 bg-transparent cursor-pointer underline underline-offset-4">
+          <button onClick={() => setStage("menu")} className="mt-6 text-xs font-bold text-[#A0A0A0] hover:text-primary transition-colors border-0 bg-transparent cursor-pointer underline underline-offset-4">
             {t.ready.changeLevel}
           </button>
         </motion.div>
@@ -494,7 +503,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
   // ============================ MODE SELECT (practice / learn) ============================
   if (stage === "mode") {
     const modes: { id: AnswerMode; icon: React.ReactNode; data: typeof t.mode.practice; accent: string }[] = [
-      { id: "practice", icon: <Zap className="w-7 h-7" />, data: t.mode.practice, accent: "text-[#F05A22] bg-[#F05A22]/10" },
+      { id: "practice", icon: <Zap className="w-7 h-7" />, data: t.mode.practice, accent: "text-primary bg-primary/10" },
       { id: "learn", icon: <GraduationCap className="w-7 h-7" />, data: t.mode.learn, accent: "text-emerald-600 bg-emerald-500/10" },
     ];
     return (
@@ -510,7 +519,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
               whileHover={{ y: -6 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => beginQuiz(m.id)}
-              className={cn("text-left bg-white rounded-[32px] p-8 border-2 border-[#F0F0F0] hover:border-[#F05A22]/40 shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_24px_60px_rgba(240,90,34,0.12)] transition-all group", isRTL && "text-right")}
+              className={cn("text-left bg-white rounded-[32px] p-8 border-2 border-[#F0F0F0] hover:border-primary/40 shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_24px_60px_rgba(240,90,34,0.12)] transition-all group", isRTL && "text-right")}
             >
               <div className={cn("w-16 h-16 rounded-3xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110", m.accent)}>{m.icon}</div>
               <h3 className="text-xl font-black text-[#1A1A1A] mb-2">{m.data.name}</h3>
@@ -523,13 +532,13 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                   </div>
                 ))}
               </div>
-              <div className={cn("inline-flex items-center gap-2 font-black text-sm text-[#F05A22] group-hover:gap-3 transition-all")}>
+              <div className={cn("inline-flex items-center gap-2 font-black text-sm text-primary group-hover:gap-3 transition-all")}>
                 {t.mode.begin} <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
               </div>
             </motion.button>
           ))}
         </div>
-        <button onClick={() => setStage("ready")} className="mt-8 text-xs font-bold text-[#A0A0A0] hover:text-[#F05A22] transition-colors border-0 bg-transparent cursor-pointer">
+        <button onClick={() => setStage("ready")} className="mt-8 text-xs font-bold text-[#A0A0A0] hover:text-primary transition-colors border-0 bg-transparent cursor-pointer">
           {isRTL ? "→ رجوع" : "← Back"}
         </button>
       </div>
@@ -550,9 +559,10 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                 initial={{ opacity: 0, y: "100vh", x: `${Math.random() * 100}vw`, scale: 0.5 + Math.random() }}
                 animate={{ opacity: [0, 1, 0], y: "-20vh", rotate: [0, 360] }}
                 transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 3 }}
-                className="absolute text-2xl"
+                className="absolute"
               >
-                {["✨", "⭐", "🔸", "🎉", "🔥"][Math.floor(Math.random() * 5)]}
+                {/* Simple confetti pieces in the brand palette (instead of emoji). */}
+                <span className={["block w-2.5 h-2.5 rounded-[2px] bg-primary", "block w-2 h-3 rounded-[2px] bg-slate-800", "block w-2 h-2 rounded-full bg-primary/50", "block w-3 h-1.5 rounded-[2px] bg-amber-400"][i % 4]} />
               </motion.div>
             ))}
           </div>
@@ -575,7 +585,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
           </div>
 
           <div className="relative">
-            <div className="text-8xl font-black text-[#F05A22] mb-2">{pct}%</div>
+            <div className="text-8xl font-black text-primary mb-2">{pct}%</div>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#A0A0A0]">
               {language === "ar" ? "نسبة الإتقان" : "Knowledge Retention Score"}
             </p>
@@ -585,7 +595,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
             <Button onClick={() => setStage("mode")} variant="outline" className="rounded-2xl h-16 px-10 border-2 border-[#E5E5E5] font-black text-[#1A1A1A] hover:bg-[#F9F9F9] transition-all">
               {language === "ar" ? "إعادة الاختبار" : "Retake Quiz"}
             </Button>
-            <Button onClick={() => setStage("menu")} className="rounded-2xl h-16 px-10 bg-[#1A1A1A] hover:bg-[#F05A22] text-white font-black text-lg transition-all shadow-xl shadow-black/10">
+            <Button onClick={() => setStage("menu")} className="rounded-2xl h-16 px-10 bg-[#1A1A1A] hover:bg-primary text-white font-black text-lg transition-all shadow-xl shadow-black/10">
               {language === "ar" ? "اختبار جديد" : "New Quiz"}
             </Button>
           </div>
@@ -603,19 +613,29 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
         {/* Mode + progress strip */}
         <div className={cn("flex items-center justify-between mb-5")}>
           <div className={cn("flex items-center gap-2 text-[11px] font-black uppercase tracking-wider")}>
-            <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full", answerMode === "learn" ? "bg-emerald-500/10 text-emerald-600" : "bg-[#F05A22]/10 text-[#F05A22]")}>
+            <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full", answerMode === "learn" ? "bg-emerald-500/10 text-emerald-600" : "bg-primary/10 text-primary")}>
               {answerMode === "learn" ? <GraduationCap className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
               {answerMode === "learn" ? t.mode.learn.name : t.mode.practice.name}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-[#A0A0A0] tabular-nums">
-            {currentQuestionIndex + 1} / {questions.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold text-[#A0A0A0] tabular-nums">
+              {currentQuestionIndex + 1} / {questions.length}
+            </span>
+            <button
+              type="button"
+              onClick={handleFinishNow}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
+            >
+              <Flag className="w-3.5 h-3.5" />
+              {language === "ar" ? "إنهاء الاختبار" : "Finish Quiz"}
+            </button>
+          </div>
         </div>
         {/* Progress bar */}
         <div className="h-1.5 rounded-full bg-[#F0F0F0] overflow-hidden mb-6">
           <motion.div
-            className="h-full rounded-full bg-[#F05A22]"
+            className="h-full rounded-full bg-primary"
             animate={{ width: `${((currentQuestionIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -626,7 +646,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-4">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-[#F05A22] uppercase tracking-[0.2em] mb-0.5">{language === "ar" ? "السؤال" : "QUESTION"}</span>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">{language === "ar" ? "السؤال" : "QUESTION"}</span>
                   <div className="text-xl font-black text-[#1A1A1A] flex items-baseline gap-1">
                     {currentQuestionIndex + 1}
                     <span className="text-[#A0A0A0] text-xs font-bold">/ {questions.length}</span>
@@ -635,14 +655,14 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                 {showTimer && (
                   <>
                     <div className="h-8 w-px bg-[#FFE4DE] mx-2 hidden md:block" />
-                    <div className="flex items-center gap-2 bg-[#F05A22]/10 text-[#F05A22] px-4 py-2 rounded-2xl font-black text-sm">
+                    <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-2xl font-black text-sm">
                       <Timer className="w-4 h-4" />
                       <span>{timeLeft}</span>
                     </div>
                   </>
                 )}
               </div>
-              <div className="text-[11px] font-black text-[#F05A22] uppercase tracking-widest bg-[#F05A22]/5 px-4 py-1.5 rounded-full">
+              <div className="text-[11px] font-black text-primary uppercase tracking-widest bg-primary/5 px-4 py-1.5 rounded-full">
                 {currentQuestion.type === "open_ended" ? (language === "ar" ? "سؤال مقالي" : "Open-Ended Question") : (language === "ar" ? "خيار من متعدد" : "Multiple Choice")}
               </div>
             </div>
@@ -654,7 +674,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
 
             <AnimatePresence>
               {showHint && !isAnswered && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-6 p-4 rounded-2xl bg-[#FFF5F2] border-l-4 border-[#F05A22] text-[#C14416] flex items-start gap-3">
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-6 p-4 rounded-2xl bg-[#FFF5F2] border-l-4 border-primary text-[#C14416] flex items-start gap-3">
                   <Bot className="w-5 h-5 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-black text-sm uppercase block mb-1">{language === "ar" ? "تلميح للحل:" : "Study Hint:"}</span>
@@ -677,11 +697,11 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                     onChange={(e) => setEssayAnswer(e.target.value)}
                     disabled={isAnswered}
                     placeholder={language === "ar" ? "اكتب إجابتك هنا بالتفصيل..." : "Compose your detailed response here..."}
-                    className="min-h-[200px] rounded-[30px] border-2 border-[#F0F0F0] focus:border-[#F05A22] focus:ring-0 p-6 text-base font-medium leading-relaxed transition-all"
+                    className="min-h-[200px] rounded-[30px] border-2 border-[#F0F0F0] focus:border-primary focus:ring-0 p-6 text-base font-medium leading-relaxed transition-all"
                   />
                 </div>
                 {!isAnswered && (
-                  <Button onClick={handleEssaySubmit} disabled={!essayAnswer.trim() || isEvaluating} className="w-full h-16 rounded-[25px] bg-[#1A1A1A] hover:bg-[#F05A22] text-white font-black text-lg transition-all shadow-xl flex items-center justify-center gap-3">
+                  <Button onClick={handleEssaySubmit} disabled={!essayAnswer.trim() || isEvaluating} className="w-full h-16 rounded-[25px] bg-[#1A1A1A] hover:bg-primary text-white font-black text-lg transition-all shadow-xl flex items-center justify-center gap-3">
                     {isEvaluating ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -693,9 +713,9 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                   </Button>
                 )}
                 {evaluation && showLearnExtras && (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[35px] border-2 border-dashed border-[#F05A22]/20 bg-[#FFF8F6] flex flex-col items-center text-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center justify-center border-4 border-[#F05A22]">
-                      <span className="text-2xl font-black text-[#F05A22]">{evaluation.similarityScore}%</span>
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[35px] border-2 border-dashed border-primary/20 bg-[#FFF8F6] flex flex-col items-center text-center gap-4">
+                    <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center justify-center border-4 border-primary">
+                      <span className="text-2xl font-black text-primary">{evaluation.similarityScore}%</span>
                     </div>
                     <div className="space-y-2">
                       <h4 className="text-xl font-black text-[#1A1A1A]">
@@ -728,13 +748,13 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                               ? "bg-[#FFF5F5] border-[#EF4444] text-[#B91C1C]"
                               : "bg-white border-[#F0F0F0] text-[#9CA3AF] opacity-60"
                           : isSelected
-                            ? "bg-[#FFF5F2] border-[#F05A22] text-[#F05A22] shadow-sm"
-                            : "bg-white border-[#F0F0F0] hover:border-[#F05A22]/30 text-[#444]",
+                            ? "bg-[#FFF5F2] border-primary text-primary shadow-sm"
+                            : "bg-white border-[#F0F0F0] hover:border-primary/30 text-[#444]",
                       )}
                     >
                       <span className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-colors uppercase",
-                        showResult && isCorrect ? "bg-[#10B981] text-white" : showResult && isSelected && !isCorrect ? "bg-[#EF4444] text-white" : isSelected ? "bg-[#F05A22] text-white" : "bg-[#F3F4F6] text-[#F05A22]",
+                        showResult && isCorrect ? "bg-[#10B981] text-white" : showResult && isSelected && !isCorrect ? "bg-[#EF4444] text-white" : isSelected ? "bg-primary text-white" : "bg-[#F3F4F6] text-primary",
                       )}>
                         {letter}.
                       </span>
@@ -786,11 +806,11 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                     <>
                       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="p-6 md:p-8 rounded-[32px] bg-white border-2 border-[#FFE4DE] relative overflow-hidden group shadow-sm">
                         <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                          <Bot className="w-24 h-24 text-[#F05A22]" />
+                          <Bot className="w-24 h-24 text-primary" />
                         </div>
                         <div className="flex items-center gap-3 mb-5">
-                          <div className="w-10 h-10 rounded-2xl bg-[#F05A22] flex items-center justify-center shadow-lg shadow-[#F05A22]/20">
-                            <Sparkles className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Lightbulb className="w-5 h-5 text-white" />
                           </div>
                           <h4 className="font-black text-[#1A1A1A] text-lg tracking-tight">
                             {currentQuestion.type === "open_ended" ? (language === "ar" ? "التحليل التعليمي الذكي:" : "Smart Educational Analysis:") : (language === "ar" ? "شرح المفهوم:" : "Concept Explanation:")}
@@ -804,7 +824,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                       <div className="p-5 rounded-[32px] bg-white border border-[#F0F0F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col md:flex-row items-center justify-between gap-4 px-8">
                         <div className="flex flex-col md:flex-row items-center gap-6">
                           <div className="flex flex-col items-center md:items-start gap-1">
-                            <span className="text-[10px] font-black text-[#F05A22] uppercase tracking-[0.1em]">{language === "ar" ? "المصدر من المحاضرة:" : "Lecture Reference:"}</span>
+                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.1em]">{language === "ar" ? "المصدر من المحاضرة:" : "Lecture Reference:"}</span>
                             <div className="flex items-center gap-2">
                               <div className={cn("flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm", currentQuestion.reference?.source_type === "uploaded_content" ? "bg-[#1A1A1A] text-white" : "bg-[#F3F4F6] text-[#666]")}>
                                 {currentQuestion.reference?.source_type === "uploaded_content" ? (
@@ -820,8 +840,8 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                                 )}
                               </div>
                               {currentQuestion.reference?.location && (
-                                <div className="flex items-center gap-1.5 text-[#444] text-xs font-black bg-[#F05A22]/5 px-3 py-1 rounded-lg border border-[#F05A22]/10">
-                                  <PlayCircle className="w-3.5 h-3.5 text-[#F05A22]" />
+                                <div className="flex items-center gap-1.5 text-[#444] text-xs font-black bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">
+                                  <PlayCircle className="w-3.5 h-3.5 text-primary" />
                                   <span>{currentQuestion.reference.location}</span>
                                 </div>
                               )}
@@ -831,7 +851,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                           <div className="flex flex-col items-center md:items-start gap-1">
                             <span className="text-[10px] font-black text-[#A0A0A0] uppercase tracking-wider">{language === "ar" ? "المفهوم المرتبط:" : "Related Concept:"}</span>
                             <div className="flex items-center gap-2">
-                              <Search className="w-3.5 h-3.5 text-[#F05A22]" />
+                              <Search className="w-3.5 h-3.5 text-primary" />
                               <span className="text-sm font-black text-[#1A1A1A]">{currentQuestion.reference?.concept || (language === "ar" ? "المفهوم الأساسي" : "Core Concept")}</span>
                             </div>
                           </div>
@@ -842,11 +862,11 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.99 }}
                         onClick={() => setIsChatOpen(true)}
-                        className="w-full h-14 bg-white border-2 border-[#F05A22] rounded-[24px] flex items-center justify-between px-6 shadow-md hover:shadow-[#F05A22]/20 transition-all group overflow-hidden relative"
+                        className="w-full h-14 bg-white border-2 border-primary rounded-[24px] flex items-center justify-between px-6 shadow-md hover:shadow-primary/20 transition-all group overflow-hidden relative"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#F05A22]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="flex items-center gap-4 relative z-10">
-                          <div className="w-10 h-10 rounded-2xl bg-[#F05A22] flex items-center justify-center text-white shadow-lg shadow-[#F05A22]/30 group-hover:rotate-12 transition-transform">
+                          <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform">
                             <Bot className="w-5 h-5" />
                           </div>
                           <div className="flex flex-col items-start">
@@ -854,7 +874,7 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                             <span className="text-[#666] font-bold text-[10px] uppercase tracking-widest">{language === "ar" ? "تحدث مع الوكيل الذكي الآن" : "Chat with the AI Agent"}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 text-[#F05A22] relative z-10">
+                        <div className="flex items-center gap-3 text-primary relative z-10">
                           <ArrowRight className={cn("w-5 h-5 group-hover:translate-x-1 transition-transform", isRTL && "rotate-180")} />
                         </div>
                       </motion.button>
@@ -877,13 +897,13 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
                   <Button
                     onClick={handleCheckAnswer}
                     disabled={selectedOption === null}
-                    className={cn("h-12 px-8 rounded-xl font-black text-white transition-all shadow-md flex-1 text-sm", selectedOption !== null ? "bg-[#1A1A1A] hover:bg-[#F05A22] shadow-black/10" : "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed shadow-none")}
+                    className={cn("h-12 px-8 rounded-xl font-black text-white transition-all shadow-md flex-1 text-sm", selectedOption !== null ? "bg-[#1A1A1A] hover:bg-primary shadow-black/10" : "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed shadow-none")}
                   >
                     {language === "ar" ? "تحقق" : "Check"}
                   </Button>
                 )}
                 {isAnswered && (
-                  <Button onClick={handleNext} className="h-12 px-8 rounded-xl font-black text-white bg-[#F05A22] hover:bg-[#D44A1B] shadow-md flex-1 transition-all text-sm">
+                  <Button onClick={handleNext} className="h-12 px-8 rounded-xl font-black text-white bg-primary hover:bg-[#D44A1B] shadow-md flex-1 transition-all text-sm">
                     {currentQuestionIndex < questions.length - 1 ? (language === "ar" ? "التالي" : "Next Question") : (language === "ar" ? "إنهاء" : "Finish Quiz")}
                   </Button>
                 )}
@@ -899,8 +919,8 @@ export function QuizView({ questions: initialQuestions, lectureId, transcript, m
               <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="w-full max-w-4xl h-[80vh] bg-white rounded-[40px] shadow-2xl border border-[#F0F0F0] overflow-hidden flex flex-col relative">
                 <div className="p-6 border-b border-[#F0F0F0] flex justify-between items-center bg-[#FDFDFD]">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#F05A22]/10 flex items-center justify-center">
-                      <Bot className="w-6 h-6 text-[#F05A22]" />
+                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                      <Bot className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-black text-[#1A1A1A]">AI Agent</h3>

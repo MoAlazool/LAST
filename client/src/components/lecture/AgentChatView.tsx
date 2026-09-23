@@ -36,7 +36,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
             <div className="my-6 rounded-xl overflow-hidden border border-slate-200 bg-[#1E293B] shadow-lg max-w-full" dir="ltr">
                 <div className="flex items-center justify-between px-4 py-2 bg-[#0F172A] border-b border-white/5">
                     <span className="text-xs font-mono font-medium text-slate-400 capitalize flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#F05A22]"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
                         {languageMatch || "code"}
                     </span>
                     <button
@@ -545,7 +545,7 @@ export function AgentChatView({
                             <div className="px-5 py-3.5 flex items-start justify-between gap-3 border-b border-slate-100 bg-white shrink-0">
                                 <div className="min-w-0">
                                     <h3 className="text-slate-900 font-bold text-sm mb-0.5 flex items-center gap-2">
-                                        {isVideoKind ? <Film className="w-4 h-4 text-[#F05A22]" /> : <FileText className="w-4 h-4 text-[#F05A22]" />}
+                                        {isVideoKind ? <Film className="w-4 h-4 text-primary" /> : <FileText className="w-4 h-4 text-primary" />}
                                         {isVideoKind ? (isAr ? "فيديو المحاضرة" : "Lecture Video") : (isAr ? "مستندك" : "Your Document")}
                                     </h3>
                                     <p className="text-slate-400 text-[11px] truncate">
@@ -601,7 +601,7 @@ export function AgentChatView({
                                         <div className="h-9 border-b border-slate-200 bg-slate-50 flex items-center justify-end px-3 shrink-0">
                                             <button
                                                 onClick={() => setPptViewerVariant((prev) => prev + 1)}
-                                                className="text-[10px] px-2 py-1 rounded-md border border-slate-200 text-slate-500 hover:text-[#F05A22] hover:border-[#F05A22]/30 transition-colors"
+                                                className="text-[10px] px-2 py-1 rounded-md border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30 transition-colors"
                                                 type="button"
                                             >
                                                 {isAr ? "إعادة المحاولة" : "Retry"}
@@ -625,7 +625,7 @@ export function AgentChatView({
                     {/* Chat Header */}
                     <div className={cn("px-6 pt-6 pb-4 flex items-center justify-between border-b border-slate-100")}>
                         <div className={cn("flex items-center gap-3 min-w-0")}>
-                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F05A22] to-[#f5793f] flex items-center justify-center shadow-lg shadow-[#F05A22]/20 shrink-0">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-[#f5793f] flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div className={cn("min-w-0", isRTL ? "text-right" : "text-left")}>
@@ -645,7 +645,7 @@ export function AgentChatView({
                             {hasDocumentContext && !showDocument && (
                                 <button
                                     onClick={() => setShowDocument(true)}
-                                    className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg border bg-slate-50 border-slate-200 text-slate-500 hover:text-[#F05A22] hover:border-[#F05A22]/30 hover:bg-[#F05A22]/5 transition-all flex items-center gap-2"
+                                    className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg border bg-slate-50 border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all flex items-center gap-2"
                                     title={language === "ar" 
                                         ? (inferredDocumentKind === "youtube" || inferredDocumentKind === "media" ? "إظهار الفيديو" : "إظهار المستند") 
                                         : (inferredDocumentKind === "youtube" || inferredDocumentKind === "media" ? "Show video" : "Show document")}
@@ -701,7 +701,7 @@ export function AgentChatView({
                                         "px-5 py-3 rounded-2xl text-[14px] leading-relaxed transition-all",
                                         message.role === "ai"
                                             ? "bg-slate-50 text-slate-800 border border-slate-100"
-                                            : "bg-[#F05A22] text-white shadow-lg shadow-[#F05A22]/20"
+                                            : "bg-primary text-white shadow-lg shadow-primary/20"
                                     )}>
                                         {message.role === "ai" ? (
                                             <div className={cn("markdown-content prose prose-slate prose-sm max-w-none", alignText)} dir={dir}>
@@ -739,9 +739,9 @@ export function AgentChatView({
                             <div className="flex gap-4">
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2">
                                     <div className="flex gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }}></span>
                                     </div>
                                 </div>
                             </div>
@@ -773,15 +773,15 @@ export function AgentChatView({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 8 }}
                                     className={cn(
-                                        "mb-3 flex items-start gap-2.5 rounded-2xl border border-[#F05A22]/20 bg-[#F05A22]/5 px-4 py-2.5",
+                                        "mb-3 flex items-start gap-2.5 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2.5",
                                         isRTL && "text-right"
                                     )}
                                 >
-                                    <div className="w-7 h-7 rounded-xl bg-[#F05A22]/15 flex items-center justify-center shrink-0 text-[#F05A22]">
+                                    <div className="w-7 h-7 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 text-primary">
                                         {pendingContext.kind === "moment" ? <Film className="w-3.5 h-3.5" /> : pendingContext.kind === "page" ? <BookOpen className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black uppercase tracking-wider text-[#F05A22]">
+                                        <p className="text-[10px] font-black uppercase tracking-wider text-primary">
                                             {pendingContext.kind === "moment"
                                                 ? (isAr ? `لحظة الفيديو · ${pendingContext.time}` : `Video moment · ${pendingContext.time}`)
                                                 : pendingContext.kind === "page"
@@ -848,7 +848,7 @@ export function AgentChatView({
                                 onChange={handleImageUpload}
                             />
 
-                            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2 focus-within:border-[#F05A22]/30 focus-within:bg-white transition-all shadow-sm">
+                            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2 focus-within:border-primary/30 focus-within:bg-white transition-all shadow-sm">
                                 <input
                                     ref={inputRef}
                                     value={input}
@@ -866,7 +866,7 @@ export function AgentChatView({
                                                 onClick={() => setShowPagePicker((v) => !v)}
                                                 className={cn(
                                                     "flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold transition-colors",
-                                                    showPagePicker ? "text-[#F05A22] bg-[#F05A22]/10" : "text-slate-400 hover:text-[#F05A22]"
+                                                    showPagePicker ? "text-primary bg-primary/10" : "text-slate-400 hover:text-primary"
                                                 )}
                                                 title={isSlideDoc ? (isAr ? "اسأل عن شريحة" : "Ask about a slide") : (isAr ? "اسأل عن صفحة" : "Ask about a page")}
                                             >
@@ -894,7 +894,7 @@ export function AgentChatView({
                                                                         onClick={() => stagePage(n)}
                                                                         className={cn(
                                                                             "h-9 rounded-lg text-xs font-black tabular-nums transition-all",
-                                                                            active ? "bg-[#F05A22] text-white shadow" : "bg-slate-50 text-slate-600 border border-slate-100 hover:bg-[#F05A22]/10 hover:text-[#F05A22]"
+                                                                            active ? "bg-primary text-white shadow" : "bg-slate-50 text-slate-600 border border-slate-100 hover:bg-primary/10 hover:text-primary"
                                                                         )}
                                                                     >
                                                                         {n}
@@ -916,7 +916,7 @@ export function AgentChatView({
                                             onClick={() => imageInputRef.current?.click()}
                                             className={cn(
                                                 "p-2 transition-colors rounded-lg",
-                                                selectedImage ? "text-[#F05A22] bg-[#F05A22]/10" : "text-slate-400 hover:text-[#F05A22]"
+                                                selectedImage ? "text-primary bg-primary/10" : "text-slate-400 hover:text-primary"
                                             )}
                                         >
                                             <Paperclip className="w-5 h-5" />
@@ -924,7 +924,7 @@ export function AgentChatView({
                                         <button
                                             type="submit"
                                             disabled={(!input.trim() && !selectedImage && !pendingContext) || isLoading}
-                                            className="bg-[#F05A22] hover:bg-[#D44A1B] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-[#F05A22]/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                                            className="bg-primary hover:bg-[#D44A1B] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
                                         >
                                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                         </button>

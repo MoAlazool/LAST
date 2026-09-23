@@ -47,7 +47,7 @@ export default function ProcessingModeSelector({
             "group inline-flex items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-container-low pl-2.5 pr-2 py-1.5 text-xs font-semibold text-on-surface transition-colors hover:bg-surface-container-high disabled:opacity-50",
           )}
         >
-          <span className="grid place-items-center h-5 w-5 rounded-full bg-[#F05A22]/10 text-[#F05A22]">
+          <span className="grid place-items-center h-5 w-5 rounded-full bg-primary/10 text-primary">
             <CurrentIcon size={12} strokeWidth={2.5} />
           </span>
           <span className="whitespace-nowrap">{current.name}</span>
@@ -66,13 +66,13 @@ export default function ProcessingModeSelector({
               onSelect={() => onChange(key)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-2.5 py-2 cursor-pointer",
-                active && "bg-[#F05A22]/[0.06]",
+                active && "bg-primary/[0.06]",
               )}
             >
               <span
                 className={cn(
                   "grid place-items-center h-8 w-8 rounded-lg shrink-0",
-                  active ? "bg-[#F05A22]/15 text-[#F05A22]" : "bg-surface-container-high text-on-surface-variant",
+                  active ? "bg-primary/15 text-primary" : "bg-surface-container-high text-on-surface-variant",
                 )}
               >
                 <Icon size={16} />
@@ -81,7 +81,7 @@ export default function ProcessingModeSelector({
                 <span className="block text-sm font-semibold text-on-surface">{m.name}</span>
                 <span className="block text-[11px] text-on-surface-variant">{m.desc}</span>
               </span>
-              {active && <Check size={16} className="text-[#F05A22] shrink-0" />}
+              {active && <Check size={16} className="text-primary shrink-0" />}
             </DropdownMenuItem>
           );
         })}

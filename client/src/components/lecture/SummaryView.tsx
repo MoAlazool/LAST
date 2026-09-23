@@ -118,7 +118,7 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
         {/* Top bar */}
         <div className={cn("flex items-center justify-between gap-3 mb-6")}>
           <div className={cn("flex items-center gap-2.5")}>
-            <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5")}>
+            <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-primary bg-primary/10 rounded-full px-3 py-1.5")}>
               <FileText className="w-3.5 h-3.5" /> {t.tag}
             </span>
             <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold text-slate-400")}>
@@ -127,7 +127,7 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
           </div>
           <button
             onClick={handleExportPDF}
-            className={cn("no-print inline-flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors")}
+            className={cn("no-print inline-flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:border-primary/40 hover:text-primary transition-colors")}
           >
             <Download className="w-4 h-4" /> {t.download}
           </button>
@@ -140,8 +140,8 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
 
           {/* TL;DR */}
           {takeawaySummary && (
-            <div className="mt-8 rounded-2xl bg-[#F05A22]/[0.05] border-s-4 border-[#F05A22] p-5">
-              <p className="text-[11px] font-black uppercase tracking-wider text-[#F05A22] mb-2">{t.tldr}</p>
+            <div className="mt-8 rounded-2xl bg-primary/[0.05] border-s-4 border-primary p-5">
+              <p className="text-[11px] font-black uppercase tracking-wider text-primary mb-2">{t.tldr}</p>
               <div className="text-[15px] leading-[1.8] text-slate-700 font-medium">
                 <TextWithMath text={takeawaySummary} />
               </div>
@@ -152,14 +152,14 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
           {sections.length > 0 && (
             <div className="mt-10">
               <h2 className="text-xl font-black text-slate-900 mb-7 flex items-center gap-2.5">
-                <span className="w-1.5 h-6 rounded-full bg-[#F05A22]" />
+                <span className="w-1.5 h-6 rounded-full bg-primary" />
                 {t.inLecture}
               </h2>
               <div className="space-y-8">
                 {sections.map((s, i) => (
                   <div key={i}>
                     <h3 className="text-[17px] font-black text-slate-900 mb-2 flex items-baseline gap-2.5">
-                      <span className="font-mono text-sm text-[#F05A22] shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="font-mono text-sm text-primary shrink-0">{String(i + 1).padStart(2, "0")}</span>
                       <span>{s.heading}</span>
                     </h3>
                     <div className="text-[15px] leading-[1.85] text-slate-600 ps-[2.1rem]">
@@ -195,14 +195,14 @@ export function SummaryView({ summary, title: initialTitle }: SummaryViewProps) 
 
               {/* Study tips */}
               {studyTips.length > 0 && (
-                <div className="rounded-2xl bg-[#FFF7ED] border border-[#F05A22]/15 p-6">
+                <div className="rounded-2xl bg-[#FFF7ED] border border-primary/15 p-6">
                   <h2 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-[#F05A22]" /> {t.studyTips}
+                    <Lightbulb className="w-4 h-4 text-primary" /> {t.studyTips}
                   </h2>
                   <ul className="space-y-3">
                     {studyTips.map((p, i) => (
                       <li key={i} className="flex items-start gap-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22] shrink-0 mt-2" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-2" />
                         <div className="text-[14px] leading-relaxed text-slate-700 font-medium flex-1">
                           <TextWithMath text={p} />
                         </div>

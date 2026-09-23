@@ -59,6 +59,7 @@ function firestoreToLecture(docData: any, id: string): Lecture {
     transcriptChunks: docData.transcriptChunks || undefined,
     sourceUrl: docData.sourceUrl || undefined,
     documentPageCount: typeof docData.documentPageCount === "number" ? docData.documentPageCount : undefined,
+    requestedFeatures: Array.isArray(docData.requestedFeatures) ? docData.requestedFeatures : undefined,
   };
 }
 
@@ -92,6 +93,7 @@ function lectureToFirestore(lecture: Partial<Lecture>): any {
   if (lecture.transcriptChunks !== undefined && lecture.transcriptChunks !== null) data.transcriptChunks = lecture.transcriptChunks;
   if (lecture.sourceUrl !== undefined && lecture.sourceUrl !== null) data.sourceUrl = lecture.sourceUrl;
   if (lecture.documentPageCount !== undefined && lecture.documentPageCount !== null) data.documentPageCount = lecture.documentPageCount;
+  if (lecture.requestedFeatures !== undefined && lecture.requestedFeatures !== null) data.requestedFeatures = lecture.requestedFeatures;
 
   return data;
 }
@@ -126,6 +128,7 @@ function updatesToFirestore(updates: Partial<Lecture>): any {
   if (updates.transcriptChunks !== undefined && updates.transcriptChunks !== null) data.transcriptChunks = updates.transcriptChunks;
   if (updates.sourceUrl !== undefined && updates.sourceUrl !== null) data.sourceUrl = updates.sourceUrl;
   if (updates.documentPageCount !== undefined && updates.documentPageCount !== null) data.documentPageCount = updates.documentPageCount;
+  if (updates.requestedFeatures !== undefined && updates.requestedFeatures !== null) data.requestedFeatures = updates.requestedFeatures;
 
   // Always update the updatedAt timestamp
   data.updatedAt = Timestamp.now();

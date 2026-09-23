@@ -15,6 +15,12 @@ export type SlideType =
   | "code" // code snippet + AI explanation
   | "quote"
   | "summary"
+  | "table" // real tabular data from the source
+  | "swot" // strengths / weaknesses / opportunities / threats
+  | "chart" // actual numeric series from the source (bar chart)
+  | "equation" // equations that genuinely appear in / are required by the source
+  | "definition" // one key term + its definition
+  | "layers" // architecture / technology stack (grouped items)
   | "content"; // legacy alias of "bullets"
 
 export interface SlideVisual {
@@ -39,6 +45,37 @@ export interface SlideStep {
   text?: string;
 }
 
+export interface SlideTable {
+  columns: string[];
+  rows: string[][];
+}
+
+export interface SlideSwot {
+  strengths: string[];
+  weaknesses: string[];
+  opportunities: string[];
+  threats: string[];
+}
+
+export interface SlideChart {
+  kind?: "bar";
+  unit?: string;
+  labels: string[];
+  values: number[];
+  caption?: string;
+}
+
+export interface SlideEquation {
+  latex: string;
+  label?: string;
+  explanation?: string;
+}
+
+export interface SlideLayer {
+  title: string;
+  items: string[];
+}
+
 export interface SlideStat {
   value: string;
   label: string;
@@ -61,6 +98,16 @@ export interface Slide {
   steps?: SlideStep[];
   // stats
   stats?: SlideStat[];
+  // process / timeline: number of the first step when a long process was split across slides
+  stepOffset?: number;
+  // table / swot / chart / equation / definition / layers
+  table?: SlideTable;
+  swot?: SlideSwot;
+  chart?: SlideChart;
+  equations?: SlideEquation[];
+  term?: string;
+  definition?: string;
+  layers?: SlideLayer[];
   // comparison
   left_label?: string;
   right_label?: string;
@@ -75,6 +122,7 @@ export interface Slide {
   code?: string;
   codeLanguage?: string;
   // meta
+  source?: string; // short supporting excerpt from the source (grounding; not rendered)
   speaker_notes?: string;
   direction?: "ltr" | "rtl";
   language?: "en" | "ar";
@@ -89,6 +137,11 @@ export interface SlideTheme {
   card: string;
   cardBorder: string;
   dark: boolean;
+  accent?: string;      // default accent when the user hasn't picked a colour
+  headingFont?: string; // CSS font stack for titles (default: the body font)
+  bodyFont?: string;    // CSS font stack for body text
+  arabicFont?: string;  // CSS font stack for Arabic slides
+  variant?: "default" | "academic"; // layout decoration style
 }
 
 // Normalize a bullet (rich or legacy string) to a consistent shape.

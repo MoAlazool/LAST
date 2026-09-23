@@ -2,26 +2,12 @@ import { Slide } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Download,
-  Presentation,
-  Edit2,
-  Save,
-  X,
-  Check,
-  Sparkles,
-  Palette,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
-} from "lucide-react";
+import { Download, Presentation, Edit2, Save, X, Check, Sparkles, Palette, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, PenLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { downloadSlidesPptx, SlideTheme } from "@/lib/aiService";
-import { SlideView, slidesCss, getSlideTheme, resolveAccent, SLIDE_W } from "@shared/slides";
+import { SlideView, slidesCss, getSlideTheme, resolveAccent, fitSlideElement, SLIDE_W } from "@shared/slides";
 import "katex/dist/katex.min.css";
 import { useLectures } from "@/hooks/useLectures";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +45,8 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
 
   const [theme, setTheme] = useState<string>("clean_light");
   const [customColor, setCustomColor] = useState<string>("#4A90D9");
+  // Until the user picks their own accent, each theme brings its default accent.
+  const [colorTouched, setColorTouched] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [editingSlideId, setEditingSlideId] = useState<number | null>(null);
@@ -99,6 +87,13 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
 
   const defaultTitle = language === "ar" ? "شرائح المحاضرة" : "Lecture Slides";
   const displayTitle = title || defaultTitle;
+  // Title shown in slide footers (academic theme): the deck's own title slide, never the
+  // uploaded file name ("…Poster.pdf").
+  const deckTitle = useMemo(() => {
+    const intro = editedSlides.find((sl: any) => sl.type === "intro" && sl.title);
+    if (intro?.title) return String(intro.title).replace(/\$/g, "");
+    return displayTitle.replace(/\.(pdf|pptx?|docx?|txt|md)$/i, "").replace(/[_]+/g, " ").trim();
+  }, [editedSlides, displayTitle]);
 
   const t = {
     generatedSlides: language === "ar" ? "الشرائح المُنشأة" : "Generated Slides",
@@ -138,7 +133,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
     vibrant_sunset: {
       label: language === "ar" ? "غروب برتقالي" : "Orange Sunset",
       defaultColor: "#FFFFFF", font: "Inter, sans-serif",
-      colors: { bg: "bg-gradient-to-br from-red-600 to-orange-500", title: "text-white", text: "text-white" },
+      colors: { bg: "bg-gradient-to-br from-red-600 to-primary", title: "text-white", text: "text-white" },
     },
     cyber_neon: {
       label: language === "ar" ? "سايبر نيون" : "Cyber Neon",
@@ -149,6 +144,11 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
       label: language === "ar" ? "رمادي عملي" : "Soft Gray",
       defaultColor: "#DC2626", font: "Inter, sans-serif",
       colors: { bg: "bg-[#E5E7EB]", title: "text-[#DC2626]", text: "text-black" },
+    },
+    academic_classic: {
+      label: language === "ar" ? "أكاديمي" : "Academic",
+      defaultColor: "#8C1D40", font: "'Source Serif 4', Georgia, serif",
+      colors: { bg: "bg-[#FBFAF7]", title: "text-[#1F2A44]", text: "text-[#2B2B2B]" },
     },
     emerald_forest: {
       label: language === "ar" ? "غابة الزمرد" : "Emerald Forest",
@@ -204,14 +204,31 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
     if (editedSlides.length === 0) return;
     setIsDownloading(true);
     try {
-      await downloadSlidesPptx(editedSlides, theme as SlideTheme, displayTitle, customColor, { format });
+      const accent = resolveAccent(customColor, getSlideTheme(theme).accent);
+      const result = await downloadSlidesPptx(editedSlides, theme as SlideTheme, displayTitle, accent, { format });
+      // The designed render needs headless Chromium on the server; if it failed, the server
+      // produced a text-only deck — say so instead of claiming it's the designed version.
+      if (format !== "editable" && result.renderedAs && result.renderedAs !== format) {
+        toast({
+          title: language === "ar" ? "تعذّر إنشاء النسخة المصممة" : "Designed version unavailable",
+          description: result.renderedAs === "text"
+            ? (language === "ar"
+                ? "تعذّر عرض التصميم على الخادم، لذلك تم تنزيل نسخة نصية بدلاً منه."
+                : "The server couldn't render the design, so a text-only deck was downloaded instead.")
+            : (language === "ar"
+                ? "تم تنزيل نسخة التصميم (صور) بدلاً من النسخة القابلة للتعديل."
+                : "Downloaded the designed (image) version instead of the editable one."),
+          variant: "destructive",
+        });
+        return;
+      }
       toast({
         title: language === "ar" ? "تم التحميل" : "Downloaded",
         description: format === "editable"
           ? (language === "ar" ? "نسخة نصية قابلة للتعديل." : "Editable text PowerPoint downloaded.")
           : format === "hybrid"
           ? (language === "ar" ? "تصميم + نص قابل للتعديل." : "Designed + editable text downloaded.")
-          : (language === "ar" ? "نسخة التصميم (صور)." : "Designed (image) PowerPoint downloaded."),
+          : (language === "ar" ? "نسخة التصميم — مطابقة تمامًا للعرض على الموقع." : "Designed PowerPoint downloaded — exactly as shown on the site."),
       });
     } catch (error: any) {
       toast({ title: "Error", description: error?.message, variant: "destructive" });
@@ -271,6 +288,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
             onClick={() => handleDownloadPPTX("image")}
             disabled={isDownloading || editedSlides.length === 0}
             className="rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 font-bold"
+            title={language === "ar" ? "مطابق تمامًا لما تراه على الموقع (كل شريحة صورة عالية الدقة)" : "Looks exactly like the web preview (each slide is a high-resolution image)"}
           >
             <Download className={cn("w-4 h-4", uiDir === "rtl" ? "ml-2" : "mr-2")} />
             {isDownloading ? "..." : (language === "ar" ? "تصميم (صور)" : "Designed")}
@@ -280,9 +298,9 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
             onClick={() => handleDownloadPPTX("hybrid")}
             disabled={isDownloading || editedSlides.length === 0}
             className="rounded-xl transition-all active:scale-95 font-bold"
-            title={language === "ar" ? "تصميم كامل مع نص قابل للتعديل في PowerPoint" : "Designed look with editable text on top"}
+            title={language === "ar" ? "نفس التصميم مع نص قابل للتعديل في PowerPoint (قد يختلف الخط قليلًا)" : "Same design with editable PowerPoint text on top (fonts may differ slightly)"}
           >
-            <Sparkles className={cn("w-4 h-4", uiDir === "rtl" ? "ml-2" : "mr-2")} />
+            <PenLine className={cn("w-4 h-4", uiDir === "rtl" ? "ml-2" : "mr-2")} />
             {language === "ar" ? "تصميم + تعديل" : "Designed + Editable"}
           </Button>
           <Button
@@ -302,7 +320,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
       <Collapsible open={isThemeOpen} onOpenChange={setIsThemeOpen} className="border rounded-2xl bg-card shadow-sm overflow-hidden border-border/50">
         <CollapsibleTrigger className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
           <div className={cn("flex items-center gap-3")}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/60 grid place-items-center text-white shadow">
+            <div className="w-9 h-9 rounded-xl bg-primary grid place-items-center text-white">
               <Palette className="w-5 h-5" />
             </div>
             <div className={uiDir === "rtl" ? "text-right" : "text-left"}>
@@ -315,11 +333,14 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="p-5 border-t border-border/50 bg-muted/5 space-y-5">
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
             {Object.entries(themeConfig).map(([key, c]: [any, any]) => (
               <button
                 key={key}
-                onClick={() => setTheme(key)}
+                onClick={() => {
+                  setTheme(key);
+                  if (!colorTouched) setCustomColor(getSlideTheme(key).accent || "#4A90D9");
+                }}
                 className={cn(
                   "relative p-2 rounded-xl border-2 transition-all",
                   theme === key ? "border-primary bg-primary/5 shadow-lg scale-105" : "border-border hover:border-primary/40",
@@ -349,7 +370,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
             <input
               type="color"
               value={customColor}
-              onChange={(e) => setCustomColor(e.target.value)}
+              onChange={(e) => { setCustomColor(e.target.value); setColorTouched(true); }}
               className="w-16 h-11 rounded-xl border-2 border-white cursor-pointer bg-transparent shadow"
             />
           </div>
@@ -376,6 +397,9 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
                 contentTextAlign={contentTextAlign}
                 language={language}
                 themeName={theme}
+                index={currentIndex}
+                total={editedSlides.length}
+                deckTitle={deckTitle}
                 isEditing={isEditing}
                 onUpdateTitle={handleUpdateSlideTitle}
                 onUpdateContent={handleUpdateSlideContent}
@@ -394,7 +418,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
 
       {/* Controls */}
       <div className={cn("flex items-center justify-between gap-4 max-w-4xl mx-auto")}>
-        <span className="text-sm font-bold text-muted-foreground tabular-nums">
+        <span className="text-sm font-bold text-muted-foreground tabular-nums" dir="ltr">
           {currentIndex + 1} / {editedSlides.length}
         </span>
         <div className={cn("flex gap-2")}>
@@ -433,11 +457,25 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
               editingSlideId !== null && "cursor-not-allowed",
             )}
           >
-            <div className={cn("w-full h-full p-2 flex flex-col text-left", conf.colors.bg)}>
-              <div className="h-1 w-2/3 rounded-full mb-1.5 shrink-0" style={{ backgroundColor: customColor }} />
-              <p className={cn("text-[7px] font-black leading-tight line-clamp-4", conf.colors.title)}>{s.title}</p>
+            {/* Real miniature of the slide (same renderer as the main preview), not an approximation. */}
+            <div className="w-full h-full pointer-events-none">
+              <SlideCanvas
+                slide={s}
+                conf={conf}
+                customColor={customColor}
+                contentDir={contentDir}
+                contentTextAlign={contentTextAlign}
+                language={language}
+                themeName={theme}
+                index={i}
+                total={editedSlides.length}
+                deckTitle={deckTitle}
+                isEditing={false}
+                onUpdateTitle={handleUpdateSlideTitle}
+                onUpdateContent={handleUpdateSlideContent}
+              />
             </div>
-            <span className="absolute bottom-1 right-1 text-[8px] font-black text-white bg-black/50 rounded px-1 leading-tight">
+            <span className="absolute bottom-1 end-1 text-[8px] font-bold text-white bg-black/55 rounded px-1 leading-tight tabular-nums">
               {i + 1}
             </span>
           </button>
@@ -472,6 +510,9 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
                   contentTextAlign={contentTextAlign}
                   language={language}
                   themeName={theme}
+                  index={currentIndex}
+                  total={editedSlides.length}
+                  deckTitle={deckTitle}
                   isEditing={false}
                   onUpdateTitle={handleUpdateSlideTitle}
                   onUpdateContent={handleUpdateSlideContent}
@@ -481,7 +522,7 @@ export function SlidesView({ slides, title, lectureId }: SlidesViewProps) {
               <NavButton dir="next" onClick={goNext} disabled={currentIndex === editedSlides.length - 1} />
             </div>
 
-            <span className="text-white/80 font-bold mt-5 tabular-nums">
+            <span className="text-white/80 font-bold mt-5 tabular-nums" dir="ltr">
               {currentIndex + 1} / {editedSlides.length}
             </span>
           </motion.div>
@@ -499,13 +540,16 @@ interface SlideCanvasProps {
   contentTextAlign: "left" | "right";
   language: string;
   themeName: string;
+  index: number;
+  total: number;
+  deckTitle: string;
   isEditing: boolean;
   onUpdateTitle: (id: number, value: string) => void;
   onUpdateContent: (id: number, value: string) => void;
 }
 
 const SLIDE_FONTS_IMPORT =
-  "@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;700;800&display=swap');";
+  "@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Noto+Naskh+Arabic:wght@400;500;700&display=swap');";
 
 // Preview canvas — renders the SAME shared <SlideView/> the server rasterizes for the
 // PPTX (scaled to fit), so what you see is exactly what you get.
@@ -514,6 +558,9 @@ function SlideCanvas({
   customColor,
   language,
   themeName,
+  index,
+  total,
+  deckTitle,
   isEditing,
   onUpdateTitle,
   onUpdateContent,
@@ -522,7 +569,7 @@ function SlideCanvas({
   const slideRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
-  const accent = resolveAccent(customColor);
+  const accent = resolveAccent(customColor, getSlideTheme(themeName).accent);
   const css = useMemo(() => SLIDE_FONTS_IMPORT + slidesCss(getSlideTheme(themeName), accent), [themeName, accent]);
 
   // Scale the fixed 1280px slide down to the container width.
@@ -536,20 +583,39 @@ function SlideCanvas({
     return () => ro.disconnect();
   }, []);
 
+  // Fit the slide's content to its box (same engine the PPTX export runs), re-running
+  // once fonts, images and Mermaid diagrams have settled.
+  const refit = () => {
+    const el = slideRef.current?.querySelector<HTMLElement>(".slide");
+    if (el) fitSlideElement(el);
+  };
+  useLayoutEffect(() => {
+    if (isEditing) return;
+    refit();
+    let cancelled = false;
+    (document as any).fonts?.ready?.then(() => { if (!cancelled) refit(); });
+    const imgs = Array.from(slideRef.current?.querySelectorAll("img") || []);
+    imgs.forEach((img) => { if (!img.complete) img.addEventListener("load", refit, { once: true }); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slide, css, isEditing, deckTitle, index, total]);
+
   // Upgrade any Mermaid diagram in the previewed slide.
   useEffect(() => {
     if (slide.visual?.type !== "mermaid" || !slideRef.current) return;
     let cancelled = false;
-    import("mermaid").then((m) => {
+    import("mermaid").then(async (m) => {
       if (cancelled) return;
       const M = m.default;
       try {
         M.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
         const nodes = slideRef.current?.querySelectorAll<HTMLElement>(".mermaid[data-slide-mermaid]");
-        if (nodes && nodes.length) M.run({ nodes: Array.from(nodes) });
+        if (nodes && nodes.length) await M.run({ nodes: Array.from(nodes) });
+        if (!cancelled) refit();
       } catch { /* leave raw on failure */ }
     });
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slide]);
 
   if (isEditing) {
@@ -579,14 +645,18 @@ function SlideCanvas({
   }
 
   return (
-    <div ref={wrapRef} className="relative w-full h-full overflow-hidden">
+    // The canvas is always laid out LTR and anchored top-left: the slide's own `dir` handles
+    // Arabic content. (Anchoring with inset-inline-start in an RTL page put the 1280px slide
+    // at the right edge while scaling toward the left — pushing it out of frame and leaving
+    // a large empty area whenever the UI was in Arabic.)
+    <div ref={wrapRef} className="relative w-full h-full overflow-hidden" dir="ltr">
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div
         ref={slideRef}
-        style={{ position: "absolute", top: 0, insetInlineStart: 0, transform: `scale(${scale})`, transformOrigin: "top left" }}
+        style={{ position: "absolute", top: 0, left: 0, width: SLIDE_W, transform: `scale(${scale})`, transformOrigin: "top left" }}
       >
         <div className="slide-root">
-          <SlideView slide={slide as any} index={(slide.id ?? 1) - 1} themeName={themeName} />
+          <SlideView slide={slide as any} index={index} total={total} deckTitle={deckTitle} themeName={themeName} />
         </div>
       </div>
     </div>
@@ -602,6 +672,9 @@ function _LegacySlideCanvasUnused({
   contentTextAlign,
   language,
   themeName,
+  index,
+  total,
+  deckTitle,
   isEditing,
   onUpdateTitle,
   onUpdateContent,

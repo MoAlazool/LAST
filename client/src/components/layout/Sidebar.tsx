@@ -67,7 +67,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-medium transition-all duration-200 cursor-pointer group no-underline",
                   isActive
-                    ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-[#F05A22] border border-[#F05A22]/10"
+                    ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-primary border border-primary/10"
                     : "text-muted-foreground hover:bg-[#F9F9F9] hover:text-[#111827]"
                 )}
               >
@@ -76,7 +76,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                   className={cn(
                     "shrink-0 transition-colors",
                     isActive
-                      ? "text-[#F05A22]"
+                      ? "text-primary"
                       : "text-muted-foreground group-hover:text-[#111827]"
                   )}
                 />
@@ -101,7 +101,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[14px] font-medium transition-all duration-200 cursor-pointer group",
                       isActive
-                        ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-[#F05A22] border border-[#F05A22]/10"
+                        ? "bg-white shadow-[0_4px_20px_rgba(240,90,34,0.06)] text-primary border border-primary/10"
                         : "text-muted-foreground hover:bg-[#F9F9F9] hover:text-[#111827]",
                       isRTL ? "text-right" : "flex-row"
                     )}
@@ -109,7 +109,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
                     <span
                       className={cn(
                         "material-symbols-outlined text-[20px] shrink-0 transition-colors",
-                        isActive ? "text-[#F05A22]" : "text-muted-foreground group-hover:text-[#111827]"
+                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-[#111827]"
                       )}
                     >
                       {item.icon}
@@ -124,7 +124,7 @@ export function SidebarContent({ currentTab, lectureNav }: { currentTab?: string
               <button
                 onClick={lectureNav.onBack}
                 className={cn(
-                  "mt-4 w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 cursor-pointer border border-[#F05A22]/20 text-[#F05A22] hover:bg-[#F05A22] hover:text-white hover:border-[#F05A22] group",
+                  "mt-4 w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 cursor-pointer border border-primary/20 text-primary hover:bg-primary hover:text-white hover:border-primary group",
                   isRTL ? "text-right" : "flex-row"
                 )}
               >

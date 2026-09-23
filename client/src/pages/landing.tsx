@@ -1,11 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, useScroll, useTransform } from "framer-motion";
-import {
-  FileText, Sparkles, BrainCircuit, Bot, HelpCircle, Layers,
-  Stethoscope, CircuitBoard, Presentation, Upload, Cpu, GraduationCap,
-  ArrowRight, Globe, Check, Play, Star, Pill, Code2,
-} from "lucide-react";
+import { FileText, Sparkles, BrainCircuit, Bot, HelpCircle, Layers, Stethoscope, CircuitBoard, Presentation, Upload, Cpu, GraduationCap, ArrowRight, Globe, Check, Play, Star, Pill, Code2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -128,19 +124,19 @@ export default function Landing() {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 w-full">
           <div className={cn("flex items-center gap-2.5 mb-5")}>
-            <div className="w-8 h-8 rounded-xl bg-[#F05A22]/10 flex items-center justify-center"><Sparkles className="w-4 h-4 text-[#F05A22]" /></div>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><FileText className="w-4 h-4 text-primary" /></div>
             <div className="h-3 w-32 rounded-full bg-slate-800/80" />
           </div>
           <div className="space-y-3.5">
             {[92, 78, 96, 70, 85].map((w, i) => (
               <div key={i} className={cn("flex items-start gap-2.5")}>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#F05A22] mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                 <div className="h-2.5 rounded-full bg-slate-100" style={{ width: `${w}%` }} />
               </div>
             ))}
           </div>
           <div className="mt-5 flex gap-2">
-            <div className="h-6 w-20 rounded-lg bg-[#F05A22]/10" />
+            <div className="h-6 w-20 rounded-lg bg-primary/10" />
             <div className="h-6 w-16 rounded-lg bg-slate-100" />
           </div>
         </div>
@@ -155,7 +151,7 @@ export default function Landing() {
               <line x1="50%" y1="22%" x2="50%" y2="72%" stroke="#F05A22" strokeOpacity="0.3" strokeWidth="2" />
               <line x1="50%" y1="22%" x2="78%" y2="72%" stroke="#F05A22" strokeOpacity="0.3" strokeWidth="2" />
             </svg>
-            <div className="absolute top-[10%] left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-[#F05A22] text-white text-[11px] font-black shadow-lg">
+            <div className="absolute top-[10%] left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-primary text-white text-[11px] font-black shadow-lg">
               {isAr ? "الموضوع" : "Topic"}
             </div>
             {[isAr ? "مفهوم" : "Concept", isAr ? "مبدأ" : "Principle", isAr ? "تطبيق" : "Application"].map((n, i) => (
@@ -171,7 +167,7 @@ export default function Landing() {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-5 w-full space-y-3">
           <div className={cn("flex items-center gap-2 pb-3 border-b border-slate-100")}>
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#F05A22] to-[#f5793f] flex items-center justify-center"><Bot className="w-3.5 h-3.5 text-white" /></div>
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-primary to-[#f5793f] flex items-center justify-center"><Bot className="w-3.5 h-3.5 text-white" /></div>
             <span className="text-xs font-black text-slate-800">AI Agent</span>
             <span className="ml-auto inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Online</span>
           </div>
@@ -179,14 +175,14 @@ export default function Landing() {
             <div className="h-2 w-40 rounded-full bg-slate-200" />
             <div className="h-2 w-28 rounded-full bg-slate-200" />
           </div>
-          <div className={cn("max-w-[80%] rounded-2xl bg-[#F05A22] p-3 space-y-1.5", isRTL ? "ml-auto" : "ml-auto")}>
+          <div className={cn("max-w-[80%] rounded-2xl bg-primary p-3 space-y-1.5", isRTL ? "ml-auto" : "ml-auto")}>
             <div className="h-2 w-32 rounded-full bg-white/50" />
             <div className="h-2 w-20 rounded-full bg-white/50" />
           </div>
           <div className={cn("flex items-center gap-1 px-2")}>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F05A22]/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
         </div>
       );
@@ -195,13 +191,13 @@ export default function Landing() {
       return (
         <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-5 w-full">
           <div className={cn("flex items-center gap-2.5 mb-4")}>
-            <div className="w-8 h-8 rounded-xl bg-[#F05A22]/10 flex items-center justify-center"><Stethoscope className="w-4 h-4 text-[#F05A22]" /></div>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Stethoscope className="w-4 h-4 text-primary" /></div>
             <div className="h-3 w-28 rounded-full bg-slate-800/80" />
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
             <div className={cn("flex items-center justify-between")}>
-              <span className="text-[9px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 px-2 py-0.5 rounded">{isAr ? "مضاد حيوي" : "Antibiotic"}</span>
-              <Pill className="w-4 h-4 text-[#F05A22]" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">{isAr ? "مضاد حيوي" : "Antibiotic"}</span>
+              <Pill className="w-4 h-4 text-primary" />
             </div>
             <div className="h-3 w-32 rounded-full bg-slate-700/70" />
             <div className="h-2 w-full rounded-full bg-slate-200" />
@@ -224,21 +220,21 @@ export default function Landing() {
     if (k === "engineering") {
       const lines = [
         { ind: 0, w: "55%", c: "bg-slate-500" },
-        { ind: 0, w: "70%", c: "bg-[#F05A22]/70" },
+        { ind: 0, w: "70%", c: "bg-primary/70" },
         { ind: 1, w: "60%", c: "bg-sky-400/70" },
         { ind: 1, w: "48%", c: "bg-emerald-400/70" },
         { ind: 0, w: "30%", c: "bg-slate-600" },
-        { ind: 0, w: "65%", c: "bg-[#F05A22]/70" },
+        { ind: 0, w: "65%", c: "bg-primary/70" },
         { ind: 1, w: "52%", c: "bg-sky-400/70" },
       ];
       return (
         <div className="rounded-2xl bg-[#1E293B] border border-slate-700 shadow-[0_20px_60px_rgba(0,0,0,0.18)] overflow-hidden w-full" dir="ltr">
           <div className="h-9 bg-[#0F172A] border-b border-slate-700 flex items-center justify-between px-3">
             <div className="flex items-center gap-2">
-              <Code2 className="w-3.5 h-3.5 text-[#F05A22]" />
+              <Code2 className="w-3.5 h-3.5 text-primary" />
               <span className="text-[10px] font-mono text-slate-400">blink.ino</span>
             </div>
-            <span className="text-[8px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/15 px-1.5 py-0.5 rounded">arduino</span>
+            <span className="text-[8px] font-black uppercase tracking-wider text-primary bg-primary/15 px-1.5 py-0.5 rounded">arduino</span>
           </div>
           <div className="p-4 space-y-2.5 font-mono">
             {lines.map((l, i) => (
@@ -255,7 +251,7 @@ export default function Landing() {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-6 w-full">
         <div className={cn("flex items-center justify-between mb-4")}>
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#F05A22]">{isAr ? "السؤال ٢ / ١٠" : "Question 2 / 10"}</span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-primary">{isAr ? "السؤال ٢ / ١٠" : "Question 2 / 10"}</span>
           <span className="text-[10px] font-bold text-slate-400">00:24</span>
         </div>
         <div className="h-3 w-3/4 rounded-full bg-slate-800/80 mb-5" />
@@ -279,8 +275,8 @@ export default function Landing() {
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#FAFAF8]/80 border-b border-slate-200/60">
         <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between")}>
           <Link href="/landing" className={cn("flex items-center gap-2.5 no-underline")}>
-            <div className="w-9 h-9 rounded-xl bg-[#F05A22] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#F05A22]/20">L</div>
-            <span className="text-lg font-black tracking-tight">Lecture<span className="text-[#F05A22]">Mate</span></span>
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20">L</div>
+            <span className="text-lg font-black tracking-tight">Lecture<span className="text-primary">Mate</span></span>
           </Link>
           <nav className={cn("hidden md:flex items-center gap-8")}>
             <a href="#features" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors no-underline">{t.navFeatures}</a>
@@ -288,11 +284,11 @@ export default function Landing() {
             <a href="#how" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors no-underline">{t.navHow}</a>
           </nav>
           <div className={cn("flex items-center gap-2.5")}>
-            <button onClick={toggleLanguage} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 border border-slate-200 rounded-full px-3 py-1.5 hover:border-[#F05A22]/40 hover:text-[#F05A22] transition-colors">
+            <button onClick={toggleLanguage} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 border border-slate-200 rounded-full px-3 py-1.5 hover:border-primary/40 hover:text-primary transition-colors">
               <Globe className="w-3.5 h-3.5" />{isAr ? "EN" : "عربي"}
             </button>
             <Link href="/sign-in" className="hidden sm:inline-block text-sm font-bold text-slate-600 hover:text-slate-900 px-3 py-2 no-underline">{t.signIn}</Link>
-            <Link href="/sign-up" className="inline-flex items-center gap-1.5 text-sm font-black bg-slate-900 hover:bg-[#F05A22] text-white px-4 py-2 rounded-full shadow-lg shadow-slate-900/10 transition-all no-underline">
+            <Link href="/sign-up" className="inline-flex items-center gap-1.5 text-sm font-black bg-slate-900 hover:bg-primary text-white px-4 py-2 rounded-full shadow-lg shadow-slate-900/10 transition-all no-underline">
               {t.getStarted}
             </Link>
           </div>
@@ -301,21 +297,21 @@ export default function Landing() {
 
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[#F05A22]/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-16 relative">
           <div className="max-w-3xl mx-auto text-center">
             <motion.span
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] text-[#F05A22] bg-[#F05A22]/10 border border-[#F05A22]/20 rounded-full px-4 py-1.5"
+              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5"
             >
-              <Sparkles className="w-3.5 h-3.5" /> {t.heroTag}
+              {t.heroTag}
             </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               className="mt-6 text-4xl sm:text-6xl font-black tracking-tight leading-[1.05]"
             >
               {t.heroTitleA}{" "}
-              <span className="relative inline-block text-[#F05A22]">
+              <span className="relative inline-block text-primary">
                 {t.heroTitleHi}
                 <svg className="absolute -bottom-2 left-0 w-full" height="10" viewBox="0 0 200 10" preserveAspectRatio="none">
                   <path d="M2,7 Q100,1 198,7" fill="none" stroke="#F05A22" strokeWidth="3" strokeOpacity="0.35" strokeLinecap="round" />
@@ -332,7 +328,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
               className={cn("mt-9 flex flex-col sm:flex-row items-center justify-center gap-3")}
             >
-              <Link href="/sign-up" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-[#F05A22] text-white font-black text-base px-7 py-3.5 rounded-full shadow-xl shadow-slate-900/15 transition-all active:scale-95 no-underline">
+              <Link href="/sign-up" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-primary text-white font-black text-base px-7 py-3.5 rounded-full shadow-xl shadow-slate-900/15 transition-all active:scale-95 no-underline">
                 {t.ctaPrimary}
                 <ArrowRight className={cn("w-5 h-5", isRTL && "rotate-180")} />
               </Link>
@@ -362,7 +358,7 @@ export default function Landing() {
                     initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.05 }}
                     className="rounded-2xl border border-slate-100 bg-white p-4 flex flex-col gap-2 shadow-sm"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-[#F05A22]/10 flex items-center justify-center text-[#F05A22]"><f.icon className="w-4 h-4" /></div>
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><f.icon className="w-4 h-4" /></div>
                     <span className="text-[12px] font-black text-slate-700 leading-tight">{f.title}</span>
                   </motion.div>
                 ))}
@@ -394,9 +390,9 @@ export default function Landing() {
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: (i % 4) * 0.06 }}
-                className="group rounded-[24px] border border-slate-200/70 bg-white p-6 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:border-[#F05A22]/30 transition-all"
+                className="group rounded-[24px] border border-slate-200/70 bg-white p-6 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:border-primary/30 transition-all"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#F05A22]/10 flex items-center justify-center text-[#F05A22] group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                   <f.icon className="w-6 h-6" />
                 </div>
                 <h3 className="mt-5 text-lg font-black text-slate-900">{f.title}</h3>
@@ -411,7 +407,7 @@ export default function Landing() {
       <section id="showcase" className="py-20 sm:py-28 bg-white border-y border-slate-200/60 overflow-hidden">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16 sm:mb-24">
-            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] text-[#F05A22] bg-[#F05A22]/10 rounded-full px-4 py-1.5">
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] text-primary bg-primary/10 rounded-full px-4 py-1.5">
               <Play className="w-3.5 h-3.5" /> {isAr ? "جولة سريعة" : "Product tour"}
             </span>
             <h2 className="mt-5 text-3xl sm:text-4xl font-black tracking-tight">{t.showcaseTitle}</h2>
@@ -422,7 +418,7 @@ export default function Landing() {
           <div ref={timelineRef} className="relative">
             {/* center spine (desktop) */}
             <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-slate-200/80 rounded-full">
-              <motion.div style={{ scaleY: spineScale }} className="origin-top w-full h-full bg-gradient-to-b from-[#F05A22] to-[#f5793f] rounded-full" />
+              <motion.div style={{ scaleY: spineScale }} className="origin-top w-full h-full bg-gradient-to-b from-primary to-[#f5793f] rounded-full" />
             </div>
 
             <div className="space-y-20 sm:space-y-28">
@@ -441,7 +437,7 @@ export default function Landing() {
                       whileInView={{ scale: 1, opacity: 1 }}
                       viewport={{ once: true, margin: "-30% 0px -30% 0px" }}
                       transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                      className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-14 h-14 rounded-full bg-white border-2 border-[#F05A22] text-[#F05A22] font-black text-sm items-center justify-center shadow-[0_8px_24px_rgba(240,90,34,0.25)]"
+                      className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-14 h-14 rounded-full bg-white border-2 border-primary text-primary font-black text-sm items-center justify-center shadow-[0_8px_24px_rgba(240,90,34,0.25)]"
                     >
                       {String(idx + 1).padStart(2, "0")}
                     </motion.div>
@@ -454,7 +450,7 @@ export default function Landing() {
                       transition={{ duration: 0.55, ease: "easeOut" }}
                       className={cn(flip && "lg:order-2", isRTL ? "text-right" : "text-left")}
                     >
-                      <div className={cn("inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-[#F05A22] bg-[#F05A22]/10 rounded-full px-3 py-1.5 mb-5")}>
+                      <div className={cn("inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-primary bg-primary/10 rounded-full px-3 py-1.5 mb-5")}>
                         <s.icon className="w-3.5 h-3.5" /> {s.tag}
                       </div>
                       <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight">{s.title}</h3>
@@ -477,7 +473,7 @@ export default function Landing() {
                       transition={{ duration: 0.55, ease: "easeOut", delay: 0.05 }}
                       className={cn("relative", flip && "lg:order-1")}
                     >
-                      <div className="absolute inset-0 -m-5 bg-gradient-to-br from-[#F05A22]/12 to-transparent rounded-[36px] blur-2xl pointer-events-none" />
+                      <div className="absolute inset-0 -m-5 bg-gradient-to-br from-primary/12 to-transparent rounded-[36px] blur-2xl pointer-events-none" />
                       <div className="relative">{renderMock(s.key)}</div>
                     </motion.div>
                   </div>
@@ -491,7 +487,7 @@ export default function Landing() {
       {/* HOW IT WORKS */}
       <section id="how" className="py-20 sm:py-24 bg-[#17120F] text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.5] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)", backgroundSize: "26px 26px" }} />
-        <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#F05A22]/15 blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 blur-[120px] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-5 sm:px-8 relative">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight">{t.howTitle}</h2>
@@ -503,7 +499,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="relative text-center"
               >
-                <div className="mx-auto w-16 h-16 rounded-3xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-[#F05A22] mb-6">
+                <div className="mx-auto w-16 h-16 rounded-3xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-primary mb-6">
                   <s.icon className="w-7 h-7" />
                 </div>
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 text-[80px] font-black text-white/[0.04] select-none leading-none">{i + 1}</span>
@@ -518,7 +514,7 @@ export default function Landing() {
       {/* FINAL CTA */}
       <section className="py-20 sm:py-28">
         <div className="max-w-4xl mx-auto px-5 sm:px-8">
-          <div className="relative rounded-[36px] bg-gradient-to-br from-[#F05A22] to-[#d4430f] text-white p-10 sm:p-16 text-center overflow-hidden shadow-[0_30px_80px_rgba(240,90,34,0.3)]">
+          <div className="relative rounded-[36px] bg-gradient-to-br from-primary to-[#d4430f] text-white p-10 sm:p-16 text-center overflow-hidden shadow-[0_30px_80px_rgba(240,90,34,0.3)]">
             <div className="absolute -top-16 -right-10 w-60 h-60 bg-white/10 rounded-full blur-2xl" />
             <div className="relative">
               <div className="flex justify-center gap-1 mb-5">
@@ -539,8 +535,8 @@ export default function Landing() {
       <footer className="border-t border-slate-200/60 py-10">
         <div className={cn("max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4")}>
           <div className={cn("flex items-center gap-2.5")}>
-            <div className="w-8 h-8 rounded-lg bg-[#F05A22] flex items-center justify-center text-white font-black">L</div>
-            <span className="font-black tracking-tight">Lecture<span className="text-[#F05A22]">Mate</span></span>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">L</div>
+            <span className="font-black tracking-tight">Lecture<span className="text-primary">Mate</span></span>
           </div>
           <p className="text-xs text-slate-400 font-medium">© {new Date().getFullYear()} LectureMate. {t.rights}</p>
         </div>

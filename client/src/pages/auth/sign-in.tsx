@@ -89,7 +89,7 @@ export default function SignIn() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 dir={isRTL ? "rtl" : "ltr"}
-                className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]", isRTL ? "pr-10" : "pl-10")}
+                className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary", isRTL ? "pr-10" : "pl-10")}
               />
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function SignIn() {
           <div className="space-y-2">
             <div className={cn("flex items-center justify-between")}>
               <Label htmlFor="password" className="text-sm font-bold text-slate-700">{t.password}</Label>
-              <Link href="#" className="text-xs font-bold text-[#F05A22] hover:underline">{t.forgotPassword}</Link>
+              <Link href="#" className="text-xs font-bold text-primary hover:underline">{t.forgotPassword}</Link>
             </div>
             <div className="relative">
               <Lock className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400", isRTL ? "right-3.5" : "left-3.5")} />
@@ -109,7 +109,7 @@ export default function SignIn() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 dir={isRTL ? "rtl" : "ltr"}
-                className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]", isRTL ? "pr-10 pl-10" : "pl-10 pr-10")}
+                className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary", isRTL ? "pr-10 pl-10" : "pl-10 pr-10")}
               />
               <button
                 type="button"
@@ -124,7 +124,7 @@ export default function SignIn() {
           <Button
             type="submit"
             disabled={isLoading || isGoogleLoading}
-            className="w-full h-12 rounded-xl bg-slate-900 hover:bg-[#F05A22] text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]"
+            className="w-full h-12 rounded-xl bg-slate-900 hover:bg-primary text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function SignIn() {
 
         <p className={cn("text-sm text-slate-500 mt-7 text-center font-medium")}>
           {t.noAccount}{" "}
-          <Link href="/sign-up" className="text-[#F05A22] hover:underline font-bold">{t.signUp}</Link>
+          <Link href="/sign-up" className="text-primary hover:underline font-bold">{t.signUp}</Link>
         </p>
       </div>
     </AuthShell>

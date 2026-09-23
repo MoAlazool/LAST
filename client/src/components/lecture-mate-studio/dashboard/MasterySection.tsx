@@ -44,15 +44,15 @@ export default function MasterySection() {
               isRTL ? "left-6 sm:left-10 text-right" : "right-6 sm:right-10 text-left"
             )}
           >
-            <h5 className="text-[#F05A22] font-bold mb-2 uppercase text-xs tracking-widest font-headline">
+            <h5 className="text-primary font-bold mb-2 uppercase text-xs tracking-widest font-headline">
               {t.dailyGoal}
             </h5>
             <p className="font-extrabold text-2xl mb-6 font-headline tracking-tight text-on-surface">
               {t.goalDesc}
             </p>
             <div className={cn("flex gap-2", isRTL ? "flex-row" : "flex-row")}>
-              <div className="h-1.5 flex-1 bg-[#F05A22] rounded-full" />
-              <div className="h-1.5 flex-1 bg-[#F05A22] rounded-full" />
+              <div className="h-1.5 flex-1 bg-primary rounded-full" />
+              <div className="h-1.5 flex-1 bg-primary rounded-full" />
               <div className="h-1.5 flex-1 bg-surface-container-low rounded-full" />
             </div>
           </motion.div>
@@ -76,7 +76,7 @@ export default function MasterySection() {
                 />
               </div>
               <div className={isRTL ? "text-right" : "text-left"}>
-                <p className="text-[10px] font-bold text-[#F05A22] uppercase tracking-widest font-headline">
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest font-headline">
                   {t.profTitle}
                 </p>
                 <p className="font-bold text-on-surface font-headline">
@@ -101,7 +101,7 @@ export default function MasterySection() {
             ) : (
               <>Ignite Mastery through <br /></>
             )}
-            <span className="text-[#F05A22] underline decoration-[#F05A22]/20 underline-offset-8">
+            <span className="text-primary underline decoration-primary/20 underline-offset-8">
               {t.titleSuffix}
             </span>
           </motion.h3>
@@ -118,7 +118,7 @@ export default function MasterySection() {
                 transition={{ delay: 0.6 + idx * 0.1 }}
                 className={cn("flex items-center gap-4 font-bold text-on-surface font-headline", isRTL ? "flex-row" : "flex-row")}
               >
-                <div className="bg-[#F05A22]/10 p-1 rounded-full text-[#F05A22]">
+                <div className="bg-primary/10 p-1 rounded-full text-primary">
                   <CheckCircle2 size={24} />
                 </div>
                 <span>{feature}</span>

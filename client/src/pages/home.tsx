@@ -655,7 +655,7 @@ export default function Home() {
     <AppLayout>
       <main className="relative pt-6 pb-16 lg:pt-14 lg:pb-24 overflow-hidden bg-[#f4f6f9]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
-          <div className="absolute top-[-8%] right-[-5%] w-[45%] max-w-xl h-[320px] bg-[#F05A22]/15 rounded-full blur-[100px]" />
+          <div className="absolute top-[-8%] right-[-5%] w-[45%] max-w-xl h-[320px] bg-primary/15 rounded-full blur-[100px]" />
           <div className="absolute bottom-[10%] left-[-8%] w-[40%] max-w-lg h-[280px] bg-blue-500/10 rounded-full blur-[90px]" />
         </div>
 
@@ -666,17 +666,17 @@ export default function Home() {
                 "text-center " + (language === "ar" ? "lg:text-right" : "lg:text-left")
               }
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F05A22]/10 text-[#F05A22] text-[10px] font-bold uppercase tracking-wider mb-6 border border-[#F05A22]/20">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider mb-6 border border-primary/20">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F05A22] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F05A22]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
                 {t.heroBadge}
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.08] mb-6 tracking-tight text-slate-900">
                 <span className="block text-slate-800">{t.heroTitleLine1}</span>
-                <span className="block text-[#F05A22] mt-1">{t.heroTitleLine2}</span>
+                <span className="block text-primary mt-1">{t.heroTitleLine2}</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
@@ -718,7 +718,7 @@ export default function Home() {
                       className={
                         "px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap " +
                         (selectedModel === "api"
-                          ? "bg-[#F05A22] text-white shadow-lg shadow-[#F05A22]/30"
+                          ? "bg-primary text-white shadow-lg shadow-primary/30"
                           : "bg-slate-800/90 text-slate-300 hover:bg-slate-700 border border-slate-600/50")
                       }
                     >
@@ -730,7 +730,7 @@ export default function Home() {
                       className={
                         "px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap " +
                         (selectedModel === "gpu"
-                          ? "bg-[#F05A22] text-white shadow-lg shadow-[#F05A22]/30"
+                          ? "bg-primary text-white shadow-lg shadow-primary/30"
                           : "bg-slate-800/90 text-slate-300 hover:bg-slate-700 border border-slate-600/50")
                       }
                     >
@@ -741,9 +741,9 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={handleUploadClick}
-                    className="group w-full cursor-pointer relative border-2 border-dashed border-slate-500/70 rounded-2xl p-8 sm:p-10 text-center transition-all hover:border-[#F05A22]/60 hover:bg-slate-800/40 bg-slate-800/30"
+                    className="group w-full cursor-pointer relative border-2 border-dashed border-slate-500/70 rounded-2xl p-8 sm:p-10 text-center transition-all hover:border-primary/60 hover:bg-slate-800/40 bg-slate-800/30"
                   >
-                    <div className="w-14 h-14 bg-[#F05A22]/15 text-[#F05A22] rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-transform ring-1 ring-orange-500/20">
+                    <div className="w-14 h-14 bg-primary/15 text-primary rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-transform ring-1 ring-primary/20">
                       <Upload className="w-7 h-7" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1.5">
@@ -784,7 +784,7 @@ export default function Home() {
                       <input
                         type="text"
                         className={
-                          "block w-full py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-sm text-white focus:ring-2 focus:ring-orange-500/40 focus:border-[#F05A22]/50 transition-all outline-none placeholder:text-slate-500 " +
+                          "block w-full py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-sm text-white focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all outline-none placeholder:text-slate-500 " +
                           (language === "ar"
                             ? "pr-11 pl-4 text-right"
                             : "pl-11 pr-4 text-left")
@@ -810,7 +810,7 @@ export default function Home() {
                               onChange={(e) => setEnableTimeRange(e.target.checked)} 
                               className="sr-only peer" 
                             />
-                            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F05A22]"></div>
+                            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             <span className={`text-xs font-bold text-slate-400 ${language === "ar" ? "mr-3" : "ml-3"}`}>{t.enableTimeRange}</span>
                           </label>
                         </div>
@@ -819,7 +819,7 @@ export default function Home() {
                           <div className="grid grid-cols-2 gap-4 animate-in zoom-in-95 duration-200">
                             {/* Start Time */}
                             <div className="space-y-2">
-                              <label className={`text-[10px] font-black tracking-widest text-[#F05A22] uppercase block ${language === "ar" ? "text-right" : "text-left"}`}>
+                              <label className={`text-[10px] font-black tracking-widest text-primary uppercase block ${language === "ar" ? "text-right" : "text-left"}`}>
                                 {t.startTime}
                               </label>
                               <div className="flex gap-2">
@@ -828,21 +828,21 @@ export default function Home() {
                                   placeholder={t.minutes}
                                   value={startMinutes}
                                   onChange={(e) => setStartMinutes(e.target.value)}
-                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-[#F05A22]/50" 
+                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/50" 
                                 />
                                 <input 
                                   type="number" 
                                   placeholder={t.seconds}
                                   value={startSeconds}
                                   onChange={(e) => setStartSeconds(e.target.value)}
-                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-[#F05A22]/50" 
+                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/50" 
                                 />
                               </div>
                             </div>
 
                             {/* End Time */}
                             <div className="space-y-2">
-                              <label className={`text-[10px] font-black tracking-widest text-[#F05A22] uppercase block ${language === "ar" ? "text-right" : "text-left"}`}>
+                              <label className={`text-[10px] font-black tracking-widest text-primary uppercase block ${language === "ar" ? "text-right" : "text-left"}`}>
                                 {t.endTime}
                               </label>
                               <div className="flex gap-2">
@@ -851,14 +851,14 @@ export default function Home() {
                                   placeholder={t.minutes}
                                   value={endMinutes}
                                   onChange={(e) => setEndMinutes(e.target.value)}
-                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-[#F05A22]/50" 
+                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/50" 
                                 />
                                 <input 
                                   type="number" 
                                   placeholder={t.seconds}
                                   value={endSeconds}
                                   onChange={(e) => setEndSeconds(e.target.value)}
-                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-[#F05A22]/50" 
+                                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/50" 
                                 />
                               </div>
                             </div>
@@ -870,7 +870,7 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={isAnalyzing || isCreating}
-                      className="w-full py-4 bg-gradient-to-r from-[#F05A22] to-[#F05A22] text-white font-bold rounded-xl shadow-lg shadow-orange-900/40 hover:brightness-105 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:brightness-100"
+                      className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-orange-900/40 hover:brightness-105 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:brightness-100"
                     >
                       {isAnalyzing || isCreating ? (
                         <div className="flex items-center gap-2">
@@ -888,7 +888,7 @@ export default function Home() {
                 </form>
               </div>
 
-              <div className="absolute -top-4 -right-4 w-28 h-28 bg-[#F05A22]/25 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-4 -right-4 w-28 h-28 bg-primary/25 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-8 -left-6 w-36 h-36 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
             </div>
           </div>

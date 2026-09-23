@@ -12,11 +12,13 @@ import { GoogleAIFileManager } from "@google/generative-ai/server";
 import pptxgen from "pptxgenjs";
 import multer from "multer";
 import os from "os";
+import { registerUsageRoutes } from "./lib/usage";
+import { generateGroundedSlides } from "./lib/slidePipeline";
 import { uploadAudioToFirebase, checkAudioExists, downloadAudioFromFirebase, uploadImageToFirebase, uploadDocumentToFirebase, isFirebaseAvailable } from "./firebaseStorage";
 import youtubedl from "youtube-dl-exec";
 import { lineHasMath, renderLineToPng } from "./lib/mathRender";
 import { injectFadeAnimations, injectSlideTransitions } from "./lib/pptxAnimations";
-import { renderSlidesToPngs, renderSlidesHybrid } from "./lib/slideRenderer";
+import { renderSlidesToPngs, renderSlidesHybrid, measureSlides } from "./lib/slideRenderer";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -288,6 +290,7 @@ export async function registerRoutes(
   app: Express,
 ): Promise<Server> {
   // put application routes here
+  registerUsageRoutes(app);
   // prefix all routes with /api
 
   // Serve the local uploads directory for fallback images/documents when Firebase fails
@@ -3854,7 +3857,7 @@ Text: ${text.substring(0, 25000)}`;
       const { transcript, summary, theme = "clean", mode, images } = req.body as {
         transcript?: string;
         summary?: string | string[];
-        theme?: "clean" | "dark" | "academic" | "vibrant";
+        theme?: string;
         mode?: "gpu" | "api";
         images?: { index?: number; description?: string; url?: string }[];
       };
@@ -3863,398 +3866,68 @@ Text: ${text.substring(0, 25000)}`;
         return res.status(400).json({ error: "Transcript is required" });
       }
 
-      // Real figures extracted from the uploaded lecture (offered to the AI to place + explain).
+      // Real figures extracted from the uploaded source (offered to the model to place + explain).
       const figures = (Array.isArray(images) ? images : [])
         .filter((im) => im && typeof im.index === "number" && typeof im.url === "string" && im.url)
         .slice(0, 12) as { index: number; description?: string; url: string }[];
 
       const isGpuMode = mode === "gpu";
-      const hasArabic = /[\u0600-\u06FF]/.test(transcript);
-      const language = hasArabic ? "Arabic" : "English";
-
-      // Priority 1: Ollama (GPU) if requested or Gemini not available
       const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434";
       const ollamaModel = process.env.OLLAMA_MODEL || "qwen2.5:14b";
-
-      if (isGpuMode || !process.env.GEMINI_API_KEY) {
-        try {
-          const ollamaCheck = await fetch(`${ollamaUrl}/api/tags`, {
-            method: "GET",
-            signal: AbortSignal.timeout(2000),
-          });
-
-          if (ollamaCheck.ok) {
-            console.log(`[API] Using Ollama model: ${ollamaModel} for slides generation`);
-
-            const slidesPrompt = language === "Arabic"
-              ? `??? ???? ????. ???? ????? JSON ?? ????????.
-
-??? ????: JSON ???. ???? markdown? ???? ???.
-
-???????:
-{ "lectureTitle": "?????", "slides": [{ "title": "????? 1", "bullets": ["???? 1", "???? 2"], "visualKeyword": "search term in English" }] }
-
-?????????:
-- 8-10 ?????
-- ?? ?????: ????? + 3-5 ????
-- ??? visualKeyword: ???? ??? ???????? ????? ??????? (????: "Artificial Intelligence", "DNA")
-- ???? ??? ??????? ????????
-- JSON ???? ?????
-
-????????:
-${transcript.substring(0, 25000)}
-
-???? JSON:`
-              : `You are an expert presentation designer. Create a professional slide deck.
-
-Required JSON Format:
-{
-  "lectureTitle": "Title",
-  "slides": [
-    {
-      "title": "Slide Title",
-      "bullets": ["Point 1", "Point 2"],
-      "visualKeyword": "Specific English search term for an image representing this slide",
-      "notes": "Notes"
-    }
-  ]
-}
-
-Quality Guidelines:
-1. Number of slides: 10 slides.
-2. Each slide must have a unique, specific "visualKeyword" (e.g., "stethoscpoe", "server rack").
-3. Coverage: Comprehensive coverage of the lecture.
-
-Lecture Transcript:
-${transcript.substring(0, 30000)}`;
-
-            const ollamaResponse = await fetch(`${ollamaUrl}/api/generate`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: ollamaModel,
-                prompt: slidesPrompt,
-                stream: false,
-                options: {
-                  temperature: 0.2,
-                  top_k: 50,
-                  top_p: 0.95,
-                  repeat_penalty: 1.15,
-                  num_predict: 7000,  // More tokens for rich, designed slides
-                  num_ctx: 16384,
-                },
-              }),
-            });
-
-            if (ollamaResponse.ok) {
-              const ollamaData = await ollamaResponse.json();
-              const aiResponseRaw = (ollamaData.response || "").trim();
-
-              console.log("[API] Ollama slides response length:", aiResponseRaw.length);
-
-              // Clean and parse JSON
-              let cleanedResponse = aiResponseRaw
-                .replace(/```json\n?/gi, "")
-                .replace(/```/g, "")
-                .trim();
-
-              const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                cleanedResponse = jsonMatch[0];
-              }
-
-              try {
-                const parsedResponse = JSON.parse(cleanedResponse);
-
-                if (parsedResponse.slides && Array.isArray(parsedResponse.slides) && parsedResponse.slides.length > 0) {
-                  // Format slides and fetch images in parallel
-                  const formattedSlides = await Promise.all(parsedResponse.slides.map(async (slide: any, index: number) => {
-                    const title = slide.title || (language === "Arabic" ? `????? ${index + 1}` : `Slide ${index + 1}`);
-                    const keyword = slide.imageKeyword || slide.visualKeyword || title;
-                    
-                    // Fetch image from Pexels API
-                    let finalUrl = null;
-                    try {
-                      const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=1&orientation=landscape`, {
-                        headers: { Authorization: process.env.PEXELS_API_KEY || "NzhhF45UoWw3m4FpPInO5XhPzQZ6N9dAY77a56v7FMB2974R34aXwIih" }
-                      });
-                      if (res.ok) {
-                        const data = await res.json() as any;
-                        if (data.photos && data.photos.length > 0) {
-                          finalUrl = data.photos[0].src.large2x || data.photos[0].src.large;
-                        }
-                      }
-                    } catch (e) {
-                      console.warn("Pexels failed for fallback", e);
-                    }
-                    const imageResult = finalUrl ? { base64: null, type: 'url', url: finalUrl } : null;
-
-                    return {
-                      id: index + 1,
-                      title: title,
-                      content: Array.isArray(slide.bullets) ? slide.bullets : (slide.bullets ? [slide.bullets] : []),
-                      notes: slide.notes || "",
-                      imageUrl: imageResult ? imageResult.url : null
-                    };
-                  }));
-
-                  console.log(`[API] Ollama slides generated: ${formattedSlides.length} slides`);
-
-                  return res.json({
-                    lectureTitle: parsedResponse.lectureTitle || (language === "Arabic" ? "????? ????????" : "Lecture Slides"),
-                    language,
-                    theme,
-                    slides: formattedSlides,
-                  });
-                }
-              } catch (parseError: any) {
-                console.warn("[API] Failed to parse Ollama slides JSON:", parseError.message);
-                // In GPU mode, don't fall back to Gemini - return error
-                if (isGpuMode) {
-                  return res.status(500).json({
-                    error: "Failed to generate slides with Ollama (JSON parsing error)",
-                    details: "Please try again or use API mode",
-                  });
-                }
-                // Fall through to Gemini only if not in GPU mode
-              }
-            }
-          }
-        } catch (ollamaError: any) {
-          console.error("[API] Ollama slides generation failed:", ollamaError.message);
-          // In GPU mode, return error instead of falling back
-          if (isGpuMode) {
-            return res.status(500).json({
-              error: "Ollama is not available for slides generation",
-              details: "Please ensure Ollama is running or use API mode",
-            });
-          }
-          // Fall through to Gemini only if not in GPU mode
-        }
-      }
-
-      // Priority 2: Gemini API (only if not GPU mode)
-      if (isGpuMode) {
-        // Should not reach here, but just in case
-        return res.status(500).json({
-          error: "GPU mode slides generation failed",
-          details: "Please check Ollama or use API mode",
-        });
-      }
-
       const geminiApiKey = process.env.GEMINI_API_KEY;
-      if (!geminiApiKey) {
+
+      // One model interface for the pipeline: Ollama in GPU mode (or when Gemini isn't configured),
+      // Gemini otherwise. Both get the same grounded prompt and the same validation afterwards.
+      const useOllama = isGpuMode || !geminiApiKey;
+      if (!useOllama && !geminiApiKey) {
         return res.status(500).json({ error: "Gemini API key not configured" });
       }
-
-      const genAI = new GoogleGenerativeAI(geminiApiKey);
-
-      // Use gemini-3.5-flash (most reliable and widely available)
-      const model = genAI.getGenerativeModel({
-        model: "gemini-3.5-flash",
-        generationConfig: {
-          temperature: 0.3,
-          topP: 0.9,
-          maxOutputTokens: 8192,
-        },
-      });
-
-      console.log(`[API] Using Gemini model: gemini-3.5-flash for ${language} language`);
-
-      // ── SLIDES_PROMPT (rich, designer-grade decks; auto language detection) ──
-      const SLIDES_SYSTEM_PROMPT = `You are a world-class presentation designer (think the polish of a Claude-designed deck).
-Turn the content into a beautiful, information-RICH slide deck. Return ONLY a valid JSON array — no markdown, no backticks, no prose before/after.
-
-==== GOAL ====
-- Slides must be SPECIFIC and substantive: real definitions, concrete examples, key numbers, formulas, comparisons — NEVER vague filler like "this is important" or "we will discuss".
-- VARY the layout: choose the BEST "type" for each slide's content. A good deck mixes intro, cards, process, comparison, stats, a diagram, bullets, and a summary. Do NOT make every slide a plain bullet list.
-- Every non-title slide should have a short "lead": one punchy sentence under the title that frames the idea.
-
-==== LANGUAGE ====
-- Auto-detect. Arabic → formal Arabic (فصحى), direction "rtl". English → professional English, direction "ltr". Never mix languages on a slide.
-
-==== COUNT ====
-- 6–18 slides based on depth. Each slide = ONE focused idea.
-
-==== MATH (IMPORTANT) ====
-- Wrap every formula/variable/symbol in LaTeX: inline $...$  (e.g. $I = V/R$), display $$...$$ (e.g. $$E = mc^2$$).
-- Use real LaTeX ($\\frac{dV}{dt}$, $\\sum_{i=1}^{n} x_i$, $\\Omega$, $\\mu$), not words. For technical topics INCLUDE the real equations. LaTeX is the only place symbols are allowed; keep all other text clean (no emojis/markdown/asterisks).
-
-==== ICONS ====
-- Where a field accepts "icon", give a short ENGLISH keyword for a relevant icon (e.g. "cpu", "circuit", "power", "memory", "code", "process", "idea", "formula", "atom", "heart", "data", "speed", "warning", "check", "settings", "layers", "network", "battery", "signal", "book", "target", "clock"). Omit if none fits.
-
-==== SLIDE TYPES (pick the best per slide; mix them) ====
-"intro"      → first slide. { title, subtitle }
-"section"    → divider between parts. { title, subtitle? }
-"bullets"    → key points. { title, lead?, bullets: [{ text, icon? }] (3–6), callout?: { label?, text } }  — callout = one highlighted key takeaway/definition.
-"cards"      → 2–4 parallel items (features, components, types). { title, lead?, cards: [{ icon?, title, text }] }
-"process"    → ordered steps / pipeline / procedure. { title, lead?, steps: [{ title, text }] (3–6) }
-"timeline"   → chronological steps. same shape as process.
-"stats"      → 2–4 key numbers. { title, lead?, stats: [{ value, label }] }
-"comparison" → two sides. { title, lead?, left_label, right_label, left_points[], right_points[] }
-"diagram"    → a visual is the point. { title, lead?, visual: { type, code, caption? } }
-"figure"     → a REAL image extracted from THIS lecture is the point. { title, lead?, imageRef: <index from AVAILABLE FIGURES>, bullets: [{ text }] (2–4 that EXPLAIN what the figure shows) }
-"code"       → a real code snippet from the lecture. { title, lead?, code: "<verbatim code, ≤ ~18 lines>", codeLanguage: "python"|"cpp"|"c"|"javascript"|"java"|"arduino"|..., bullets?: [{ text }] (2–3 explaining it) }
-"quote"      → one impactful line. { title?, quote }
-"summary"    → last slide. { title, bullets: [{ text, icon? }] (takeaways) }
-
-==== REAL LECTURE MEDIA (figures, code, equations) ====
-- Most slides have NO figure and NO code — keep the deck a VARIED MIX where each slide uses the layout that best fits its content. Do NOT force an image or code onto every slide; no padding.
-- Insert a "figure" slide ONLY where a real image from AVAILABLE FIGURES genuinely aids understanding; reference it by its index via "imageRef". Use each figure AT MOST once, and SKIP decorative/cover/logo images. If no figures are listed below, do not use the "figure" type.
-- Insert a "code" slide ONLY when the lecture actually contains code worth explaining; copy the code verbatim — never invent code. Keep snippets short.
-- Surface real equations as LaTeX ($...$ / $$...$$) per the MATH rules — that is the preferred way to show formulas, NOT as images.
-
-==== DIAGRAMS (optional, only where a picture truly helps; ~1–3 per deck) ====
-- Add a "visual" to a "diagram" slide (or to a "bullets" slide) as { "type": "svg"|"mermaid", "code": "...", "caption": "..." }.
-- Prefer "svg": ONE self-contained <svg> with a viewBox, simple shapes + <text> labels, no scripts/external refs, under ~2.5KB. JSON-escape quotes in code (use \\").
-- "mermaid" allowed for flows/relationships: SIMPLE syntax only (graph TD; A-->B), nodes/edges/labels — NO style/classDef/colors.
-- Captions and any labels in the deck's language.
-
-==== TEXT LIMITS ====
-- title ≤ 8 words (ar) / 10 (en). lead ≤ 16 words. bullet/point ≤ 22 words. card.text ≤ 24 words. step.text ≤ 20 words. speaker_notes ≤ 60 words.
-
-==== OUTPUT ====
-Return ONLY the JSON array. Start with [ and end with ]. Each object MUST include "type" and (for non-quote) "title", plus "speaker_notes", "direction", "language".`;
-
-      const figuresBlock = figures.length
-        ? `\n\n==== AVAILABLE FIGURES (real images extracted from THIS lecture; reference by index) ====\n` +
-          figures.map((f) => `[${f.index}] ${f.description || "(no description)"}`).join("\n")
-        : "";
-
-      const prompt = `${SLIDES_SYSTEM_PROMPT}${figuresBlock}
-
-Lecture content to convert into slides:
-${transcript.substring(0, 30000)}`;
-
-      const aiResponseRaw = await callGeminiWithRetry(genAI, prompt, "gemini-3.5-flash");
-
-      console.log("[API] Raw AI response length:", aiResponseRaw.length);
-      console.log("[API] Raw AI response preview:", aiResponseRaw.substring(0, 200));
-
-      const cleanedResponse = aiResponseRaw.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
-
-      // New format: a raw JSON array of typed slide objects
-      let rawSlides: any[] = [];
-      try {
-        const strictCleaned = cleanGeminiJson(aiResponseRaw);
-        const parsed = JSON.parse(strictCleaned);
-        // Accept both array directly (new spec) and legacy { slides: [...] } object
-        rawSlides = Array.isArray(parsed) ? parsed : (parsed.slides || []);
-      } catch (parseError: any) {
-        console.warn("[API] Failed to parse slides JSON:", parseError);
-        // Fallback: try to extract array with regex
-        const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/);
-        if (arrayMatch) {
-          try { rawSlides = JSON.parse(arrayMatch[0]); } catch {}
+      const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
+      const callModel = async (prompt: string, json: boolean): Promise<string> => {
+        if (useOllama) {
+          const r = await fetch(`${ollamaUrl}/api/generate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: ollamaModel, prompt, stream: false, ...(json ? { format: "json" } : {}),
+              options: { temperature: 0.2, top_p: 0.9, num_predict: 8000, num_ctx: 32768 },
+            }),
+            signal: AbortSignal.timeout(300000),
+          });
+          if (!r.ok) throw new Error(`Ollama error ${r.status}`);
+          const d: any = await r.json();
+          return String(d.response || "");
         }
-        if (!rawSlides.length) {
-          return res.status(500).json({ error: "Invalid slides format from AI", rawResponse: cleanedResponse.substring(0, 500) });
-        }
-      }
-
-      if (!Array.isArray(rawSlides) || rawSlides.length === 0) {
-        return res.status(500).json({ error: "No slides returned by AI" });
-      }
-
-      // Normalize the rich slide schema to a unified shape (preserves new fields).
-      const VALID_TYPES = ["intro", "section", "bullets", "content", "cards", "process", "timeline", "stats", "comparison", "diagram", "figure", "code", "quote", "summary"];
-      const cleanStr = (v: any) => (v == null ? undefined : String(v).trim() || undefined);
-      const normBullets = (s: any): { text: string; icon?: string }[] => {
-        const raw = Array.isArray(s.bullets) ? s.bullets : (Array.isArray(s.content) ? s.content : []);
-        return raw
-          .map((b: any) => (typeof b === "string"
-            ? { text: b.trim() }
-            : (b && b.text ? { text: String(b.text).trim(), icon: cleanStr(b.icon) } : null)))
-          .filter((b: any) => b && b.text);
+        return callGeminiWithRetry(genAI, prompt, "gemini-3.5-flash", 3, 0.2, json ? "application/json" : undefined);
       };
-      const validatedSlides = rawSlides
-        .filter((s: any) => s && (s.title || s.quote || s.subtitle || (s.bullets?.length) || (s.cards?.length)))
-        .map((s: any, idx: number) => {
-          const slideType = VALID_TYPES.includes(s.type) ? (s.type === "content" ? "bullets" : s.type) : "bullets";
-          const bullets = normBullets(s);
-          const visual = s.visual && s.visual.code
-            ? { type: s.visual.type === "mermaid" ? "mermaid" : "svg", code: String(s.visual.code), caption: cleanStr(s.visual.caption) }
-            : undefined;
-          return {
-            type:         slideType,
-            slide_number: s.slide_number || idx + 1,
-            title:        cleanStr(s.title) || "",
-            lead:         cleanStr(s.lead),
-            subtitle:     cleanStr(s.subtitle),
-            quote:        cleanStr(s.quote),
-            bullets,
-            content:      bullets.map((b) => b.text), // legacy mirror (string[])
-            callout:      s.callout && s.callout.text ? { label: cleanStr(s.callout.label), text: String(s.callout.text).trim() } : undefined,
-            cards:        Array.isArray(s.cards) ? s.cards.slice(0, 4).map((c: any) => ({ icon: cleanStr(c.icon), title: cleanStr(c.title) || "", text: cleanStr(c.text) || "" })).filter((c: any) => c.title || c.text) : undefined,
-            steps:        Array.isArray(s.steps) ? s.steps.slice(0, 6).map((st: any) => ({ title: cleanStr(st.title) || "", text: cleanStr(st.text) })).filter((st: any) => st.title || st.text) : undefined,
-            stats:        Array.isArray(s.stats) ? s.stats.slice(0, 4) : undefined,
-            left_label:   cleanStr(s.left_label),
-            right_label:  cleanStr(s.right_label),
-            left_points:  Array.isArray(s.left_points)  ? s.left_points  : undefined,
-            right_points: Array.isArray(s.right_points) ? s.right_points : undefined,
-            visual,
-            imageRef:     (slideType === "figure" && Number.isInteger(s.imageRef)) ? s.imageRef : undefined,
-            code:         slideType === "code" ? cleanStr(s.code) : undefined,
-            codeLanguage: slideType === "code" ? cleanStr(s.codeLanguage) : undefined,
-            speaker_notes: cleanStr(s.speaker_notes) || "",
-            direction:    s.direction || (hasArabic ? "rtl" : "ltr"),
-            language:     s.language  || (hasArabic ? "ar" : "en"),
-          };
-        });
 
-      // Resolve real figures: map each figure slide's imageRef → the extracted image URL.
-      // Drop repeats / invalid refs by degrading those slides to plain bullets (never blank).
-      const figureUrlByIndex = new Map<number, string>();
-      for (const f of figures) figureUrlByIndex.set(f.index, f.url);
-      const usedFigureRefs = new Set<number>();
-      const finalSlides = validatedSlides.map((s: any) => {
-        if (s.type === "figure") {
-          const ref = s.imageRef;
-          const url = typeof ref === "number" ? figureUrlByIndex.get(ref) : undefined;
-          if (url && !usedFigureRefs.has(ref)) {
-            usedFigureRefs.add(ref);
-            return { ...s, imageUrl: url };
-          }
-          // missing/duplicate figure → keep the explanation as a normal bullets slide
-          const { imageRef, ...rest } = s;
-          return { ...rest, type: "bullets" };
-        }
-        if (s.type === "code" && !s.code) {
-          return { ...s, type: "bullets" };
-        }
-        return s;
+      const result = await generateGroundedSlides({
+        transcript,
+        summary,
+        figures,
+        callModel,
+        measure: (slides) => measureSlides(slides as any, "clean_light"),
+        resolveImage: (url) => resolveImageDataUri(url),
       });
 
-      console.log(`[API] Generated ${finalSlides.length} slides (new spec format; ${usedFigureRefs.size} real figures placed)`);
-
-      // Detect title from intro slide
-      const introSlide = finalSlides.find((s: any) => s.type === "intro");
-      const lectureTitle = introSlide?.title || (hasArabic ? "شرائح المحاضرة" : "Lecture Slides");
+      console.log(`[API] Slides: ${result.slides.length} (type=${result.analysis?.document_type || "?"}, repaired=${result.report.repaired}, ` +
+        `mathAllowed=${!result.report.strippedMath}, split=${result.report.split}, overflow=${result.report.overflowRemaining})`);
 
       return res.json({
-        lectureTitle,
-        language,
+        lectureTitle: result.lectureTitle,
+        language: result.language,
         theme,
-        slides: finalSlides,
+        documentType: result.analysis?.document_type,
+        slides: result.slides,
       });
     } catch (error: any) {
-      console.error("[API] Error generating slides:", error);
-      console.error("[API] Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack?.substring(0, 500),
-      });
-
-      // Check if it's a network/API error
+      console.error("[API] Error generating slides:", error?.message);
       if (error.message?.includes("fetch failed") || error.message?.includes("network")) {
         return res.status(503).json({
           error: "Network error connecting to AI service",
           details: "Please check your internet connection and API key",
         });
       }
-
       return res.status(500).json({
         error: "Failed to generate slides",
         details: error.message || "Unknown error occurred",
@@ -4544,6 +4217,15 @@ ${transcript.substring(0, 30000)}`;
         imageUrl:    typeof s.imageUrl === "string" ? s.imageUrl : "",
         code:        typeof s.code === "string" ? s.code : undefined,
         codeLanguage: normalizeText(s.codeLanguage) || undefined,
+        // structured layouts (table / swot / chart / equation / definition / layers)
+        table:       s.table && Array.isArray(s.table.columns) && Array.isArray(s.table.rows) ? { columns: s.table.columns.map(normalizeText), rows: s.table.rows.map((r: any[]) => (Array.isArray(r) ? r : []).map(normalizeText)) } : undefined,
+        swot:        s.swot ? { strengths: (s.swot.strengths || []).map(normalizeText), weaknesses: (s.swot.weaknesses || []).map(normalizeText), opportunities: (s.swot.opportunities || []).map(normalizeText), threats: (s.swot.threats || []).map(normalizeText) } : undefined,
+        chart:       s.chart && Array.isArray(s.chart.labels) && Array.isArray(s.chart.values) ? { kind: "bar", labels: s.chart.labels.map(normalizeText), values: s.chart.values.map(Number), unit: normalizeText(s.chart.unit) || undefined, caption: normalizeText(s.chart.caption) || undefined } : undefined,
+        equations:   Array.isArray(s.equations) ? s.equations.filter((e: any) => e && e.latex).map((e: any) => ({ latex: String(e.latex), label: normalizeText(e.label) || undefined, explanation: normalizeText(e.explanation) || undefined })) : undefined,
+        term:        normalizeText(s.term) || undefined,
+        definition:  normalizeText(s.definition) || undefined,
+        layers:      Array.isArray(s.layers) ? s.layers.map((l: any) => ({ title: normalizeText(l?.title), items: (l?.items || []).map(normalizeText) })) : undefined,
+        stepOffset:  Number.isInteger(s.stepOffset) ? s.stepOffset : undefined,
         direction:   s.direction || (hasArabic ? "rtl" : "ltr"),
         language:    s.language || (hasArabic ? "ar" : "en"),
       }));
@@ -4606,6 +4288,9 @@ ${transcript.substring(0, 30000)}`;
         cyber_neon:        { bg: "0A0A0A", title: "00FF00", text: "FFFFFF", accent: "00FF00", sep: "00FF00", font: "Calibri" },
         professional_gray: { bg: "E5E7EB", title: "DC2626", text: "0A0A0A", accent: "DC2626", sep: "DC2626", font: "Calibri" },
         emerald_forest:    { bg: "001A00", title: "00FF00", text: "FFFFFF", accent: "00FF00", sep: "00FF00", font: "Calibri" },
+        // Academic: paper background, navy serif titles, burgundy accent (Georgia ships with Office).
+        academic_classic:  { bg: "FBFAF7", title: "1F2A44", text: "2B2B2B", accent: "8C1D40", sep: "8C1D40", font: "Georgia" },
+        university:        { bg: "FBFAF7", title: "1F2A44", text: "2B2B2B", accent: "8C1D40", sep: "8C1D40", font: "Georgia" },
         // legacy aliases
         clean:     { bg: "FFFFFF", title: "DC2626", text: "0A0A0A", accent: "DC2626", sep: "DC2626", font: "Calibri" },
         dark:      { bg: "000000", title: "FF1493", text: "FFFFFF", accent: "FF1493", sep: "FF1493", font: "Calibri" },
@@ -4693,7 +4378,7 @@ ${transcript.substring(0, 30000)}`;
       };
 
       const addFooter = (slide: any, idx: number) => {
-        slide.addText("✦ LECTUREMATE AI", { x: M, y: 7.16, w: 5, h: 0.3, fontSize: 9, bold: true, color: T.text, align: "left", charSpacing: 3, fontFace: T.font || "Calibri" });
+        slide.addText("LECTUREMATE", { x: M, y: 7.16, w: 5, h: 0.3, fontSize: 9, bold: true, color: T.text, align: "left", charSpacing: 3, fontFace: T.font || "Calibri" });
         slide.addText(`${idx + 1} / ${slides.length}`, { x: W - M - 3.0, y: 7.16, w: 3.0, h: 0.3, fontSize: 10, bold: true, color: T.text, align: "right", charSpacing: 1, fontFace: T.font || "Calibri" });
       };
 
@@ -4975,6 +4660,10 @@ ${transcript.substring(0, 30000)}`;
       );
 
       let renderedViaImages = false;
+      // What was actually produced — reported to the client (X-Slides-Render) so a
+      // failed designed render is never silently passed off as "Designed".
+      let renderedAs: "hybrid" | "image" | "text" = "text";
+      let renderError = "";
 
       // ── Hybrid: designed background image + native EDITABLE text boxes on top ──
       if (format === "hybrid") {
@@ -4984,7 +4673,7 @@ ${transcript.substring(0, 30000)}`;
             if (!m) return "000000";
             return [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, "0")).join("").toUpperCase();
           };
-          const hyb = await renderSlidesHybrid(slides, theme, customColor);
+          const hyb = await renderSlidesHybrid(slides, theme, customColor, lectureTitle);
           if (hyb && hyb.length === slides.length) {
             for (const sl of hyb) {
               const ps = pptx.addSlide();
@@ -4997,17 +4686,22 @@ ${transcript.substring(0, 30000)}`;
                   fontSize: Math.max(8, t.sizePx * 0.75), color: rgbToHex(t.color),
                   bold: t.bold, italic: t.italic, align: t.align, valign: "top",
                   wrap: true, shrinkText: true, margin: 0, lineSpacingMultiple: 1.0,
-                  fontFace: ar ? "Arial" : (T.font || "Calibri"),
+                  fontFace: ar ? "Arial" : t.serif ? "Georgia" : "Calibri",
                 };
                 if (ar || t.rtl) opts.rtlMode = true;
                 if (t.text.trim()) ps.addText(t.text, opts);
               }
             }
             renderedViaImages = true;
+            renderedAs = "hybrid";
             console.log(`[PPTX] Hybrid: ${hyb.length} designed slides with editable text overlay`);
+          } else {
+            renderError = `hybrid render produced ${hyb?.length ?? 0}/${slides.length} slides`;
+            console.error("[PPTX]", renderError);
           }
         } catch (hybErr: any) {
-          console.error("[PPTX] Hybrid render failed, falling back:", hybErr?.message);
+          renderError = hybErr?.message || "hybrid render failed";
+          console.error("[PPTX] Hybrid render failed, falling back:", renderError);
         }
       }
 
@@ -5015,7 +4709,7 @@ ${transcript.substring(0, 30000)}`;
       // Skipped when the user explicitly requests the editable (native text) version.
       if (!renderedViaImages && format !== "editable") {
         try {
-          const pngs = await renderSlidesToPngs(slides, theme, customColor);
+          const pngs = await renderSlidesToPngs(slides, theme, customColor, lectureTitle);
           if (pngs && pngs.length === slides.length) {
             for (const png of pngs) {
               const s = pptx.addSlide();
@@ -5026,10 +4720,15 @@ ${transcript.substring(0, 30000)}`;
               });
             }
             renderedViaImages = true;
+            renderedAs = "image";
             console.log(`[PPTX] Rendered ${pngs.length} designed slide images`);
+          } else {
+            renderError = `image render produced ${pngs?.length ?? 0}/${slides.length} slides`;
+            console.error("[PPTX]", renderError);
           }
         } catch (renderErr: any) {
-          console.error("[PPTX] Image render failed, falling back to text builder:", renderErr?.message);
+          renderError = renderErr?.message || "image render failed";
+          console.error("[PPTX] Image render failed, falling back to text builder:", renderError);
         }
       }
 
@@ -5040,10 +4739,27 @@ ${transcript.substring(0, 30000)}`;
         const t = s.type;
         if (t === "intro" || t === "section" || t === "quote" || t === "stats" || t === "comparison" || t === "figure" || t === "code") return s;
         let bullets: string[] = [];
-        if (Array.isArray(s.cards) && s.cards.length) {
+        if (t === "table" && s.table?.rows?.length) {
+          const cols: string[] = s.table.columns || [];
+          bullets = s.table.rows.map((r: string[]) => r.map((c, i) => (i === 0 || !cols[i] ? c : `${cols[i]}: ${c}`)).filter(Boolean).join(" — "));
+        } else if (t === "swot" && s.swot) {
+          const L = hasArabic
+            ? { strengths: "نقاط القوة", weaknesses: "نقاط الضعف", opportunities: "الفرص", threats: "التهديدات" }
+            : { strengths: "Strengths", weaknesses: "Weaknesses", opportunities: "Opportunities", threats: "Threats" };
+          bullets = (["strengths", "weaknesses", "opportunities", "threats"] as const)
+            .filter((q) => s.swot[q]?.length).map((q) => `${(L as any)[q]}: ${s.swot[q].join("; ")}`);
+        } else if (t === "chart" && s.chart?.labels?.length) {
+          bullets = s.chart.labels.map((l: string, i: number) => `${l}: ${s.chart.values[i]}${s.chart.unit ? ` ${s.chart.unit}` : ""}`);
+        } else if (t === "equation" && s.equations?.length) {
+          bullets = s.equations.map((e: any) => [e.label, `$${e.latex}$`, e.explanation].filter(Boolean).join(" — "));
+        } else if (t === "definition" && (s.term || s.definition)) {
+          bullets = [[s.term, s.definition].filter(Boolean).join(": "), ...(s.bullets || []).map((b: any) => (typeof b === "string" ? b : b?.text || ""))].filter(Boolean);
+        } else if (t === "layers" && s.layers?.length) {
+          bullets = s.layers.map((l: any) => `${l.title}: ${(l.items || []).join(", ")}`);
+        } else if (Array.isArray(s.cards) && s.cards.length) {
           bullets = s.cards.map((c: any) => [c?.title, c?.text].filter(Boolean).join(" — ")).filter(Boolean);
         } else if (Array.isArray(s.steps) && s.steps.length) {
-          bullets = s.steps.map((st: any, i: number) => `${i + 1}. ${[st?.title, st?.text].filter(Boolean).join(" — ")}`);
+          bullets = s.steps.map((st: any, i: number) => `${(s.stepOffset || 0) + i + 1}. ${[st?.title, st?.text].filter(Boolean).join(" — ")}`);
         } else {
           bullets = (s.bullets || []).map((b: any) => (typeof b === "string" ? b : b?.text || "")).filter(Boolean);
           if (!bullets.length && s.visual?.caption) bullets = [s.visual.caption];
@@ -5131,6 +4847,10 @@ ${transcript.substring(0, 30000)}`;
       // Send file with properly encoded filename
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
       res.setHeader("Content-Disposition", contentDisposition);
+      res.setHeader("X-Slides-Render", renderedAs);
+      if (renderError && renderedAs !== format) {
+        res.setHeader("X-Slides-Render-Error", encodeURIComponent(renderError.slice(0, 200)));
+      }
       res.send(buffer);
     } catch (error: any) {
       console.error("[API] Error generating PPTX:", error);

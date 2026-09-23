@@ -70,6 +70,13 @@ export function sanitizeLatex(tex: string): string {
   // 3) Special fix for vecAB -> \vec{AB}
   s = s.replace(/(?<!\\)vec([A-Z][A-Za-z0-9]*)/g, '\\vec{$1}');
 
+  // 3b) Unwrap a lone math command mistakenly placed inside \text{}.
+  // The AI often emits \text{\max} (or \text{\min}, \text{\sin}, \text{\alpha}…);
+  // these are math-mode operators that KaTeX rejects in text mode, which breaks
+  // the whole formula. \text{\max} -> \max. Only matches a single \command with
+  // no arguments, so genuine text like \text{\textbf{x}} is left untouched.
+  s = s.replace(/\\text\{\s*(\\[a-zA-Z]+)\s*\}/g, '$1');
+
   // 4) Clean up all multi-backslashes to a single one
   s = s.replace(/\\\\+/g, '\\');
   

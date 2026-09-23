@@ -21,7 +21,10 @@ export default function LectureMateStudioShell() {
     handleFileAnalyze, 
     isAnalyzing, 
     selectedModel, 
-    setSelectedModel 
+    setSelectedModel,
+    usage,
+    limitReached,
+    dismissLimit,
   } = useLectureProcessor();
 
   return (
@@ -43,6 +46,9 @@ export default function LectureMateStudioShell() {
                 isAnalyzing={isAnalyzing}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
+                usage={usage}
+                limitReached={limitReached}
+                dismissLimit={dismissLimit}
               />
             </div>
 

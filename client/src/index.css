@@ -24,6 +24,33 @@
   --color-on-surface: #09090B;
   --color-on-surface-variant: #64748B;
   --color-outline-variant: #F1F5F9;
+  --color-outline: #E2E8F0;
+  --color-surface-container: #F1F5F9;
+  --color-surface-container-high: #EEF2F6;
+  --color-surface-container-highest: #E2E8F0;
+
+  /* shadcn/ui tokens — these were missing, so classes like bg-popover, bg-card,
+     text-primary-foreground and bg-destructive generated no CSS at all (menus and
+     cards rendered transparent, destructive buttons unstyled). */
+  --color-primary-foreground: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #09090B;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #09090B;
+  --color-secondary: #F1F5F9;
+  --color-secondary-foreground: #0F172A;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-sidebar: #FFFFFF;
+  --color-sidebar-foreground: #09090B;
+  --color-sidebar-primary: #F05A22;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #F8FAFC;
+  --color-sidebar-accent-foreground: #09090B;
+  --color-sidebar-border: #F1F5F9;
+  --color-sidebar-ring: #F05A22;
+
+  --font-arabic: "Tajawal", "Inter", sans-serif;
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
@@ -34,13 +61,14 @@
 
 :root {
   /* Legacy mapping for compatibility if needed, but primarily using new tokens */
-  --primary: 20 85% 33%;
+  --primary: 16 87% 54%; /* #F05A22 — same as --color-primary */
   --primary-foreground: 0 0% 100%;
   --background: 210 20% 98%;
   --foreground: 240 10% 10%;
   --card: 0 0% 100%;
   --card-foreground: 240 10% 10%;
   --border: 240 6% 90%;
+  --muted-foreground: 215 16% 47%;
   --radius: 1rem;
 
   /* On-surface tokens for light mode */

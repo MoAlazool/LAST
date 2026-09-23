@@ -136,7 +136,7 @@ const CustomEdge = ({
                         }}
                         className="nodrag nopan"
                     >
-                        <div className="bg-white px-3 py-1.5 rounded-lg border border-orange-100 shadow-sm text-[#111827] text-[13px] font-black whitespace-nowrap animate-in fade-in zoom-in duration-200">
+                        <div className="bg-white px-3 py-1.5 rounded-lg border border-primary/10 shadow-sm text-[#111827] text-[13px] font-black whitespace-nowrap animate-in fade-in zoom-in duration-200">
                             {label}
                         </div>
                     </div>
@@ -722,7 +722,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
             {!isInteractive && (
                 <div className="absolute top-6 left-6 right-6 z-40 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-none">
                     <div className="flex items-center gap-3 bg-white/95 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-slate-200/50 shadow-lg pointer-events-auto">
-                        <div className="w-8 h-8 rounded-xl bg-[#F05A22] flex items-center justify-center text-white">
+                        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white">
                             <BrainCircuit className="w-5 h-5" />
                         </div>
                         <div>
@@ -742,7 +742,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                                 onClick={() => setViewMode('compact')}
                                 className={cn(
                                     "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                    viewMode === 'compact' ? "bg-white text-[#F05A22] shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    viewMode === 'compact' ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-700"
                                 )}
                             >
                                 <Compass className="w-3.5 h-3.5" />
@@ -752,7 +752,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                                 onClick={() => setViewMode('full')}
                                 className={cn(
                                     "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                    viewMode === 'full' ? "bg-white text-[#F05A22] shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    viewMode === 'full' ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-700"
                                 )}
                             >
                                 <Map className="w-3.5 h-3.5" />
@@ -765,7 +765,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                         {/* Interactive Button */}
                         <button 
                             onClick={startPresentation}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-[#F05A22]/10 hover:bg-[#F05A22]/20 text-[#F05A22] rounded-xl text-xs font-black transition-all border border-[#F05A22]/20"
+                            className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-black transition-all border border-primary/20"
                         >
                             <Zap className="w-3.5 h-3.5" />
                             {language === 'ar' ? 'بدء وضع العرض التفاعلي' : 'Guided Presentation'}
@@ -800,20 +800,20 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                     "fixed top-4 z-[5001] flex items-center gap-2 animate-in fade-in slide-in-from-top-4 pointer-events-none",
                     isRTL ? "left-4" : "right-4"
                 )}>
-                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-full border border-orange-100 shadow-lg pointer-events-auto">
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-full border border-primary/10 shadow-lg pointer-events-auto">
                         {/* Prev Button */}
                         <button 
                             onClick={prevStep} 
                             disabled={currentStep === -1 || isTransitioning} 
-                            className="w-10 h-10 rounded-full bg-white text-[#F05A22] border border-orange-100 disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-orange-50 transition-all hover:scale-105 active:scale-95"
+                            className="w-10 h-10 rounded-full bg-white text-primary border border-primary/10 disabled:opacity-40 flex items-center justify-center shadow-md hover:bg-primary/5 transition-all hover:scale-105 active:scale-95"
                             title={language === 'ar' ? 'السابق' : 'Previous'}
                         >
                             <span className="material-symbols-outlined text-lg">{isRTL ? "chevron_right" : "chevron_left"}</span>
                         </button>
 
-                        <div className="px-2 text-[10px] font-black text-[#F05A22] border-x border-orange-100 flex flex-col items-center min-w-[45px]">
+                        <div className="px-2 text-[10px] font-black text-primary border-x border-primary/10 flex flex-col items-center min-w-[45px]">
                             <span>{currentStep + 1}</span>
-                            <span className="h-[1px] w-full bg-orange-100" />
+                            <span className="h-[1px] w-full bg-primary/10" />
                             <span className="text-slate-400">{guide.length}</span>
                         </div>
 
@@ -833,7 +833,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
                     {/* Exit Button */}
                     <button 
                         onClick={exitPresentation} 
-                        className="w-10 h-10 rounded-full bg-white text-[#F05A22] border border-orange-100 flex items-center justify-center shadow-lg hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 pointer-events-auto"
+                        className="w-10 h-10 rounded-full bg-white text-primary border border-primary/10 flex items-center justify-center shadow-lg hover:bg-primary/5 transition-all hover:scale-105 active:scale-95 pointer-events-auto"
                         title={language === 'ar' ? 'إغلاق' : 'Close'}
                     >
                         <span className="material-symbols-outlined text-lg">close</span>
@@ -883,7 +883,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
             {/* Explanation Card (FOR FULLSCREEN MODE - Physical Docking at bottom) */}
             {isInteractive && guide.length > 0 && isFullscreen && (
                 <div className={cn(
-                    "w-full bg-white px-8 py-6 border-t border-orange-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom-10",
+                    "w-full bg-white px-8 py-6 border-t border-primary/10 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom-10",
                     isRTL ? "text-right" : "text-left"
                 )}>
                     <div className="flex items-center gap-3 mb-4">
@@ -906,7 +906,7 @@ function ConceptMapContent({ mindmapCode, lectureId }: ConceptMapViewProps) {
             {/* Explanation Card (STRUCTURALLY BELOW THE MAP FRAME - Only when NOT in fullscreen) */}
             {isInteractive && guide.length > 0 && !isFullscreen && (
                 <div className={cn(
-                    "w-full bg-white p-6 md:p-8 rounded-3xl border border-orange-100 shadow-sm animate-in slide-in-from-bottom-4",
+                    "w-full bg-white p-6 md:p-8 rounded-3xl border border-primary/10 shadow-sm animate-in slide-in-from-bottom-4",
                     isRTL ? "text-right" : "text-left"
                 )}>
                     <div className="flex items-center gap-3 mb-3">

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, List, HelpCircle, Presentation, Share2, Download, ChevronLeft, Trash2, X, Sparkles, Clock, Calendar, Sigma, Maximize2, LayoutGrid, Stethoscope, CircuitBoard } from "lucide-react";
+import { FileText, List, HelpCircle, Presentation, Share2, Download, ChevronLeft, Trash2, X, Clock, Calendar, Sigma, Maximize2, LayoutGrid, Stethoscope, CircuitBoard, Play, ImagePlus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { TranscriptView } from "@/components/lecture/TranscriptView";
@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { lectureRequested, type AnalysisFeature } from "@/lib/analysisFeatures";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -69,6 +70,7 @@ export default function LectureView() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupTab, setPopupTab] = useState("summary");
   const [forceShowContent, setForceShowContent] = useState(false);
+  const [generatingFeature, setGeneratingFeature] = useState<string | null>(null);
 
   // Inline title / subtitle editing
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -192,6 +194,33 @@ export default function LectureView() {
     (eng.procedures?.length || 0) > 0
   ));
   const isEngineeringLecture = lecture?.category === "engineering";
+
+  // ── Selected-features support ──────────────────────────────────────────────
+  // Lectures record which AI features the user picked before analysis. Sections
+  // that weren't picked are never "loading" — they offer "Generate now" instead.
+  const TASK_FEATURE: Record<string, AnalysisFeature | undefined> = {
+    summary: "summary", conceptMap: "conceptMap", quiz: "quiz", slides: "slides",
+    formulas: "formulas", flashcards: "flashcards", medical: "insights", engineering: "insights",
+  };
+  const isRequestedTask = (task: string) => {
+    const f = TASK_FEATURE[task];
+    return !f || lectureRequested(lecture?.requestedFeatures, f);
+  };
+  const hasTaskContent = (task: string) => {
+    if (!lecture) return false;
+    switch (task) {
+      case "summary": return !!(lecture.summary && (typeof lecture.summary === "string" ? lecture.summary.length > 0 : lecture.summary.length > 0));
+      case "conceptMap": return !!(lecture.conceptMap && lecture.conceptMap.length > 0);
+      case "slides": return !!(lecture.slides && lecture.slides.length > 0);
+      case "flashcards": return !!(lecture.flashcards && lecture.flashcards.length > 0);
+      case "formulas": return !!(lecture.formulas && lecture.formulas.length > 0);
+      case "medical": return hasMedical;
+      case "engineering": return hasEngineering;
+      default: return true;
+    }
+  };
+  /** Not picked before analysis and not generated since → show the "Generate now" card. */
+  const needsGeneration = (task: string) => !isRequestedTask(task) && !hasTaskContent(task);
 
   // Track previous state to detect completion
   const prevStateRef = useRef({
@@ -402,47 +431,48 @@ export default function LectureView() {
       engineering: language === "ar" ? "جاري تحليل المحتوى الهندسي..." : "Analyzing engineering content...",
     },
     agentStatus: {
-      systemStatus: language === "ar" ? "الحالة الحالية للنظام" : "Current System Status",
-      intelAgent: language === "ar" ? "وكيل الذكاء" : "Intel Agent",
+      systemStatus: language === "ar" ? "حالة المعالجة" : "Processing status",
+      intelAgent: language === "ar" ? "المعالجة" : "Processing",
       processing: language === "ar" ? "قيد المعالجة" : "Processing",
       agentDescription: language === "ar" 
-        ? "يقوم وكيل الذكاء الاصطناعي حالياً بتفكيك وتحليل محاضرتك:" 
-        : "The AI agent is currently deconstructing and analyzing your lecture:",
+        ? "نقوم الآن بتحليل محاضرتك:" 
+        : "We're analyzing your lecture:",
       agentDescriptionEnd: language === "ar"
-        ? ". يتم الآن تنسيق المعلومات في وحدات تعليمية متميزة."
-        : ". Organizing information into distinct curated modules.",
-      systemActive: language === "ar" ? "النظام نشط" : "System Active",
+        ? ". ستظهر كل وحدة هنا فور جاهزيتها."
+        : ". Each section appears here as soon as it's ready.",
+      systemActive: language === "ar" ? "قيد العمل" : "In progress",
       overallProgress: language === "ar" ? "التقدم الإجمالي" : "Overall Progress",
       modulesComplete: language === "ar" ? "اكتمل {count} من أصل {total} من الوحدات" : "Completed {count} of {total} modules",
       ofUnits: language === "ar" ? "من الوحدات" : "of modules",
-      curated: language === "ar" ? "مُنظم" : "Curated",
-      success: language === "ar" ? "نجاح" : "Success",
-      active: language === "ar" ? "نشط" : "Active",
+      curated: language === "ar" ? "جاهز" : "Ready",
+      success: language === "ar" ? "جاهز" : "Ready",
+      active: language === "ar" ? "قيد الإنشاء" : "In progress",
       exploreModule: language === "ar" ? "عرض القسم" : "View Section",
-      coordinating: language === "ar" ? "جاري التنسيق…" : "Coordinating…",
-      efficiency: language === "ar" ? "كفاءة المعالجة" : "Processing Efficiency",
+      coordinating: language === "ar" ? "جاري الإنشاء…" : "Generating…",
+      efficiency: language === "ar" ? "التقدم" : "Progress",
       estimatedTime: language === "ar" ? "الوقت المقدر" : "Estimated Time",
       min: language === "ar" ? "دقيقة" : "min",
-      knowledgeBlocks: language === "ar" ? "كتل المعرفة" : "Knowledge Blocks",
+      knowledgeBlocks: language === "ar" ? "الأقسام" : "Sections",
       points: language === "ar" ? "نقطة" : "pts",
-      coreIntelActive: language === "ar" ? "الذكاء الجوهري نشط" : "Core Intel Active",
+      coreIntelActive: language === "ar" ? "جاري المعالجة" : "Processing",
       highPrecisionDesc: language === "ar"
-        ? "بناء روابط عالية الدقة في بنية المفاهيم لتحقيق الإتقان الأمثل للمادة."
-        : "Building high-precision links in Concept Architecture for optimal mastery.",
-      analyzingNow: language === "ar" ? "جاري التنسيق والتحليل." : "Coordinating & Analyzing.",
+        ? "نربط المفاهيم الرئيسية ببعضها لتسهيل المراجعة."
+        : "Connecting the key concepts so they're easier to review.",
+      analyzingNow: language === "ar" ? "جاري التحليل." : "Analyzing.",
       masterMaterialsDesc: language === "ar"
-        ? "يتم الآن استخلاص موادك الدراسية وتحويلها إلى تجربة تعليمية متميزة وفريدة."
-        : "Your study materials are being distilled into a premium, curated educational experience.",
-      neuralSync: language === "ar" ? "المزامنة العصبية نشطة" : "Neural Sync Active",
-      cancelOperation: language === "ar" ? "إلغاء العملية" : "Cancel Operation",
+        ? "نحوّل المحاضرة إلى أدوات دراسة. يمكنك فتح أي قسم فور جاهزيته."
+        : "We're turning your lecture into study materials. Open any section as soon as it's ready.",
+      neuralSync: language === "ar" ? "يتم التحديث تلقائيًا" : "Updates automatically",
+      cancelOperation: language === "ar" ? "إيقاف المعالجة" : "Stop processing",
       stopping: language === "ar" ? "جاري الإيقاف..." : "Stopping...",
-      statusMonitor: language === "ar" ? "لوحة المتابعة" : "Status Monitor"
+      statusMonitor: language === "ar" ? "المتابعة" : "Status"
     }
   };
 
   // Helper function to check if a section is loading
   const isSectionLoading = (section: "transcript" | "summary" | "conceptMap" | "quiz" | "slides" | "flashcards" | "formulas" | "medical" | "engineering") => {
     if (!lecture || lecture.status !== "processing") return false;
+    if (!isRequestedTask(section)) return false;
     const progress = lecture.progress || 0;
 
     switch (section) {
@@ -518,11 +548,10 @@ export default function LectureView() {
     const progressValue = getProgress();
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px] space-y-10 p-12 bg-white rounded-[3.5rem] shadow-[0_40px_100px_rgba(240,90,34,0.03)] border-2 border-[#F05A22]/5 animate-in zoom-in-95 duration-700">
+      <div className="flex flex-col items-center justify-center min-h-[600px] space-y-10 p-12 bg-white rounded-[3.5rem] shadow-[0_40px_100px_rgba(240,90,34,0.03)] border-2 border-primary/5 animate-in zoom-in-95 duration-700">
         <div className="relative group">
-          <div className="absolute -inset-10 bg-[#F05A22]/10 rounded-full blur-[60px] animate-pulse"></div>
-          <div className="relative w-32 h-32 bg-white border-2 border-[#F05A22]/10 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-transform duration-700 group-hover:scale-110">
-            <Icon className="w-14 h-14 text-[#F05A22] animate-bounce duration-[2000ms]" />
+          <div className="relative w-32 h-32 bg-white border-2 border-primary/10 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-transform duration-700 group-hover:scale-110">
+            <Icon className="w-14 h-14 text-primary animate-bounce duration-[2000ms]" />
           </div>
         </div>
 
@@ -541,11 +570,11 @@ export default function LectureView() {
               initial={{ width: 0 }}
               animate={{ width: `${progressValue}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-[#F05A22] rounded-full shadow-[0_0_20px_rgba(240,90,34,0.4)]"
+              className="h-full bg-primary rounded-full shadow-[0_0_20px_rgba(240,90,34,0.4)]"
             />
           </div>
           <div className="flex justify-between items-center px-1">
-            <span className="text-[10px] font-black text-[#F05A22] uppercase tracking-[0.3em]">{Math.round(progressValue)}% {t.agentStatus.curated}</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{Math.round(progressValue)}% {t.agentStatus.curated}</span>
             <span className="text-[10px] font-black text-[#111827]/20 uppercase tracking-[0.3em] animate-pulse">{language === "ar" ? "قيد المعالجة" : "IN PROGRESS"}</span>
           </div>
         </div>
@@ -794,7 +823,7 @@ export default function LectureView() {
       queryClient.invalidateQueries({ queryKey: ["/api/lectures"] });
       setLocation("/");
       toast({
-        title: language === "ar" ? "نجاح" : "Success",
+        title: language === "ar" ? "جاهز" : "Ready",
         description: language === "ar" ? "تم حذف المحاضرة بنجاح" : "Lecture deleted successfully",
       });
     } catch (error: any) {
@@ -816,6 +845,82 @@ export default function LectureView() {
     }
   };
 
+  // Generate ONE section on demand (a feature the user skipped before analysis).
+  const handleGenerateFeature = async (task: string) => {
+    if (!lecture?.transcript || generatingFeature) return;
+    const transcript = lecture.transcript;
+    const { geminiFileUri, geminiFileMimeType, extractedImages } = lecture;
+    setGeneratingFeature(task);
+    try {
+      let fields: Record<string, any> = {};
+      switch (task) {
+        case "summary":
+          fields = { summary: await generateSummary(transcript, selectedModel) };
+          break;
+        case "flashcards":
+          fields = { flashcards: await generateFlashcards(transcript, selectedModel) };
+          break;
+        case "conceptMap":
+          fields = { conceptMap: await generateConceptMap(transcript, selectedModel, lecture.flashcards?.length ? lecture.flashcards as any : undefined) };
+          break;
+        case "slides": {
+          const hasSummary = hasTaskContent("summary");
+          const summary = hasSummary ? lecture.summary : await generateSummary(transcript, selectedModel);
+          fields = { slides: await generateSlides(transcript, summary as any, extractedImages) };
+          break;
+        }
+        case "formulas":
+          fields = { formulas: await extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType) };
+          break;
+        case "medical":
+          fields = { medical: await generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType) };
+          break;
+        case "engineering":
+          fields = { engineering: await generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType) };
+          break;
+        default:
+          return;
+      }
+      const feature = TASK_FEATURE[task];
+      const requested = lecture.requestedFeatures;
+      if (feature && requested && !requested.includes(feature)) {
+        fields.requestedFeatures = [...requested, feature];
+      }
+      await updateLecture({ lectureId: lecture.id, updates: fields as any });
+    } catch (err: any) {
+      toast({ title: t.toast.error, description: err?.message, variant: "destructive" });
+    } finally {
+      setGeneratingFeature(null);
+    }
+  };
+
+  const renderNotGenerated = (task: string, Icon: any) => {
+    const busy = generatingFeature === task;
+    return (
+      <div className="rounded-3xl border border-dashed border-outline-variant/60 bg-surface-container-lowest p-12 sm:p-16 text-center" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary grid place-items-center mx-auto mb-5">
+          <Icon className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-black tracking-tight mb-2">
+          {language === "ar" ? "لم يتم إنشاء هذا القسم" : "Not generated yet"}
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
+          {language === "ar"
+            ? "لم تختر هذا القسم عند بدء التحليل لتوفير المعالجة. يمكنك إنشاؤه الآن."
+            : "You skipped this section when starting the analysis to save processing. You can generate it now."}
+        </p>
+        <Button
+          onClick={() => handleGenerateFeature(task)}
+          disabled={!!generatingFeature || lecture?.status === "processing"}
+          className="rounded-xl font-bold bg-primary hover:bg-primary/90 text-white gap-2"
+        >
+          {busy ? <Spinner className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {busy ? (language === "ar" ? "جاري الإنشاء..." : "Generating...") : (language === "ar" ? "إنشاء الآن" : "Generate now")}
+        </Button>
+      </div>
+    );
+  };
+
   const handleReprocess = async () => {
     if (!lecture) return;
     if (!lecture.transcript || lecture.transcript.length < 100) {
@@ -827,8 +932,10 @@ export default function LectureView() {
     const geminiFileMimeType = lecture.geminiFileMimeType;
     const extractedImages = lecture.extractedImages;
     // Regenerate Medical / Engineering if the lecture is that category OR already has that content.
-    const regenMedical = isMedicalLecture || hasMedical;
-    const regenEngineering = isEngineeringLecture || hasEngineering;
+    const regenMedical = (isMedicalLecture && isRequestedTask("medical")) || hasMedical;
+    const regenEngineering = (isEngineeringLecture && isRequestedTask("engineering")) || hasEngineering;
+    // Only regenerate what the user asked for (or has generated since) — no wasted tokens.
+    const regen = (task: string) => isRequestedTask(task) || hasTaskContent(task);
     try {
       setIsReprocessing(true);
       toast({ title: t.toast.reprocessStarted, description: t.toast.reprocessStartedDesc });
@@ -849,19 +956,25 @@ export default function LectureView() {
         try { await updateLecture({ lectureId: lecture.id, updates: fields as any }); } catch { /* ignore */ }
       };
 
-      const summaryRaw = generateSummary(transcript, selectedModel);
-      const flashcardsRaw = generateFlashcards(transcript, selectedModel);
+      const wantSlides = !isPresentation && regen("slides");
+      const summaryRaw = regen("summary") || wantSlides ? generateSummary(transcript, selectedModel) : null;
+      const flashcardsRaw = regen("flashcards") ? generateFlashcards(transcript, selectedModel) : null;
 
-      const summaryP = summaryRaw.then((summary) => savePart({ summary }));
-      const flashcardsP = flashcardsRaw.then((flashcards) => savePart({ flashcards }));
-      const formulasP = extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-        .then((formulas) => savePart({ formulas }));
-      const conceptP = flashcardsRaw
-        .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards))
-        .then((conceptMap) => savePart({ conceptMap }));
-      const slidesP = summaryRaw
-        .then((summary) => generateSlides(transcript, summary as any, extractedImages))
-        .then((slides) => savePart({ slides }));
+      const summaryP = summaryRaw && regen("summary") ? summaryRaw.then((summary) => savePart({ summary })) : Promise.resolve();
+      const flashcardsP = flashcardsRaw ? flashcardsRaw.then((flashcards) => savePart({ flashcards })) : Promise.resolve();
+      const formulasP = regen("formulas")
+        ? extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType).then((formulas) => savePart({ formulas }))
+        : Promise.resolve();
+      const conceptP = regen("conceptMap")
+        ? (flashcardsRaw ? flashcardsRaw.catch(() => undefined) : Promise.resolve(undefined))
+            .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards as any))
+            .then((conceptMap) => savePart({ conceptMap }))
+        : Promise.resolve();
+      const slidesP = wantSlides && summaryRaw
+        ? summaryRaw
+            .then((summary) => generateSlides(transcript, summary as any, extractedImages))
+            .then((slides) => savePart({ slides }))
+        : Promise.resolve();
       const medicalP = regenMedical
         ? generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
             .then((medical) => savePart({ medical }))
@@ -896,6 +1009,7 @@ export default function LectureView() {
     // On-demand sections (e.g. Assessments / Flashcards generated later by the user)
     // must NOT keep overall progress below 100%.
     if (isFullyDone) return true;
+    if (!isRequestedTask(task)) return true; // skipped by the user — nothing to wait for
     switch (task) {
       case 'transcript': return !!(lecture.transcript && lecture.transcript.length > 0);
       case 'summary':    return !!(lecture.summary && (typeof lecture.summary === 'string' ? lecture.summary.length > 0 : Array.isArray(lecture.summary) && lecture.summary.length > 0));
@@ -993,17 +1107,20 @@ export default function LectureView() {
   const visibleTasks = tasksInfo.filter(task => {
     if (task.key === 'formulas') {
       // If task is complete (either naturally or through lecture completion), only show if it has results
+      if (!isRequestedTask('formulas') && !hasFormulas) return hasRealMathContent;
       if (isTaskComplete('formulas')) return hasFormulas;
       // If still pending, show only for subjects with real mathematical content
       return hasRealMathContent;
     }
     if (task.key === 'medical') {
       // Once done, only show if we actually extracted medical insights
+      if (!isRequestedTask('medical') && !hasMedical) return isMedicalLecture;
       if (isTaskComplete('medical')) return hasMedical;
       // While pending, show only for medical-category lectures
       return isMedicalLecture;
     }
     if (task.key === 'engineering') {
+      if (!isRequestedTask('engineering') && !hasEngineering) return isEngineeringLecture;
       if (isTaskComplete('engineering')) return hasEngineering;
       return isEngineeringLecture;
     }
@@ -1017,8 +1134,10 @@ export default function LectureView() {
     }
     return true;
   });
-  const completedCount = visibleTasks.filter(t => isTaskComplete(t.key)).length;
-  const realProgress = Math.round((completedCount / visibleTasks.length) * 100);
+  // Skipped (not selected) modules don't count toward the processing progress.
+  const trackedTasks = visibleTasks.filter(t => !needsGeneration(t.key));
+  const completedCount = trackedTasks.filter(t => isTaskComplete(t.key)).length;
+  const realProgress = trackedTasks.length ? Math.round((completedCount / trackedTasks.length) * 100) : 100;
 
   // Lecture meta for the status info card.
   const isCompleted = lecture.status === "completed";
@@ -1059,7 +1178,7 @@ export default function LectureView() {
                       {isCompleted ? (isRTL ? "مكتمل" : "Completed") : (isRTL ? "قيد المعالجة" : "Processing")}
                     </span>
                     {lecture.category && (
-                      <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#F05A22]/10 text-[#F05A22]">{lecture.category}</span>
+                      <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary/10 text-primary">{lecture.category}</span>
                     )}
                   </div>
                   {isEditingTitle ? (
@@ -1072,7 +1191,7 @@ export default function LectureView() {
                         maxLength={200}
                         placeholder={isRTL ? "عنوان المحاضرة" : "Lecture title"}
                         dir={isRTL ? "rtl" : "ltr"}
-                        className="w-full bg-surface border-2 border-[#F05A22]/30 focus:border-[#F05A22] outline-none rounded-2xl px-4 py-3 text-xl lg:text-3xl font-black tracking-tight text-on-surface"
+                        className="w-full bg-surface border-2 border-primary/30 focus:border-primary outline-none rounded-2xl px-4 py-3 text-xl lg:text-3xl font-black tracking-tight text-on-surface"
                       />
                       <input
                         value={subtitleDraft}
@@ -1081,13 +1200,13 @@ export default function LectureView() {
                         maxLength={300}
                         placeholder={isRTL ? "وصف فرعي (اختياري)" : "Subtitle / short description (optional)"}
                         dir={isRTL ? "rtl" : "ltr"}
-                        className="w-full bg-surface border border-outline-variant/40 focus:border-[#F05A22] outline-none rounded-xl px-4 py-2.5 text-sm font-bold text-on-surface-variant"
+                        className="w-full bg-surface border border-outline-variant/40 focus:border-primary outline-none rounded-xl px-4 py-2.5 text-sm font-bold text-on-surface-variant"
                       />
                       <div className={cn("flex items-center gap-2 pt-1")}>
                         <button
                           onClick={handleSaveTitle}
                           disabled={isSavingTitle || !titleDraft.trim()}
-                          className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F05A22] text-white text-xs font-black uppercase tracking-wider hover:bg-[#d84d1a] transition-all active:scale-95 disabled:opacity-50")}
+                          className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-wider hover:bg-[#d84d1a] transition-all active:scale-95 disabled:opacity-50")}
                         >
                           <span className={cn("material-symbols-outlined text-[18px]", isSavingTitle && "animate-spin")}>{isSavingTitle ? "progress_activity" : "check"}</span>
                           {isRTL ? "حفظ" : "Save"}
@@ -1116,7 +1235,7 @@ export default function LectureView() {
                       <button
                         onClick={startEditTitle}
                         title={isRTL ? "تعديل العنوان" : "Edit title"}
-                        className="shrink-0 mt-1 w-9 h-9 rounded-xl border border-outline-variant/40 bg-surface flex items-center justify-center text-on-surface-variant hover:text-[#F05A22] hover:border-[#F05A22]/40 transition-all opacity-0 group-hover/title:opacity-100 focus:opacity-100"
+                        className="shrink-0 mt-1 w-9 h-9 rounded-xl border border-outline-variant/40 bg-surface flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/40 transition-all opacity-0 group-hover/title:opacity-100 focus:opacity-100"
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
@@ -1124,18 +1243,18 @@ export default function LectureView() {
                   )}
                   <div className={cn("flex flex-wrap gap-x-7 gap-y-2 mt-4 text-sm font-bold text-on-surface-variant")}>
                     <span className={cn("flex items-center gap-1.5")}>
-                      <span className="material-symbols-outlined text-[18px] text-[#F05A22]">{typeMeta.icon}</span>{typeMeta.label}
+                      <span className="material-symbols-outlined text-[18px] text-primary">{typeMeta.icon}</span>{typeMeta.label}
                     </span>
                     <span className={cn("flex items-center gap-1.5")}>
-                      <span className="material-symbols-outlined text-[18px] text-[#F05A22]">notes</span>{wordCount.toLocaleString(isRTL ? "ar-EG" : "en-US")} {isRTL ? "كلمة" : "words"}
+                      <span className="material-symbols-outlined text-[18px] text-primary">notes</span>{wordCount.toLocaleString(isRTL ? "ar-EG" : "en-US")} {isRTL ? "كلمة" : "words"}
                     </span>
                     {imageCount > 0 && (
                       <span className={cn("flex items-center gap-1.5")}>
-                        <span className="material-symbols-outlined text-[18px] text-[#F05A22]">image</span>{imageCount} {isRTL ? "صورة" : "images"}
+                        <span className="material-symbols-outlined text-[18px] text-primary">image</span>{imageCount} {isRTL ? "صورة" : "images"}
                       </span>
                     )}
                     <span className={cn("flex items-center gap-1.5")}>
-                      <span className="material-symbols-outlined text-[18px] text-[#F05A22]">analytics</span>{completedCount}/{visibleTasks.length} {isRTL ? "وحدة" : "modules"}
+                      <span className="material-symbols-outlined text-[18px] text-primary">analytics</span>{completedCount}/{trackedTasks.length} {isRTL ? "وحدة" : "modules"}
                     </span>
                   </div>
                 </div>
@@ -1150,7 +1269,7 @@ export default function LectureView() {
                       <button
                         key={m}
                         onClick={() => setSelectedModel(m)}
-                        className={cn("flex-1 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all", selectedModel === m ? "bg-[#F05A22] text-white shadow" : "text-on-surface-variant hover:text-on-surface")}
+                        className={cn("flex-1 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all", selectedModel === m ? "bg-primary text-white shadow" : "text-on-surface-variant hover:text-on-surface")}
                       >
                         {m === "api" ? (isRTL ? "سحابي API" : "API · Cloud") : (isRTL ? "محلي GPU" : "GPU · Local")}
                       </button>
@@ -1159,7 +1278,7 @@ export default function LectureView() {
                   <button
                     onClick={handleReprocess}
                     disabled={isReprocessing}
-                    className={cn("w-full py-3 rounded-2xl bg-on-surface text-white font-black text-sm flex items-center justify-center gap-2 hover:bg-[#F05A22] transition-all active:scale-[0.98] disabled:opacity-60")}
+                    className={cn("w-full py-3 rounded-2xl bg-on-surface text-white font-black text-sm flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-[0.98] disabled:opacity-60")}
                   >
                     <span className={cn("material-symbols-outlined text-[18px]", isReprocessing && "animate-spin")}>{isReprocessing ? "progress_activity" : "auto_awesome"}</span>
                     {isReprocessing ? (isRTL ? "جاري المعالجة..." : "Reprocessing...") : (isRTL ? "إعادة المعالجة" : "Reprocess")}
@@ -1184,17 +1303,17 @@ export default function LectureView() {
                 <div className="mb-10 bg-surface-container-lowest rounded-[3rem] p-8 md:p-10 border border-outline-variant/30 shadow-[0_20px_60px_rgba(0,0,0,0.03)]" dir={isRTL ? "rtl" : "ltr"}>
                   <div className={cn("flex items-center justify-between mb-5", isRTL ? "flex-row" : "flex-row")}>
                     <span className={cn("text-xs font-black text-on-surface-variant uppercase tracking-[0.15em]", isRTL ? "text-right" : "text-left")}>
-                      {t.agentStatus.overallProgress} — <span className="text-[#F05A22] underline decoration-[#F05A22]/20 underline-offset-4">
-                        {t.agentStatus.modulesComplete.replace('{count}', String(completedCount)).replace('{total}', String(visibleTasks.length))}
+                      {t.agentStatus.overallProgress} — <span className="text-primary underline decoration-primary/20 underline-offset-4">
+                        {t.agentStatus.modulesComplete.replace('{count}', String(completedCount)).replace('{total}', String(trackedTasks.length))}
                       </span>
                     </span>
                     <span className="text-4xl font-black text-on-surface tabular-nums tracking-tighter">
-                       <span className={cn("text-xl text-[#F05A22] opacity-40", isRTL ? "ml-1" : "mr-1")}>%</span>{realProgress}
+                       <span className={cn("text-xl text-primary opacity-40", isRTL ? "ml-1" : "mr-1")}>%</span>{realProgress}
                     </span>
                   </div>
                   <div className="w-full bg-surface-container-low h-4 rounded-full overflow-hidden shadow-inner p-1">
                     <motion.div
-                      className="bg-[#F05A22] h-full rounded-full"
+                      className="bg-primary h-full rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.round(realProgress)}%` }}
                       transition={{ duration: 1.5, ease: "circOut" }}
@@ -1204,7 +1323,8 @@ export default function LectureView() {
 
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {visibleTasks.map((task, idx) => {
-                    const done = isTaskComplete(task.key);
+                    const skipped = needsGeneration(task.key);
+                    const done = !skipped && isTaskComplete(task.key);
                     const stepNum = String(idx + 1).padStart(2, '0');
                     return (
                       <div key={task.key} className={cn(
@@ -1222,36 +1342,36 @@ export default function LectureView() {
                           <div className={cn("flex justify-between items-start mb-8", isRTL ? "flex-row" : "flex-row")}>
                             <div className={cn(
                                 "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 group-hover:rotate-12",
-                                done ? "bg-[#F05A22]/10 text-[#F05A22] shadow-lg shadow-[#F05A22]/10" : "bg-surface-container-low text-on-surface-variant/40"
+                                done ? "bg-primary/10 text-primary shadow-lg shadow-primary/10" : "bg-surface-container-low text-on-surface-variant/40"
                             )}>
                                 <span className="material-symbols-outlined text-3xl">{task.icon}</span>
                             </div>
                             <div className={cn("flex flex-col gap-1", isRTL ? "items-end" : "items-start")}>
                                 <span className={cn(
                                     "text-[9px] font-black uppercase tracking-[0.2em] transition-all",
-                                    done ? "text-[#F05A22]" : "text-on-surface-variant/40"
+                                    done ? "text-primary" : "text-on-surface-variant/40"
                                 )}>
                                   Step {stepNum}
                                 </span>
                                 <span className={cn(
                                     "text-[10px] font-black uppercase tracking-[0.1em] px-3 py-1 rounded-full",
-                                    done ? "text-[#F05A22] bg-[#F05A22]/10" : "text-on-surface-variant/40 bg-surface-container-low"
+                                    done ? "text-primary bg-primary/10" : "text-on-surface-variant/40 bg-surface-container-low"
                                 )}>
-                                  {done ? t.agentStatus.success : t.agentStatus.active}
+                                  {skipped ? (language === "ar" ? "غير محدد" : "Not selected") : done ? t.agentStatus.success : t.agentStatus.active}
                                 </span>
                             </div>
                           </div>
-                          <h3 className={cn("text-3xl font-black mb-3 text-[#111827] tracking-tight group-hover:text-[#F05A22] transition-colors", isRTL ? "text-right" : "text-left")}>{task.label}</h3>
-                          <p className={cn("text-base text-[#111827]/80 font-bold leading-relaxed", isRTL ? "text-right" : "text-left")}>{done ? task.doneMsg : task.pendingMsg}</p>
+                          <h3 className={cn("text-3xl font-black mb-3 text-[#111827] tracking-tight group-hover:text-primary transition-colors", isRTL ? "text-right" : "text-left")}>{task.label}</h3>
+                          <p className={cn("text-base text-[#111827]/80 font-bold leading-relaxed", isRTL ? "text-right" : "text-left")}>{skipped ? (language === "ar" ? "لم يتم اختياره — يمكنك إنشاؤه في أي وقت" : "Skipped — generate it anytime") : done ? task.doneMsg : task.pendingMsg}</p>
                         </div>
                         <div className="mt-6 relative z-10">
-                          {(done || ['quiz', 'transcript', 'chat'].includes(task.key)) ? (
+                          {(done || skipped || ['quiz', 'transcript', 'chat'].includes(task.key)) ? (
                             <button
                               onClick={() => { setActiveTab(task.tab); setForceShowContent(true); }}
                               className={cn(
                                 "w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-lg shadow-black/5",
                                 done 
-                                  ? "bg-on-surface text-white hover:bg-[#F05A22]" 
+                                  ? "bg-on-surface text-white hover:bg-primary" 
                                   : "bg-surface-container-low text-on-surface-variant/60 hover:bg-surface-container-high"
                               )}
                             >
@@ -1261,8 +1381,8 @@ export default function LectureView() {
                               </span>
                             </button>
                           ) : (
-                            <div className={cn("flex items-center justify-center gap-3 text-xs font-black text-[#F05A22] uppercase tracking-[0.2em] animate-pulse", isRTL ? "flex-row" : "flex-row")}>
-                              <span className="w-2 h-2 rounded-full bg-[#F05A22]" />
+                            <div className={cn("flex items-center justify-center gap-3 text-xs font-black text-primary uppercase tracking-[0.2em] animate-pulse", isRTL ? "flex-row" : "flex-row")}>
+                              <span className="w-2 h-2 rounded-full bg-primary" />
                               {t.agentStatus.coordinating}
                             </div>
                           )}
@@ -1305,7 +1425,7 @@ export default function LectureView() {
               </TabsContent>
 
               <TabsContent value="summary" className="mt-0 animate-in fade-in-50 duration-300">
-                {isSectionLoading("summary") ? (
+                {needsGeneration("summary") ? renderNotGenerated("summary", List) : isSectionLoading("summary") ? (
                   <SectionLoading section="summary" icon={List} />
                 ) : (
                   <SummaryView 
@@ -1318,7 +1438,7 @@ export default function LectureView() {
               </TabsContent>
 
               <TabsContent value="conceptMap" className="mt-0 animate-in fade-in-50 duration-300">
-                {isSectionLoading("conceptMap") ? (
+                {needsGeneration("conceptMap") ? renderNotGenerated("conceptMap", BrainCircuit) : isSectionLoading("conceptMap") ? (
                   <SectionLoading section="conceptMap" icon={BrainCircuit} />
                 ) : (
                   <ConceptMapView mindmapCode={lecture.conceptMap} lectureId={lectureId} />
@@ -1341,7 +1461,7 @@ export default function LectureView() {
 
               {!isPresentation && (
                 <TabsContent value="slides" className="mt-0 animate-in fade-in-50 duration-300">
-                  {isSectionLoading("slides") ? (
+                  {needsGeneration("slides") ? renderNotGenerated("slides", Presentation) : isSectionLoading("slides") ? (
                     <SectionLoading section="slides" icon={Presentation} />
                   ) : (
                     <SlidesView
@@ -1355,9 +1475,9 @@ export default function LectureView() {
                 </TabsContent>
               )}
 
-              {hasFormulas && (
+              {(hasFormulas || (needsGeneration("formulas") && hasRealMathContent)) && (
                 <TabsContent value="formulas" className="mt-0 animate-in fade-in-50 duration-300">
-                  {isSectionLoading("formulas") ? (
+                  {needsGeneration("formulas") ? renderNotGenerated("formulas", Sigma) : isSectionLoading("formulas") ? (
                     <SectionLoading section="formulas" icon={Sigma} />
                   ) : (
                     <FormulasView formulas={lecture.formulas || []} />
@@ -1367,7 +1487,7 @@ export default function LectureView() {
 
               {(hasMedical || isMedicalLecture) && (
                 <TabsContent value="medical" className="mt-0 animate-in fade-in-50 duration-300">
-                  {isSectionLoading("medical") ? (
+                  {needsGeneration("medical") ? renderNotGenerated("medical", Stethoscope) : isSectionLoading("medical") ? (
                     <SectionLoading section="medical" icon={Stethoscope} />
                   ) : (
                     <MedicalInsightsView medical={lecture.medical || {}} lectureTitle={lecture.title} />
@@ -1377,7 +1497,7 @@ export default function LectureView() {
 
               {(hasEngineering || isEngineeringLecture) && (
                 <TabsContent value="engineering" className="mt-0 animate-in fade-in-50 duration-300">
-                  {isSectionLoading("engineering") ? (
+                  {needsGeneration("engineering") ? renderNotGenerated("engineering", CircuitBoard) : isSectionLoading("engineering") ? (
                     <SectionLoading section="engineering" icon={CircuitBoard} />
                   ) : (
                     <EngineeringLabView engineering={lecture.engineering || {}} lectureTitle={lecture.title} />
@@ -1386,7 +1506,7 @@ export default function LectureView() {
               )}
 
               <TabsContent value="flashcards" className="mt-0 animate-in fade-in-50 duration-300">
-                {isSectionLoading("flashcards") ? (
+                {needsGeneration("flashcards") ? renderNotGenerated("flashcards", Brain) : isSectionLoading("flashcards") ? (
                   <SectionLoading section="flashcards" icon={Brain} />
                 ) : (
                   <FlashcardsView flashcards={lecture.flashcards || []} />
@@ -1452,28 +1572,30 @@ export default function LectureView() {
             <div className="bg-background rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full border">
               <DialogHeader className="p-4 border-b bg-card">
                 <DialogTitle className={cn("flex items-center gap-2", "flex-row")}>
-                  {popupTab === "transcript" && <><FileText className="w-5 h-5 text-[#F05A22]" /> {t.transcript}</>}
-                  {popupTab === "summary" && <><List className="w-5 h-5 text-[#F05A22]" /> {t.summary}</>}
-                  {popupTab === "conceptMap" && <><BrainCircuit className="w-5 h-5 text-[#F05A22]" /> {t.conceptMap}</>}
-                  {popupTab === "quiz" && <><HelpCircle className="w-5 h-5 text-[#F05A22]" /> {t.quiz}</>}
-                  {popupTab === "slides" && <><Presentation className="w-5 h-5 text-[#F05A22]" /> {t.slides}</>}
-                  {popupTab === "formulas" && <><Sigma className="w-5 h-5 text-[#F05A22]" /> {t.formulas}</>}
-                  {popupTab === "medical" && <><Stethoscope className="w-5 h-5 text-[#F05A22]" /> {t.medical}</>}
-                  {popupTab === "engineering" && <><CircuitBoard className="w-5 h-5 text-[#F05A22]" /> {t.engineering}</>}
-                  {popupTab === "flashcards" && <><Brain className="w-5 h-5 text-[#F05A22]" /> {t.cards}</>}
-                  {popupTab === "images" && <><ImageIcon className="w-5 h-5 text-[#F05A22]" /> {t.images}</>}
-                  {popupTab === "nanobanana" && <><Sparkles className="w-5 h-5 text-[#F05A22]" /> {language === "ar" ? "نانو بانانا" : "Nano Banana"}</>}
-                  {popupTab === "chat" && <><Bot className="w-5 h-5 text-[#F05A22]" /> {t.chat}</>}
+                  {popupTab === "transcript" && <><FileText className="w-5 h-5 text-primary" /> {t.transcript}</>}
+                  {popupTab === "summary" && <><List className="w-5 h-5 text-primary" /> {t.summary}</>}
+                  {popupTab === "conceptMap" && <><BrainCircuit className="w-5 h-5 text-primary" /> {t.conceptMap}</>}
+                  {popupTab === "quiz" && <><HelpCircle className="w-5 h-5 text-primary" /> {t.quiz}</>}
+                  {popupTab === "slides" && <><Presentation className="w-5 h-5 text-primary" /> {t.slides}</>}
+                  {popupTab === "formulas" && <><Sigma className="w-5 h-5 text-primary" /> {t.formulas}</>}
+                  {popupTab === "medical" && <><Stethoscope className="w-5 h-5 text-primary" /> {t.medical}</>}
+                  {popupTab === "engineering" && <><CircuitBoard className="w-5 h-5 text-primary" /> {t.engineering}</>}
+                  {popupTab === "flashcards" && <><Brain className="w-5 h-5 text-primary" /> {t.cards}</>}
+                  {popupTab === "images" && <><ImageIcon className="w-5 h-5 text-primary" /> {t.images}</>}
+                  {popupTab === "nanobanana" && <><ImagePlus className="w-5 h-5 text-primary" /> {language === "ar" ? "نانو بانانا" : "Nano Banana"}</>}
+                  {popupTab === "chat" && <><Bot className="w-5 h-5 text-primary" /> {t.chat}</>}
                 </DialogTitle>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto p-6 bg-background">
                 {popupTab === "transcript" && (
                   <TranscriptView text={lecture.transcript || "No transcript available."} title={lecture.title} images={lecture.extractedImages || []} transcriptChunks={lecture.transcriptChunks || []} />
                 )}
-                {popupTab === "summary" && (
+                {popupTab === "summary" && needsGeneration("summary") && renderNotGenerated("summary", List)}
+                {popupTab === "summary" && !needsGeneration("summary") && (
                   <SummaryView summary={lecture.summary || []} title={lecture.title} />
                 )}
-                {popupTab === "conceptMap" && (
+                {popupTab === "conceptMap" && needsGeneration("conceptMap") && renderNotGenerated("conceptMap", BrainCircuit)}
+                {popupTab === "conceptMap" && !needsGeneration("conceptMap") && (
                   <ConceptMapView mindmapCode={lecture.conceptMap} lectureId={lectureId} />
                 )}
                 {popupTab === "quiz" && (
@@ -1485,7 +1607,8 @@ export default function LectureView() {
                     modelType={selectedModel}
                   />
                 )}
-                {popupTab === "slides" && (
+                {popupTab === "slides" && needsGeneration("slides") && renderNotGenerated("slides", Presentation)}
+                {popupTab === "slides" && !needsGeneration("slides") && (
                   <SlidesView
                     slides={lecture.slides || []}
                     title={lecture.title}
@@ -1494,16 +1617,20 @@ export default function LectureView() {
                     lectureId={lecture.id}
                   />
                 )}
-                {popupTab === "formulas" && (
+                {popupTab === "formulas" && needsGeneration("formulas") && renderNotGenerated("formulas", Sigma)}
+                {popupTab === "formulas" && !needsGeneration("formulas") && (
                   <FormulasView formulas={lecture.formulas || []} />
                 )}
-                {popupTab === "medical" && (
+                {popupTab === "medical" && needsGeneration("medical") && renderNotGenerated("medical", Stethoscope)}
+                {popupTab === "medical" && !needsGeneration("medical") && (
                   <MedicalInsightsView medical={lecture.medical || {}} lectureTitle={lecture.title} />
                 )}
-                {popupTab === "engineering" && (
+                {popupTab === "engineering" && needsGeneration("engineering") && renderNotGenerated("engineering", CircuitBoard)}
+                {popupTab === "engineering" && !needsGeneration("engineering") && (
                   <EngineeringLabView engineering={lecture.engineering || {}} lectureTitle={lecture.title} />
                 )}
-                {popupTab === "flashcards" && (
+                {popupTab === "flashcards" && needsGeneration("flashcards") && renderNotGenerated("flashcards", Brain)}
+                {popupTab === "flashcards" && !needsGeneration("flashcards") && (
                   <FlashcardsView flashcards={lecture.flashcards || []} />
                 )}
                 {popupTab === "images" && (

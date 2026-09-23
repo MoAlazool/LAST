@@ -4,7 +4,7 @@ import { useLecture, useLectures } from "@/hooks/useLectures";
 import { analyzeImageWithAI } from "@/lib/aiService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageIcon, Sparkles, Loader2, ChevronLeft, Maximize2, RotateCw, Globe } from "lucide-react";
+import { ImageIcon, Loader2, ChevronLeft, Maximize2, RotateCw, Globe, ScanSearch } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -134,7 +134,7 @@ export default function ImageAnalysisPage() {
                         </Button>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                                <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                                <ScanSearch className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                                 {t.title}
                             </h1>
                             <p className="text-muted-foreground text-sm mt-1">
@@ -213,7 +213,7 @@ export default function ImageAnalysisPage() {
                                     </h2>
                                     {!currentDescription && !isAnalyzing && (
                                         <Button onClick={() => handleAnalyze()} className="gap-2">
-                                            <Sparkles className="w-4 h-4" />
+                                            <ScanSearch className="w-4 h-4" />
                                             {t.analyze}
                                         </Button>
                                     )}
@@ -232,7 +232,7 @@ export default function ImageAnalysisPage() {
                                         >
                                             <div className="relative">
                                                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                                                <Sparkles className="w-5 h-5 text-primary absolute -top-1 -right-1 animate-pulse" />
+                                                
                                             </div>
                                             <div className="space-y-2 text-center">
                                                 <p className="text-xl font-medium animate-pulse">{t.analyzing}</p>
@@ -261,7 +261,7 @@ export default function ImageAnalysisPage() {
                                             className="flex flex-col items-center justify-center py-20 text-muted-foreground text-center space-y-4"
                                         >
                                             <div className="p-4 rounded-full bg-muted/50">
-                                                <Sparkles className="w-10 h-10 opacity-30" />
+                                                <ImageIcon className="w-10 h-10 opacity-30" />
                                             </div>
                                             <p className="italic text-lg">{t.noDescription}</p>
                                             <Button variant="outline" onClick={() => handleAnalyze()} className="mt-2">

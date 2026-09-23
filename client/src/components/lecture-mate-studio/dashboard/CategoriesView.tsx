@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, Microscope, Palette, Binary, LineChart, Brain, Quote, Sparkles, Monitor, Cpu, Languages, Briefcase, Pencil, ArrowRight } from "lucide-react";
+import { BookOpen, GraduationCap, Microscope, Palette, Binary, LineChart, Brain, Quote, Monitor, Cpu, Languages, Briefcase, Pencil, ArrowRight, Lightbulb } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useLectures } from "@/hooks/useLectures";
@@ -9,7 +9,7 @@ const CATEGORY_MAP_RAW: Record<LectureCategory, { nameEn: string; nameAr: string
   science: { nameEn: "Science", nameAr: "العلوم", icon: Microscope, iconBg: "bg-blue-50" },
   technology: { nameEn: "Technology", nameAr: "التكنولوجيا", icon: Cpu, iconBg: "bg-slate-50" },
   engineering: { nameEn: "Engineering", nameAr: "الهندسة", icon: Cpu, iconBg: "bg-violet-50" },
-  mathematics: { nameEn: "Mathematics", nameAr: "الرياضيات", icon: Binary, iconBg: "bg-orange-50" },
+  mathematics: { nameEn: "Mathematics", nameAr: "الرياضيات", icon: Binary, iconBg: "bg-primary/5" },
   medicine: { nameEn: "Medicine", nameAr: "الطب", icon: Brain, iconBg: "bg-red-50" },
   history: { nameEn: "History", nameAr: "التاريخ", icon: BookOpen, iconBg: "bg-amber-50" },
   art: { nameEn: "Art & Design", nameAr: "الفن والتصميم", icon: Palette, iconBg: "bg-pink-50" },
@@ -43,8 +43,8 @@ export default function CategoriesView() {
         : "Once you upload and analyze your first lecture, it will appear here automatically grouped by subject.",
     curatorStats: language === "ar" ? "إحصائيات المنسق" : "CURATOR ANALYTICS",
     speedTitle: language === "ar" 
-        ? <>زادت سرعة تحليلك بنسبة <span className="text-[#F05A22]">14%</span> هذا الشهر.</>
-        : <>Analysis velocity increased by <span className="text-[#F05A22]">14%</span> this month.</>,
+        ? <>زادت سرعة تحليلك بنسبة <span className="text-primary">14%</span> هذا الشهر.</>
+        : <>Analysis velocity increased by <span className="text-primary">14%</span> this month.</>,
     totalLectures: language === "ar" ? "إجمالي المحاضرات" : "Total Sessions",
     timeSaved: language === "ar" ? "الوقت الموفر" : "Cognitive Time Saved",
     didYouKnow: language === "ar" ? "هل تعلم؟" : "Did you know?",
@@ -109,7 +109,7 @@ export default function CategoriesView() {
       {lectures.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
            <div className={cn(
-             "lg:col-span-8 bg-[#f5e6e0]/40 rounded-[2.5rem] p-12 border border-[#F05A22]/5 relative overflow-hidden",
+             "lg:col-span-8 bg-[#f5e6e0]/40 rounded-[2.5rem] p-12 border border-primary/5 relative overflow-hidden",
              isRTL ? "text-right" : "text-left"
            )}>
               <div className={cn(
@@ -118,7 +118,7 @@ export default function CategoriesView() {
               )} />
               
               <div className="relative z-10">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#F05A22] mb-4">{t.curatorStats}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">{t.curatorStats}</p>
                   <h3 className={cn(
                     "text-3xl font-black text-on-surface leading-tight max-w-md mb-10",
                     isRTL ? "mr-0 ml-auto" : "ml-0 mr-auto"
@@ -146,10 +146,10 @@ export default function CategoriesView() {
              isRTL ? "text-right" : "text-left"
            )}>
               <div className={cn(
-                "w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-[#F05A22] mb-6",
+                "w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary mb-6",
                 isRTL ? "mr-0 ml-auto" : "ml-0 mr-auto"
               )}>
-                  <Sparkles size={24} />
+                  <Lightbulb size={24} />
               </div>
               <h4 className="text-lg font-bold text-on-surface mb-3">{t.didYouKnow}</h4>
               <p className="text-sm text-on-surface-variant leading-relaxed">
@@ -177,7 +177,7 @@ function CategoryCard({ category }: { category: any }) {
       className="no-underline block h-full group"
     >
       <div className={cn(
-        "bg-white h-full rounded-[3rem] p-10 shadow-[0_4px_25px_rgba(0,0,0,0.02)] border border-outline-variant/30 group-hover:border-[#F05A22]/30 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden flex flex-col h-full",
+        "bg-white h-full rounded-[3rem] p-10 shadow-[0_4px_25px_rgba(0,0,0,0.02)] border border-outline-variant/30 group-hover:border-primary/30 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden flex flex-col h-full",
         isRTL ? "text-right" : "text-left"
       )}>
         <div className={cn(
@@ -189,10 +189,10 @@ function CategoryCard({ category }: { category: any }) {
 
         <div className={cn("flex items-center gap-6 mb-8", isRTL ? "flex-row" : "flex-row")}>
           <div className={cn("w-16 h-16 rounded-[1.25rem] flex items-center justify-center shadow-inner", category.iconBg)}>
-            <category.icon size={30} className="text-[#F05A22]" />
+            <category.icon size={30} className="text-primary" />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-on-surface tracking-tight group-hover:text-[#F05A22] transition-colors leading-tight">
+            <h3 className="text-2xl font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-tight">
               {category.name}
             </h3>
             <p className="text-[12px] font-black text-on-surface-variant/40 uppercase tracking-[0.1em]">
@@ -208,7 +208,7 @@ function CategoryCard({ category }: { category: any }) {
                       {l.thumbnailUrl ? (
                           <img src={l.thumbnailUrl} className="w-full h-full object-cover" alt="" title={l.title} />
                       ) : (
-                          <div className="w-full h-full bg-[#F05A22]/10 flex items-center justify-center text-[8px] font-bold text-[#F05A22]">
+                          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">
                               DOC
                           </div>
                       )}
@@ -226,10 +226,10 @@ function CategoryCard({ category }: { category: any }) {
             isRTL ? "justify-start flex-row" : "justify-end flex-row"
           )}>
               <span className={cn(
-                "font-bold text-sm tracking-tight group-hover/link:text-[#F05A22] transition-colors whitespace-nowrap",
+                "font-bold text-sm tracking-tight group-hover/link:text-primary transition-colors whitespace-nowrap",
                 isRTL ? "ml-3" : "mr-3"
               )}>{viewLibrary}</span>
-              <div className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center group-hover/link:bg-[#F05A22] group-hover/link:text-white transition-all shadow-sm shrink-0">
+              <div className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center group-hover/link:bg-primary group-hover/link:text-white transition-all shadow-sm shrink-0">
                   {isRTL ? (
                     <ArrowRight size={18} className="rotate-180" />
                   ) : (

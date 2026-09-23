@@ -12,11 +12,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import { Link } from "wouter";
+import { useUsage, formatResetIn } from "@/hooks/useUsage";
 
 export default function Profile() {
   const { user, loading, signOut, updateUserProfile } = useAuth();
   const { toast } = useToast();
   const { language, isRTL } = useLanguage();
+  const { usage } = useUsage();
+  const isPro = usage?.plan === "pro";
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"general" | "billing" | "security">("general");
   const [firstName, setFirstName] = useState("");
@@ -95,20 +99,6 @@ export default function Profile() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleManageSubscription = () => {
-    toast({
-      title: language === "ar" ? "قريباً" : "Coming Soon",
-      description: language === "ar" ? "ستكون هذه الميزة متاحة قريباً." : "This feature will be available soon.",
-    });
-  };
-
-  const handleUpdatePayment = () => {
-    toast({
-      title: language === "ar" ? "قريباً" : "Coming Soon",
-      description: language === "ar" ? "ستكون هذه الميزة متاحة قريباً." : "This feature will be available soon.",
-    });
   };
 
   const handleSignOut = async () => {
@@ -250,39 +240,35 @@ export default function Profile() {
               <Card>
                 <CardHeader>
                   <CardTitle>{t.subscriptionPlan}</CardTitle>
-                  <CardDescription>{t.proPlanDesc}</CardDescription>
+                  <CardDescription>
+                    {isPro
+                      ? (language === "ar" ? "أنت على خطة Pro — تحليلات غير محدودة." : "You're on the Pro plan — unlimited analyses.")
+                      : (language === "ar" ? "أنت على الخطة المجانية." : "You're on the Free plan.")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Current Plan */}
-                  <div className={cn("flex items-center justify-between p-4 border rounded-lg bg-secondary/10")}>
+                  <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-xl bg-surface-container-low")}>
                     <div className="space-y-1">
                       <div className={cn("flex items-center gap-2")}>
-                        <span className="font-semibold">{t.proPlan}</span>
-                        <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">{t.active}</Badge>
+                        <span className="font-semibold">{isPro ? "Pro" : (language === "ar" ? "المجانية" : "Free")}</span>
+                        <Badge variant="outline" className="border-emerald-600/30 text-emerald-700 bg-emerald-50">{t.active}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{t.proPlanFeatures}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {isPro
+                          ? (language === "ar" ? "تحليلات غير محدودة وأولوية في المعالجة." : "Unlimited analyses and priority processing.")
+                          : usage && usage.limit !== null
+                            ? (language === "ar"
+                                ? `متبقٍ ${usage.remaining} من ${usage.limit} تحليلات${usage.resetAt ? ` · تتجدد خلال ${formatResetIn(usage.resetAt, true)}` : ""}`
+                                : `${usage.remaining} of ${usage.limit} analyses left${usage.resetAt ? ` · resets in ${formatResetIn(usage.resetAt, false)}` : ""}`)
+                            : (language === "ar" ? "3 تحليلات كل 24 ساعة." : "3 analyses every 24 hours.")}
+                      </p>
                     </div>
-                    <Button variant="outline" onClick={handleManageSubscription}>
-                      {t.manageSubscription}
-                    </Button>
+                    {!isPro && (
+                      <Button asChild>
+                        <Link href="/pricing">{language === "ar" ? "الترقية إلى Pro" : "Upgrade to Pro"}</Link>
+                      </Button>
+                    )}
                   </div>
-
-                  {/* Billing Details */}
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">{t.nextBilling}</Label>
-                      <p className="text-sm text-muted-foreground">{t.nextBillingDate}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">{t.paymentMethod}</Label>
-                      <p className="text-sm text-muted-foreground">{t.paymentMethodDesc}</p>
-                    </div>
-                  </div>
-
-                  {/* Update Payment Button */}
-                  <Button variant="outline" className="w-full" onClick={handleUpdatePayment}>
-                    {t.updatePayment}
-                  </Button>
                 </CardContent>
               </Card>
             )}

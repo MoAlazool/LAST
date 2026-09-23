@@ -290,6 +290,7 @@ export interface Lecture {
   sourceType?: "youtube" | "pdf" | "pptx" | "docx" | "audio" | "video"; // Source of the lecture
   sourceUrl?: string; // Public URL of the original source file (if uploaded)
   documentPageCount?: number; // Total pages/slides of original uploaded document
+  requestedFeatures?: string[]; // AI features picked before analysis (undefined = legacy, all features)
 }
 
 export const MOCK_LECTURES: Lecture[] = [

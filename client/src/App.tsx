@@ -19,6 +19,7 @@ import ImageAnalysisPage from "@/pages/image-analysis";
 import FullscreenView from "@/pages/fullscreen-view";
 import Categories from "@/pages/categories";
 import ChatHistoryPage from "@/pages/chat-history";
+import Pricing from "@/pages/pricing";
 
 
 function Router() {
@@ -67,6 +68,11 @@ function Router() {
       <Route path="/categories">
         <ProtectedRoute>
           <Categories />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/pricing">
+        <ProtectedRoute>
+          <Pricing />
         </ProtectedRoute>
       </Route>
       <Route path="/chat-history">

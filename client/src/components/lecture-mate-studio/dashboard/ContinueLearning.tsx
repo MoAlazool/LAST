@@ -35,7 +35,7 @@ export default function ContinueLearning() {
       progress: 89,
       updated: language === "ar" ? "تم التحديث منذ 3 أيام" : "Updated 3 days ago",
       icon: BookMarked,
-      color: "bg-orange-100 text-orange-600",
+      color: "bg-primary/10 text-primary",
     },
   ];
 
@@ -60,7 +60,7 @@ export default function ContinueLearning() {
         <button
           type="button"
           className={cn(
-            "text-[#F05A22] text-[15px] font-semibold flex items-center gap-0.5 hover:gap-1.5 transition-all font-sans",
+            "text-primary text-[15px] font-semibold flex items-center gap-0.5 hover:gap-1.5 transition-all font-sans",
             isRTL ? "flex-row" : "flex-row"
           )}
         >
@@ -88,7 +88,7 @@ export default function ContinueLearning() {
             <div className={cn("flex items-start justify-between mb-5", isRTL ? "flex-row" : "flex-row")}>
               <div
                 className={cn(
-                  "p-3.5 rounded-full transition-colors group-hover:bg-[#F05A22] group-hover:text-white",
+                  "p-3.5 rounded-full transition-colors group-hover:bg-primary group-hover:text-white",
                   course.color
                 )}
               >
@@ -112,14 +112,14 @@ export default function ContinueLearning() {
             <div className="space-y-3">
               <div className={cn("flex justify-between text-xs font-bold font-headline", isRTL ? "flex-row" : "flex-row")}>
                 <span className="text-on-surface-variant">{t.progress}</span>
-                <span className="text-[#F05A22]">{course.progress}%</span>
+                <span className="text-primary">{course.progress}%</span>
               </div>
               <div className="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${course.progress}%` }}
                   transition={{ duration: 1, delay: 0.5 }}
-                  className="bg-[#F05A22] h-full rounded-full"
+                  className="bg-primary h-full rounded-full"
                 />
               </div>
             </div>

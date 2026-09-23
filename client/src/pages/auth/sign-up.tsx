@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, Eye, EyeOff, Mail, Lock, User, GraduationCap, Briefcase, Presentation, Sparkles, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Eye, EyeOff, Mail, Lock, User, GraduationCap, Briefcase, Presentation, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -90,7 +90,7 @@ export default function SignUp() {
     { id: "student", icon: <GraduationCap className="w-5 h-5" /> },
     { id: "educator", icon: <Presentation className="w-5 h-5" /> },
     { id: "professional", icon: <Briefcase className="w-5 h-5" /> },
-    { id: "learner", icon: <Sparkles className="w-5 h-5" /> },
+    { id: "learner", icon: <GraduationCap className="w-5 h-5" /> },
   ];
 
   const goToStep2 = () => {
@@ -143,7 +143,7 @@ export default function SignUp() {
         <div className={cn("flex items-center gap-3 mb-6")}>
           <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">{t.step} {step} {t.of} 2</span>
           <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-[#F05A22]" animate={{ width: `${step * 50}%` }} transition={{ duration: 0.4 }} />
+            <motion.div className="h-full rounded-full bg-primary" animate={{ width: `${step * 50}%` }} transition={{ duration: 0.4 }} />
           </div>
         </div>
 
@@ -158,12 +158,12 @@ export default function SignUp() {
                   <Label className="text-sm font-bold text-slate-700">{t.firstName}</Label>
                   <div className="relative">
                     <User className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400", isRTL ? "right-3.5" : "left-3.5")} />
-                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={language === "ar" ? "محمد" : "John"} dir={isRTL ? "rtl" : "ltr"} className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]", isRTL ? "pr-10" : "pl-10")} />
+                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={language === "ar" ? "محمد" : "John"} dir={isRTL ? "rtl" : "ltr"} className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary", isRTL ? "pr-10" : "pl-10")} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-bold text-slate-700">{t.lastName}</Label>
-                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={language === "ar" ? "أحمد" : "Doe"} dir={isRTL ? "rtl" : "ltr"} className="h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]" />
+                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={language === "ar" ? "أحمد" : "Doe"} dir={isRTL ? "rtl" : "ltr"} className="h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary" />
                 </div>
               </div>
 
@@ -179,11 +179,11 @@ export default function SignUp() {
                         onClick={() => setRole(r.id)}
                         className={cn(
                           "relative flex items-center gap-3 p-3.5 rounded-2xl border-2 text-sm font-bold transition-all text-start",
-                          active ? "border-[#F05A22] bg-[#F05A22]/5 text-[#F05A22]" : "border-slate-200 text-slate-600 hover:border-slate-300",
+                          active ? "border-primary bg-primary/5 text-primary" : "border-slate-200 text-slate-600 hover:border-slate-300",
                           isRTL && "text-right",
                         )}
                       >
-                        <span className={cn("shrink-0", active ? "text-[#F05A22]" : "text-slate-400")}>{r.icon}</span>
+                        <span className={cn("shrink-0", active ? "text-primary" : "text-slate-400")}>{r.icon}</span>
                         <span className="flex-1">{t.roles[r.id]}</span>
                         {active && <Check className="w-4 h-4 shrink-0" />}
                       </button>
@@ -192,7 +192,7 @@ export default function SignUp() {
                 </div>
               </div>
 
-              <Button onClick={goToStep2} className="mt-7 w-full h-12 rounded-xl bg-slate-900 hover:bg-[#F05A22] text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]">
+              <Button onClick={goToStep2} className="mt-7 w-full h-12 rounded-xl bg-slate-900 hover:bg-primary text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]">
                 <span className="flex items-center gap-2">
                   {t.continue}
                   <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
@@ -222,7 +222,7 @@ export default function SignUp() {
 
               <p className="text-sm text-slate-500 mt-6 text-center font-medium">
                 {t.haveAccount}{" "}
-                <Link href="/sign-in" className="text-[#F05A22] hover:underline font-bold">{t.signIn}</Link>
+                <Link href="/sign-in" className="text-primary hover:underline font-bold">{t.signIn}</Link>
               </p>
             </motion.div>
           ) : (
@@ -237,7 +237,7 @@ export default function SignUp() {
                   <Label className="text-sm font-bold text-slate-700">{t.email}</Label>
                   <div className="relative">
                     <Mail className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400", isRTL ? "right-3.5" : "left-3.5")} />
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={language === "ar" ? "example@email.com" : "you@example.com"} required dir={isRTL ? "rtl" : "ltr"} className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]", isRTL ? "pr-10" : "pl-10")} />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={language === "ar" ? "example@email.com" : "you@example.com"} required dir={isRTL ? "rtl" : "ltr"} className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary", isRTL ? "pr-10" : "pl-10")} />
                   </div>
                 </div>
 
@@ -252,7 +252,7 @@ export default function SignUp() {
                       placeholder="••••••••"
                       required
                       dir={isRTL ? "rtl" : "ltr"}
-                      className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-[#F05A22]/30 focus-visible:border-[#F05A22]", isRTL ? "pr-10 pl-10" : "pl-10 pr-10")}
+                      className={cn("h-12 rounded-xl border-slate-200 focus-visible:ring-primary/30 focus-visible:border-primary", isRTL ? "pr-10 pl-10" : "pl-10 pr-10")}
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors", isRTL ? "left-3.5" : "right-3.5")}>
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -278,7 +278,7 @@ export default function SignUp() {
                     <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
                     {t.back}
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-[#F05A22] text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]">
+                  <Button type="submit" disabled={isLoading} className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-primary text-white font-black text-[15px] shadow-lg shadow-slate-900/10 transition-all active:scale-[0.99]">
                     {isLoading ? (
                       <span className="flex items-center gap-2">
                         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
@@ -296,7 +296,7 @@ export default function SignUp() {
 
               <p className="text-sm text-slate-500 mt-6 text-center font-medium">
                 {t.haveAccount}{" "}
-                <Link href="/sign-in" className="text-[#F05A22] hover:underline font-bold">{t.signIn}</Link>
+                <Link href="/sign-in" className="text-primary hover:underline font-bold">{t.signIn}</Link>
               </p>
             </motion.div>
           )}

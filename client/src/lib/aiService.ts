@@ -580,7 +580,7 @@ export async function downloadSlidesPptx(
     animate?: boolean;
     format?: "image" | "editable" | "hybrid";
   }
-): Promise<void> {
+): Promise<{ renderedAs: "image" | "hybrid" | "text" | null; renderError?: string }> {
   try {
     // Validate slides data
     if (!slides || !Array.isArray(slides) || slides.length === 0) {
@@ -637,6 +637,11 @@ export async function downloadSlidesPptx(
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
+    // The server reports what it actually produced; a designed render can fall back to text.
+    const renderedAs = response.headers.get("X-Slides-Render") as "image" | "hybrid" | "text" | null;
+    const errHeader = response.headers.get("X-Slides-Render-Error");
+    return { renderedAs, renderError: errHeader ? decodeURIComponent(errHeader) : undefined };
   } catch (error: any) {
     console.error("[aiService] Error downloading PPTX:", error);
     throw error;

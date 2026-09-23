@@ -20,7 +20,7 @@ import "katex/dist/katex.min.css";
 function LectureTypeIcon({ type }: { type: ChatSession["lectureType"] }) {
   const cls = "w-4 h-4";
   if (type === "pdf") return <FileText className={cn(cls, "text-red-500")} />;
-  if (type === "pptx") return <Presentation className={cn(cls, "text-orange-500")} />;
+  if (type === "pptx") return <Presentation className={cn(cls, "text-primary")} />;
   if (type === "docx") return <FileText className={cn(cls, "text-blue-500")} />;
   if (type === "youtube" || type === "video") return <Video className={cn(cls, "text-rose-500")} />;
   if (type === "audio") return <MessageSquare className={cn(cls, "text-purple-500")} />;
@@ -30,7 +30,7 @@ function LectureTypeIcon({ type }: { type: ChatSession["lectureType"] }) {
 function LectureTypeBadge({ type }: { type: ChatSession["lectureType"] }) {
   const map: Record<string, { label: string; color: string }> = {
     pdf:     { label: "PDF",        color: "bg-red-50 text-red-600 border-red-200" },
-    pptx:    { label: "PowerPoint", color: "bg-orange-50 text-orange-600 border-orange-200" },
+    pptx:    { label: "PowerPoint", color: "bg-primary/5 text-primary border-primary/20" },
     docx:    { label: "Word",       color: "bg-blue-50 text-blue-600 border-blue-200" },
     youtube: { label: "YouTube",    color: "bg-rose-50 text-rose-600 border-rose-200" },
     video:   { label: "Video",      color: "bg-rose-50 text-rose-600 border-rose-200" },
@@ -126,7 +126,7 @@ export default function ChatHistoryPage() {
         {/* Header */}
         <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8")}>
           <div>
-            <p className="text-[#F05A22] font-black text-[10px] uppercase tracking-widest mb-2">
+            <p className="text-primary font-black text-[10px] uppercase tracking-widest mb-2">
               {language === "ar" ? "الوكيل الذكي" : "AI Agent"}
             </p>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t.title}</h1>
@@ -151,7 +151,7 @@ export default function ChatHistoryPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t.search}
-              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#F05A22]/20 focus:border-[#F05A22]/50 transition-all"
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
               dir="auto"
             />
             {search && (
@@ -165,13 +165,13 @@ export default function ChatHistoryPage() {
         {/* Empty states */}
         {sessions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-20 h-20 rounded-3xl bg-[#F05A22]/10 flex items-center justify-center mb-6">
-              <MessageSquare className="w-10 h-10 text-[#F05A22]" />
+            <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
+              <MessageSquare className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-xl font-black text-slate-900 mb-2">{t.empty}</h3>
             <p className="text-slate-500 text-sm max-w-xs">{t.emptyHint}</p>
             <Link href="/">
-              <button className="mt-6 px-6 py-3 bg-[#F05A22] text-white rounded-2xl font-bold text-sm hover:bg-[#D44A1B] transition-all shadow-lg shadow-[#F05A22]/20">
+              <button className="mt-6 px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-[#D44A1B] transition-all shadow-lg shadow-primary/20">
                 {language === "ar" ? "تصفح المحاضرات" : "Browse Lectures"}
               </button>
             </Link>
@@ -182,7 +182,7 @@ export default function ChatHistoryPage() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Search className="w-8 h-8 text-slate-300 mb-3" />
             <p className="text-slate-500 font-medium">{t.noResults}</p>
-            <button onClick={() => setSearch("")} className="mt-3 text-sm text-[#F05A22] font-bold hover:underline">
+            <button onClick={() => setSearch("")} className="mt-3 text-sm text-primary font-bold hover:underline">
               {language === "ar" ? "مسح البحث" : "Clear search"}
             </button>
           </div>
@@ -213,7 +213,7 @@ export default function ChatHistoryPage() {
                     )}
                     onClick={() => setExpandedId(isExpanded ? null : session.lectureId)}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-[#F05A22]/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <LectureTypeIcon type={session.lectureType} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -236,7 +236,7 @@ export default function ChatHistoryPage() {
                       <Link href={`/lecture/${session.lectureId}?tab=chat`}>
                         <button
                           onClick={e => e.stopPropagation()}
-                          className="text-[10px] px-3 py-1.5 rounded-lg border border-[#F05A22]/30 text-[#F05A22] hover:bg-[#F05A22]/5 font-bold transition-all"
+                          className="text-[10px] px-3 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/5 font-bold transition-all"
                         >
                           {t.openLecture}
                         </button>
@@ -308,10 +308,10 @@ export default function ChatHistoryPage() {
                             >
                               <div className={cn(
                                 "w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-                                msg.role === "ai" ? "bg-[#F05A22]/10" : "bg-slate-200"
+                                msg.role === "ai" ? "bg-primary/10" : "bg-slate-200"
                               )}>
                                 {msg.role === "ai"
-                                  ? <Bot className="w-3.5 h-3.5 text-[#F05A22]" />
+                                  ? <Bot className="w-3.5 h-3.5 text-primary" />
                                   : <User className="w-3.5 h-3.5 text-slate-500" />
                                 }
                               </div>
@@ -326,7 +326,7 @@ export default function ChatHistoryPage() {
                                   "px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
                                   msg.role === "ai"
                                     ? "bg-white border border-slate-200 text-slate-800"
-                                    : "bg-[#F05A22] text-white"
+                                    : "bg-primary text-white"
                                 )}>
                                   {msg.image && (
                                     <div className="mb-2 rounded-lg overflow-hidden max-w-[200px]">

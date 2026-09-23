@@ -1,19 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Maximize2, 
-  Search, 
-  Copy,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  MoreVertical,
-  Image as ImageIcon,
-  BarChart3,
-  Sparkles
-} from "lucide-react";
+import { Maximize2, Search, Copy, Upload, ChevronLeft, ChevronRight, User, MoreVertical, Image as ImageIcon, BarChart3, Images, ScanSearch } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -259,7 +247,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
             <aside className="w-64 bg-white border-e border-slate-100 flex flex-col py-8 px-6 space-y-10 shrink-0">
                 <div className="flex items-center gap-4 px-2">
                    <div className="w-10 h-10 rounded-full bg-[#bd4816] flex items-center justify-center text-white shadow-md">
-                      <Sparkles className="w-5 h-5 fill-white" />
+                      <Images className="w-5 h-5 fill-white" />
                    </div>
                    <div>
                       <h3 className="font-bold text-[13px] text-slate-800 leading-tight">{t.academicLuminary}</h3>
@@ -278,7 +266,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
 
                 <div className="pt-8 mt-auto flex justify-center">
                    <button 
-                     className="w-full py-3.5 bg-[#be4816] text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20 hover:brightness-110 active:scale-95 transition-all"
+                     className="w-full py-3.5 bg-primary text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20 hover:brightness-110 active:scale-95 transition-all"
                    >
                       <Upload className="w-4 h-4" />
                       {t.uploadLecture}
@@ -396,7 +384,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                         <div className="pt-6 mt-4 flex items-center gap-3">
                                            <button 
                                               onClick={() => setSelectedImage(img)}
-                                              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#be4816] text-white rounded-full font-bold text-[13px] hover:bg-[#a63e12] transition-colors"
+                                              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-[13px] hover:bg-primary/90 transition-colors"
                                               style={{ flexShrink: 0 }}
                                            >
                                               <Search className="w-3.5 h-3.5" />
@@ -404,7 +392,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                            </button>
                                            <button 
                                               onClick={() => handleCopy(img.descriptionAr || img.parsedDesc)}
-                                              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[#be4816] hover:bg-orange-50 rounded-full font-bold text-[13px] transition-colors"
+                                              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[#be4816] hover:bg-primary/5 rounded-full font-bold text-[13px] transition-colors"
                                               style={{ flexShrink: 0 }}
                                            >
                                               <Copy className="w-3.5 h-3.5" />
@@ -488,7 +476,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                         >
                             <button 
                                onClick={() => setSelectedImage(null)}
-                               className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/60 hover:bg-[#be4816] text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+                               className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/60 hover:bg-primary text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
                             >
                                <span className="material-symbols-outlined font-bold">close</span>
                             </button>
@@ -505,8 +493,8 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                             {/* Detailed Explanation Section */}
                             <div className="p-8 md:p-10 bg-white">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-[#be4816]">
-                                        <Sparkles className="w-5 h-5" />
+                                    <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-[#be4816]">
+                                        <ScanSearch className="w-5 h-5" />
                                     </div>
                                     <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
                                         {selectedImage.parsedTitle}
@@ -536,7 +524,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                             <ul className="space-y-3">
                                                 {selectedImage.bullets.map((bullet: string, i: number) => (
                                                     <li key={i} className="flex items-start gap-3">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-[#be4816] mt-2.5 shrink-0"></span>
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5 shrink-0"></span>
                                                         <span className="text-base text-slate-600 font-medium">{bullet}</span>
                                                     </li>
                                                 ))}
@@ -560,7 +548,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                                         return (
                                                             <Tooltip key={i}>
                                                                 <TooltipTrigger asChild>
-                                                                    <span className="bg-[#fdf2eb] text-[#be4816] px-4 py-2 rounded-xl text-xs font-bold block border border-[#be4816]/10 hover:bg-[#be4816] hover:text-white transition-all shadow-sm cursor-help">
+                                                                    <span className="bg-[#fdf2eb] text-[#be4816] px-4 py-2 rounded-xl text-xs font-bold block border border-[#be4816]/10 hover:bg-primary hover:text-white transition-all shadow-sm cursor-help">
                                                                         {actualTerm}
                                                                     </span>
                                                                 </TooltipTrigger>
@@ -568,7 +556,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                                                     side="top" 
                                                                     className="z-[200] w-56 p-4 bg-[#111827] text-white text-[12px] font-medium leading-relaxed rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] text-center border-none"
                                                                 >
-                                                                    <span className="block text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-1.5 line-clamp-1">{language === 'ar' ? 'تعريف مُستخرَج' : 'Contextual Definition'}</span>
+                                                                    <span className="block text-[10px] text-primary/80 font-bold uppercase tracking-widest mb-1.5 line-clamp-1">{language === 'ar' ? 'تعريف مُستخرَج' : 'Contextual Definition'}</span>
                                                                     {explanation}
                                                                 </TooltipContent>
                                                             </Tooltip>
@@ -583,7 +571,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                 <div className="mt-10 pt-6 border-t border-slate-100 flex justify-end">
                                     <button 
                                        onClick={() => handleCopy(selectedImage.descriptionAr || selectedImage.parsedDesc)}
-                                       className="flex items-center gap-2 px-6 py-3 bg-[#be4816] text-white hover:bg-[#a63e12] rounded-full font-bold text-sm transition-colors shadow-lg shadow-orange-900/10"
+                                       className="flex items-center gap-2 px-6 py-3 bg-primary text-white hover:bg-primary/90 rounded-full font-bold text-sm transition-colors shadow-lg shadow-orange-900/10"
                                     >
                                        <Copy className="w-4 h-4" />
                                        {t.copy}

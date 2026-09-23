@@ -37,7 +37,7 @@ export function FeatureShowcase() {
       description: language === "ar"
         ? "اختبر معرفتك بأسئلة متعددة الخيارات منشأة بالذكاء الاصطناعي."
         : "Test your knowledge with AI-generated multiple choice questions.",
-      gradient: "from-amber-500/20 via-orange-500/20 to-amber-600/20",
+      gradient: "from-amber-500/20 via-primary/20 to-amber-600/20",
       border: "border-amber-500/20",
       hoverBorder: "hover:border-amber-500/50",
       icon: "📝",

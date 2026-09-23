@@ -162,7 +162,7 @@ export default function LectureVideo({
         </span>
         <button
           onClick={handleAsk}
-          className="ml-auto inline-flex items-center gap-2 bg-[#F05A22] hover:bg-[#d44a1b] text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg shadow-[#F05A22]/20 active:scale-95 transition-all"
+          className="ml-auto inline-flex items-center gap-2 bg-primary hover:bg-[#d44a1b] text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all"
         >
           {lastMoment ? (
             <>

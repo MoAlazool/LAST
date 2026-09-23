@@ -323,7 +323,7 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                     {activeMode === "spaced" ? (
                       <Clock className="w-5 h-5 text-primary" />
                     ) : (
-                      <Flame className="w-5 h-5 text-orange-500 fill-orange-500" />
+                      <Flame className="w-5 h-5 text-primary fill-primary" />
                     )}
                  </div>
               </div>
@@ -401,7 +401,7 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                               className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs border transition-all",
                                 activeCard.flagged 
-                                 ? "bg-orange-500 text-white border-orange-500 shadow-md" 
+                                 ? "bg-primary text-white border-primary shadow-md" 
                                  : "bg-white text-slate-400 border-slate-100 hover:text-slate-700"
                               )}
                             >
@@ -433,7 +433,7 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                           <div className="h-full flex flex-col overflow-hidden">
                              <div className="flex items-center justify-between mb-8 shrink-0">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 border-b-2 border-primary/20 pb-1">{language === "ar" ? "إجابة البطاقة" : "Flashcard Answer"}</span>
-                                <button onClick={handleFlag} className={cn("text-slate-400 hover:text-orange-500", activeCard.flagged && "text-orange-500")}>
+                                <button onClick={handleFlag} className={cn("text-slate-400 hover:text-primary", activeCard.flagged && "text-primary")}>
                                    <Flag className={cn("w-5 h-5", activeCard.flagged && "fill-current")} />
                                 </button>
                              </div>
@@ -472,7 +472,7 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                                  {[
                                    { id: "again", label: t.intervals.again, color: "text-red-500", bg: "bg-red-50", time: "1 MIN" },
                                    { id: "hard", label: t.intervals.hard, color: "text-slate-600", bg: "bg-slate-50", time: "2 DAYS" },
-                                   { id: "good", label: t.intervals.good, color: "text-orange-500", bg: "bg-orange-50", time: "4 DAYS" },
+                                   { id: "good", label: t.intervals.good, color: "text-primary", bg: "bg-primary/5", time: "4 DAYS" },
                                    { id: "easy", label: t.intervals.easy, color: "text-emerald-500", bg: "bg-emerald-50", time: "7 DAYS" }
                                  ].map(item => (
                                    <button 
@@ -491,11 +491,11 @@ export function FlashcardsView({ flashcards: initialFlashcards = [], lectureId, 
                               </div>
                               
                               <div className="bg-white rounded-[2rem] p-8 border border-slate-100 flex items-start gap-6">
-                                 <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-[#F05A22]">
+                                 <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
                                     <Brain className="w-8 h-8" />
                                  </div>
                                  <div className="space-y-2">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-[#F05A22]">{t.stats.related}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t.stats.related}</span>
                                     <h5 className="text-xl font-black text-slate-900">{activeCard.relatedConcept || "Synaptic Tagging"}</h5>
                                     <p className="text-sm text-slate-500 font-medium leading-relaxed">How the brain identifies which synapses to strengthen specifically during LTP. This process involves local protein synthesis...</p>
 

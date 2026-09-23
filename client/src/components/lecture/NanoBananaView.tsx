@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { downloadSlidesPptx } from "@/lib/aiService";
-import { Sparkles, CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronRight, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -213,7 +213,7 @@ export function NanoBananaView({ slides, title }: NanoBananaViewProps) {
       {/* Header */}
       <div className={cn("space-y-3", uiDir === "rtl" ? "text-right" : "text-left")}>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] font-black uppercase tracking-[0.2em]">
-          <Sparkles className="w-3 h-3" />
+          <Palette className="w-3 h-3" />
           Premium Themes
         </div>
         <h2 className="text-3xl font-black text-slate-900 tracking-tight">

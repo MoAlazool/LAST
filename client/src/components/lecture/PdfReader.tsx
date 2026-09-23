@@ -5,16 +5,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 // Vite resolves the worker from node_modules to a real served asset URL.
 // (new URL("pdfjs-dist/...", import.meta.url) does NOT resolve bare specifiers → 404 → fallback.)
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Loader2,
-  Sparkles,
-  MessageSquareQuote,
-  AlertTriangle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Loader2, MessageSquareQuote, AlertTriangle, MessageSquareText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -150,7 +141,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-[#F05A22] hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-primary hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
             aria-label="Previous page"
           >
             {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -161,7 +152,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
           <button
             onClick={() => setPage((p) => Math.min(numPages || p, p + 1))}
             disabled={page >= numPages}
-            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-[#F05A22] hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-primary hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
             aria-label="Next page"
           >
             {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -171,7 +162,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
         {onAskPage && (
           <button
             onClick={() => onAskPage(page)}
-            className="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-bold text-[#F05A22] bg-[#F05A22]/10 hover:bg-[#F05A22] hover:text-white transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-bold text-primary bg-primary/10 hover:bg-primary hover:text-white transition-colors"
             title={t.askPage}
           >
             <MessageSquareQuote className="w-3.5 h-3.5" />
@@ -182,7 +173,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
         <div className="flex items-center gap-1">
           <button
             onClick={() => setZoom((z) => Math.max(0.6, +(z - 0.15).toFixed(2)))}
-            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-[#F05A22] hover:bg-slate-50 transition-colors"
+            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-primary hover:bg-slate-50 transition-colors"
             aria-label="Zoom out"
           >
             <ZoomOut className="w-4 h-4" />
@@ -192,7 +183,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
           </span>
           <button
             onClick={() => setZoom((z) => Math.min(2.5, +(z + 0.15).toFixed(2)))}
-            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-[#F05A22] hover:bg-slate-50 transition-colors"
+            className="w-8 h-8 grid place-items-center rounded-lg text-slate-500 hover:text-primary hover:bg-slate-50 transition-colors"
             aria-label="Zoom in"
           >
             <ZoomIn className="w-4 h-4" />
@@ -213,7 +204,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
           onSourceError={() => { setFailed(true); onFallback?.(); }}
           loading={
             <div className="flex flex-col items-center justify-center h-64 gap-3 text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin text-[#F05A22]" />
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
               <span className="text-xs font-medium">{t.loading}</span>
             </div>
           }
@@ -229,7 +220,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
               className="shadow-[0_4px_24px_rgba(0,0,0,0.10)] rounded-lg overflow-hidden bg-white"
               loading={
                 <div className="flex items-center justify-center h-64">
-                  <Loader2 className="w-5 h-5 animate-spin text-[#F05A22]" />
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 </div>
               }
             />
@@ -247,7 +238,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
                 onClick={() => trigger("explain")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#F05A22]" />
+                <MessageSquareText className="w-3.5 h-3.5 text-primary" />
                 {t.explain}
               </button>
               <div className="w-px h-5 bg-white/15" />
@@ -255,7 +246,7 @@ export default function PdfReader({ url, language = "en", isRTL = false, onAsk, 
                 onClick={() => trigger("ask")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors"
               >
-                <MessageSquareQuote className="w-3.5 h-3.5 text-[#F05A22]" />
+                <MessageSquareQuote className="w-3.5 h-3.5 text-primary" />
                 {t.ask}
               </button>
             </div>

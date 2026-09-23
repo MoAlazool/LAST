@@ -159,7 +159,7 @@ export default function LectureHistoryView() {
         <div className="min-w-0">
           <div className={cn("flex items-center gap-2.5 mb-3")}>
             {urlCategory ? (
-              <Link href="/categories" className={cn("font-mono text-[11px] tracking-[0.22em] uppercase text-slate-400 hover:text-[#F05A22] transition-colors flex items-center gap-1.5 no-underline")}>
+              <Link href="/categories" className={cn("font-mono text-[11px] tracking-[0.22em] uppercase text-slate-400 hover:text-primary transition-colors flex items-center gap-1.5 no-underline")}>
                 {isRTL ? <ArrowRight size={12} /> : <ArrowLeft size={12} />}
                 {t.backToDomains}
               </Link>
@@ -168,8 +168,8 @@ export default function LectureHistoryView() {
                 {format(new Date(), "EEE, d MMM")}
               </span>
             )}
-            <span className="h-1 w-1 rounded-full bg-[#F05A22]" />
-            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[#F05A22]">{t.eyebrow}</span>
+            <span className="h-1 w-1 rounded-full bg-primary" />
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-primary">{t.eyebrow}</span>
           </div>
           <h2 className="text-4xl lg:text-[44px] font-black text-slate-900 tracking-tight leading-[1.05]">
             {urlCategory ? `${categoryName} ${t.libraryTitle}` : t.historyTitle}
@@ -227,7 +227,7 @@ export default function LectureHistoryView() {
               className={cn(
                 "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all border cursor-pointer",
                 isActive
-                  ? "bg-[#F05A22] text-white border-[#F05A22] shadow-md shadow-[#F05A22]/20"
+                  ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
                   : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
               )}
             >
@@ -255,13 +255,13 @@ export default function LectureHistoryView() {
         </div>
       ) : (
         <div className="bg-surface-container-lowest rounded-[2.5rem] p-16 text-center border border-outline-variant/30">
-          <div className="w-16 h-16 rounded-full bg-[#F05A22]/10 flex items-center justify-center mx-auto mb-6 text-[#F05A22]">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 text-primary">
             <Filter size={32} />
           </div>
           <p className="text-on-surface-variant font-medium mb-6">{t.noResults}</p>
           <button 
             onClick={() => { setFilter("all"); setLocation("/history"); }}
-            className="px-8 py-3 bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] rounded-full font-bold text-sm shadow-lg hover:shadow-[#F05A22]/20 transition-all hover:-translate-y-0.5"
+            className="px-8 py-3 bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] rounded-full font-bold text-sm shadow-lg hover:shadow-primary/20 transition-all hover:-translate-y-0.5"
           >
             {t.resetFilters}
           </button>
@@ -274,7 +274,7 @@ export default function LectureHistoryView() {
             aria-label={t.prev}
             disabled={page === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest border border-outline-variant/40 text-on-surface-variant hover:text-[#F05A22] hover:border-[#F05A22]/40 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface-variant disabled:hover:border-outline-variant/40"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest border border-outline-variant/40 text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface-variant disabled:hover:border-outline-variant/40"
           >
             {isRTL ? <ArrowRight size={18} /> : <ArrowLeft size={18} />}
           </button>
@@ -292,7 +292,7 @@ export default function LectureHistoryView() {
                 className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all cursor-pointer",
                   p === page
-                    ? "bg-[#F05A22] text-white shadow-md scale-105"
+                    ? "bg-primary text-white shadow-md scale-105"
                     : "bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low border border-outline-variant/40",
                 )}
               >
@@ -305,7 +305,7 @@ export default function LectureHistoryView() {
             aria-label={t.next}
             disabled={page === totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest border border-outline-variant/40 text-on-surface-variant hover:text-[#F05A22] hover:border-[#F05A22]/40 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface-variant disabled:hover:border-outline-variant/40"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest border border-outline-variant/40 text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-on-surface-variant disabled:hover:border-outline-variant/40"
           >
             {isRTL ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
           </button>
@@ -358,8 +358,8 @@ function HistoryCard({ lecture, onDelete }: { lecture: Lecture, onDelete: () => 
       case "pptx":
         return {
           icon: <Presentation size={28} />,
-          gradient: "from-orange-500/15 to-amber-500/[0.05]",
-          chip: "bg-orange-500",
+          gradient: "from-primary/15 to-amber-500/[0.05]",
+          chip: "bg-primary",
           label: "PPTX",
           isVideo: false,
         };
@@ -375,7 +375,7 @@ function HistoryCard({ lecture, onDelete }: { lecture: Lecture, onDelete: () => 
         return {
           icon: <FileText size={28} />,
           gradient: "from-slate-500/15 to-slate-400/[0.05]",
-          chip: "bg-[#F05A22]",
+          chip: "bg-primary",
           label: language === "ar" ? "ملف" : "File",
           isVideo: false,
         };
@@ -455,7 +455,7 @@ function HistoryCard({ lecture, onDelete }: { lecture: Lecture, onDelete: () => 
             "absolute top-3 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border",
             isRTL ? "left-3" : "right-3",
             isArchived
-              ? "bg-orange-100 text-orange-700 border-orange-200"
+              ? "bg-primary/10 text-primary border-primary/20"
               : "bg-emerald-50 text-emerald-600 border-emerald-100",
           )}
         >
@@ -470,7 +470,7 @@ function HistoryCard({ lecture, onDelete }: { lecture: Lecture, onDelete: () => 
         </h3>
 
         <div className={cn("flex items-center gap-1.5 text-xs text-on-surface-variant mt-2 mb-5")}>
-          <CalendarDays size={14} className="text-[#F05A22] shrink-0" />
+          <CalendarDays size={14} className="text-primary shrink-0" />
           <span className="font-medium truncate">{t.analyzed}: {getFormattedDate()}</span>
         </div>
 

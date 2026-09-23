@@ -1,33 +1,25 @@
 import { useRef, useState, useCallback } from "react";
-import {
-  CloudUpload,
-  Link2,
-  Video,
-  FileText,
-  Presentation,
-  FileBox,
-  FileAudio,
-  FileVideo,
-  Loader2,
-  X,
-  ClipboardPaste,
-  CheckCircle2,
-  Scissors,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
+import { CloudUpload, Link2, Video, FileText, Presentation, FileBox, FileAudio, FileVideo, Loader2, X, ClipboardPaste, CheckCircle2, Scissors, ChevronDown, FilePlus2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import ProcessingModeSelector from "./ProcessingModeSelector";
+import AnalysisOptionsDialog from "./AnalysisOptionsDialog";
+import type { AnalysisFeature } from "@/lib/analysisFeatures";
+import UpgradeDialog from "@/components/billing/UpgradeDialog";
+import { formatResetIn, type UsageStatus } from "@/hooks/useUsage";
+import { Link } from "wouter";
 
 interface NewAnalysisProps {
-  handleAnalyze: (url: string, startTimeSeconds?: number | null, endTimeSeconds?: number | null) => Promise<void>;
-  handleFileAnalyze: (file: File) => Promise<void>;
+  handleAnalyze: (url: string, startTimeSeconds?: number | null, endTimeSeconds?: number | null, features?: AnalysisFeature[]) => Promise<void>;
+  handleFileAnalyze: (file: File, features?: AnalysisFeature[]) => Promise<void>;
   isAnalyzing: boolean;
   selectedModel: "gpu" | "api";
   setSelectedModel: (mode: "gpu" | "api") => void;
+  usage?: UsageStatus;
+  limitReached?: UsageStatus | null;
+  dismissLimit?: () => void;
 }
 
 const ACCEPT = "audio/*,video/*,.pdf,.doc,.docx,.ppt,.pptx";
@@ -68,6 +60,9 @@ export default function NewAnalysis({
   isAnalyzing,
   selectedModel,
   setSelectedModel,
+  usage,
+  limitReached,
+  dismissLimit,
 }: NewAnalysisProps) {
   const { language, isRTL } = useLanguage();
   const { toast } = useToast();
@@ -81,6 +76,12 @@ export default function NewAnalysis({
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [showTrim, setShowTrim] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const ar = language === "ar";
+  // Free plan: remaining attempts in the current 24h window (Pro / unenforced → no limit shown).
+  const limited = !!usage && usage.enforced && usage.plan === "free" && usage.limit !== null;
+  const outOfAttempts = limited && (usage!.remaining ?? 0) <= 0;
 
   const t = {
     heading: language === "ar" ? "تحليل جديد" : "New Analysis",
@@ -160,13 +161,21 @@ export default function NewAnalysis({
   const isYoutube = /(?:youtube\.com|youtu\.be)/i.test(url);
   const canSubmit = tab === "file" ? !!file : url.trim().length > 0;
 
+  // "Start Analysis" first asks which outputs to generate, so we only spend tokens on those.
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isAnalyzing || !canSubmit) return;
+    if (isAnalyzing) return;
+    if (outOfAttempts) { setUpgradeOpen(true); return; }
+    if (!canSubmit) return;
+    setOptionsOpen(true);
+  };
+
+  const startWithFeatures = (features: AnalysisFeature[]) => {
+    setOptionsOpen(false);
     if (tab === "file" && file) {
-      handleFileAnalyze(file);
+      handleFileAnalyze(file, features);
     } else if (tab === "link") {
-      handleAnalyze(url.trim(), timeToSeconds(startTime), timeToSeconds(endTime));
+      handleAnalyze(url.trim(), timeToSeconds(startTime), timeToSeconds(endTime), features);
     }
   };
 
@@ -177,14 +186,12 @@ export default function NewAnalysis({
       dir={isRTL ? "rtl" : "ltr"}
       className="relative overflow-hidden rounded-3xl bg-surface-container-lowest border border-outline-variant/60 shadow-[0_8px_40px_rgba(0,0,0,0.06)]"
     >
-      {/* Brand glow */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#F05A22]/[0.07] blur-3xl" />
 
       <div className="relative z-10 p-6 sm:p-8 lg:p-10">
         {/* Header */}
         <div className={cn("flex items-start gap-4 mb-6", isRTL && "text-right")}>
-          <div className="shrink-0 grid place-items-center h-12 w-12 rounded-2xl bg-[#F05A22]/10 text-[#F05A22]">
-            <Sparkles size={24} strokeWidth={2} />
+          <div className="shrink-0 grid place-items-center h-12 w-12 rounded-2xl bg-primary/10 text-primary">
+            <FilePlus2 size={24} strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-on-surface">
@@ -254,7 +261,7 @@ export default function NewAnalysis({
                 {file ? (
                   /* Selected file preview */
                   <div className="flex items-center gap-4 rounded-2xl border border-outline-variant/70 bg-surface-container-low p-4">
-                    <div className="grid place-items-center h-12 w-12 rounded-xl bg-[#F05A22]/10 text-[#F05A22] shrink-0">
+                    <div className="grid place-items-center h-12 w-12 rounded-xl bg-primary/10 text-primary shrink-0">
                       <SelectedIcon size={24} />
                     </div>
                     <div className={cn("min-w-0 flex-1", isRTL ? "text-right" : "text-left")}>
@@ -284,22 +291,22 @@ export default function NewAnalysis({
                     className={cn(
                       "flex flex-col items-center justify-center text-center rounded-2xl border-2 border-dashed px-6 py-12 cursor-pointer transition-all duration-200",
                       isDragging
-                        ? "border-[#F05A22] bg-[#F05A22]/[0.06] scale-[1.01]"
-                        : "border-outline-variant hover:border-[#F05A22]/50 hover:bg-surface-container-low/60",
+                        ? "border-primary bg-primary/[0.06] scale-[1.01]"
+                        : "border-outline-variant hover:border-primary/50 hover:bg-surface-container-low/60",
                     )}
                   >
                     <motion.div
                       animate={isDragging ? { scale: 1.12 } : { scale: 1 }}
-                      className="grid place-items-center h-16 w-16 rounded-full bg-[#F05A22]/10 mb-4"
+                      className="grid place-items-center h-16 w-16 rounded-full bg-primary/10 mb-4"
                     >
-                      <CloudUpload className="text-[#F05A22]" size={32} strokeWidth={2} />
+                      <CloudUpload className="text-primary" size={32} strokeWidth={2} />
                     </motion.div>
                     <p className="text-lg font-bold text-on-surface">
                       {t.drop}
                     </p>
                     <p className="text-sm text-on-surface-variant mt-1">
                       {t.or}{" "}
-                      <span className="font-semibold text-[#F05A22] underline underline-offset-2">{t.browse}</span>
+                      <span className="font-semibold text-primary underline underline-offset-2">{t.browse}</span>
                     </p>
                     <p className="text-xs text-on-surface-variant/80 mt-4">{t.formats}</p>
                   </div>
@@ -331,7 +338,7 @@ export default function NewAnalysis({
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         disabled={isAnalyzing}
-                        className="w-full bg-surface-container-lowest rounded-xl py-3 pl-10 pr-4 border border-outline-variant/60 shadow-inner shadow-black/[0.02] focus:ring-2 focus:ring-[#F05A22]/25 focus:border-transparent text-sm text-on-surface outline-none transition-shadow"
+                        className="w-full bg-surface-container-lowest rounded-xl py-3 pl-10 pr-4 border border-outline-variant/60 shadow-inner shadow-black/[0.02] focus:ring-2 focus:ring-primary/25 focus:border-transparent text-sm text-on-surface outline-none transition-shadow"
                       />
                     </div>
                     <button
@@ -368,7 +375,7 @@ export default function NewAnalysis({
                     className="w-full flex items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-50"
                   >
                     <span className="flex items-center gap-2">
-                      <Scissors size={15} className="text-[#F05A22]" />
+                      <Scissors size={15} className="text-primary" />
                       {t.trim}
                     </span>
                     <ChevronDown
@@ -401,7 +408,7 @@ export default function NewAnalysis({
                                 value={f.val}
                                 onChange={(e) => f.set(e.target.value)}
                                 disabled={isAnalyzing}
-                                className="w-full bg-surface-container-lowest rounded-lg py-2 px-3 border border-outline-variant/60 focus:ring-2 focus:ring-[#F05A22]/25 focus:border-transparent text-sm text-on-surface outline-none"
+                                className="w-full bg-surface-container-lowest rounded-lg py-2 px-3 border border-outline-variant/60 focus:ring-2 focus:ring-primary/25 focus:border-transparent text-sm text-on-surface outline-none"
                               />
                             </div>
                           ))}
@@ -417,23 +424,74 @@ export default function NewAnalysis({
           {/* Action */}
           <button
             type="submit"
-            disabled={isAnalyzing || !canSubmit}
-            className="mt-7 w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-[15px] font-bold text-white bg-gradient-to-r from-[#F05A22] to-[#ff7a45] shadow-lg shadow-[#F05A22]/20 hover:shadow-xl hover:shadow-[#F05A22]/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:from-[#242424] disabled:to-[#242424]"
+            disabled={isAnalyzing || (!canSubmit && !outOfAttempts)}
+            className="mt-7 w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-[15px] font-bold text-white bg-primary shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:from-[#242424] disabled:to-[#242424]"
           >
             {isAnalyzing ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
                 <span>{t.analyzing}</span>
               </>
+            ) : outOfAttempts ? (
+              <span>{ar ? "الترقية للمتابعة" : "Upgrade to keep analyzing"}</span>
             ) : (
-              <>
-                <Sparkles size={18} />
-                <span>{t.cta}</span>
-              </>
+              <span>{t.cta}</span>
             )}
           </button>
+
+          {/* Free-plan usage */}
+          {limited && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1" aria-hidden>
+                  {Array.from({ length: usage!.limit! }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={cn(
+                        "h-1.5 w-6 rounded-full",
+                        i < (usage!.remaining ?? 0) ? "bg-primary" : "bg-on-surface/10",
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-on-surface-variant">
+                  {ar ? (
+                    <><b className="text-on-surface font-semibold tabular-nums">{usage!.remaining}</b> من {usage!.limit} تحليلات مجانية متبقية</>
+                  ) : (
+                    <><b className="text-on-surface font-semibold tabular-nums">{usage!.remaining}</b> of {usage!.limit} free analyses left</>
+                  )}
+                  {usage!.resetAt && (
+                    <span className="text-on-surface-variant/80">
+                      {" · "}{ar ? `تتجدد خلال ${formatResetIn(usage!.resetAt, ar)}` : `resets in ${formatResetIn(usage!.resetAt, ar)}`}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <Link href="/pricing" className="font-semibold text-primary hover:underline underline-offset-4">
+                {ar ? "الترقية إلى Pro" : "Upgrade to Pro"}
+              </Link>
+            </div>
+          )}
+          {usage?.plan === "pro" && (
+            <p className="mt-4 text-sm text-on-surface-variant text-center">
+              {ar ? "خطة Pro · تحليلات غير محدودة" : "Pro plan · unlimited analyses"}
+            </p>
+          )}
         </form>
       </div>
+
+      <UpgradeDialog
+        open={upgradeOpen || !!limitReached}
+        onOpenChange={(o) => { setUpgradeOpen(o); if (!o) dismissLimit?.(); }}
+        usage={limitReached || usage}
+      />
+
+      <AnalysisOptionsDialog
+        open={optionsOpen}
+        onOpenChange={setOptionsOpen}
+        onConfirm={startWithFeatures}
+        hideSlides={tab === "file" && !!file && /\.pptx?$/i.test(file.name)}
+      />
     </section>
   );
 }

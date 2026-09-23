@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { extractVideoId, getYouTubeVideoInfo, getYouTubeTranscript, transcribeAudioFile, transcribeYouTubeWithWhisper } from "@/lib/youtubeService";
 import { generateSummary, generateQuiz, generateSlides, generateFlashcards, generateFormulas as extractMathFormulas, generateConceptMap, generateMedicalInsights, generateEngineeringInsights } from "@/lib/aiService";
 import { classifyLecture } from "@/lib/categoryClassifier";
+import { ALL_ANALYSIS_FEATURES, type AnalysisFeature } from "@/lib/analysisFeatures";
+import { consumeAnalysisAttempt, UsageLimitError, useUsage, type UsageStatus } from "@/hooks/useUsage";
 
 export function useLectureProcessor() {
   const { user } = useAuth();
@@ -17,8 +19,110 @@ export function useLectureProcessor() {
   const [processingLectureId, setProcessingLectureId] = useState<string | null>(null);
   const [isProcessingStopped, setIsProcessingStopped] = useState(false);
   const [selectedModel, setSelectedModel] = useState<"gpu" | "api">("api");
+  const { usage, setUsage } = useUsage();
+  // Set when the free plan's daily quota is used up → the dashboard shows the upgrade dialog.
+  const [limitReached, setLimitReached] = useState<UsageStatus | null>(null);
 
-  const processAudioFile = async (lectureId: string, file: File) => {
+  /** Counts one analysis against the free plan. Returns false (and opens the upgrade dialog) when none are left. */
+  const claimAttempt = async (): Promise<boolean> => {
+    try {
+      const status = await consumeAnalysisAttempt();
+      setUsage(status);
+      return true;
+    } catch (e) {
+      if (e instanceof UsageLimitError) {
+        setUsage(e.status);
+        setLimitReached(e.status);
+        return false;
+      }
+      throw e;
+    }
+  };
+
+  /**
+   * Runs ONLY the AI features the user picked in the analysis dialog. Each feature is a
+   * separate model call, so anything not selected costs zero tokens. Independent tasks
+   * run concurrently and each result is saved the moment it's ready, so the lecture
+   * page reveals modules progressively.
+   */
+  const runSelectedFeatures = async (opts: {
+    lectureId: string;
+    transcript: string;
+    category: string;
+    features: AnalysisFeature[];
+    title: string;
+    geminiFileUri?: string;
+    geminiFileMimeType?: string;
+    extractedImages?: any[];
+    skipSlides?: boolean;
+  }) => {
+    const { lectureId, transcript, category, features, geminiFileUri, geminiFileMimeType, extractedImages } = opts;
+    const want = (f: AnalysisFeature) => features.includes(f);
+    const stopped = () => isProcessingStopped && processingLectureId === lectureId;
+
+    const wantSlides = want("slides") && !opts.skipSlides;
+    const wantMedical = want("insights") && category === "medicine";
+    const wantEngineering = want("insights") && category === "engineering";
+    const totalSteps = [want("summary"), want("flashcards"), want("conceptMap"), wantSlides, want("formulas"), want("quiz"), wantMedical, wantEngineering]
+      .filter(Boolean).length;
+
+    // Progress runs 45 → 95 spread evenly over the selected steps.
+    let done = 0;
+    const savePart = async (fields: Record<string, any>) => {
+      if (stopped()) return;
+      done++;
+      const progress = totalSteps ? Math.round(45 + (50 * done) / totalSteps) : 95;
+      try {
+        await updateLecture({ lectureId, updates: { progress, ...fields } });
+      } catch (e) {
+        console.warn("[runSelectedFeatures] partial save failed:", e);
+      }
+    };
+
+    await updateLecture({ lectureId, updates: { progress: 45, questions: [] } });
+
+    // Slides are built from the summary: if slides were picked without the summary we
+    // still generate it as slide input, but don't save it (it wasn't requested).
+    const summaryRaw = want("summary") || wantSlides ? generateSummary(transcript, selectedModel) : null;
+    const flashcardsRaw = want("flashcards") ? generateFlashcards(transcript, selectedModel) : null;
+
+    const tasks: Promise<unknown>[] = [];
+    if (summaryRaw && want("summary")) tasks.push(summaryRaw.then((summary) => savePart({ summary })));
+    if (flashcardsRaw) tasks.push(flashcardsRaw.then((flashcards) => savePart({ flashcards })));
+    if (want("formulas")) {
+      tasks.push(extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+        .then((formulas) => savePart({ formulas })));
+    }
+    if (want("quiz")) {
+      tasks.push(generateQuiz(transcript, selectedModel).then((questions) => savePart({ questions })));
+    }
+    if (wantMedical) {
+      tasks.push(generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+        .then((medical) => savePart({ medical })));
+    }
+    if (wantEngineering) {
+      tasks.push(generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
+        .then((engineering) => savePart({ engineering })));
+    }
+    if (wantSlides && summaryRaw) {
+      tasks.push(summaryRaw
+        .then((summary) => generateSlides(transcript, summary, extractedImages))
+        .then((slides) => savePart({ slides })));
+    }
+    if (want("conceptMap")) {
+      // Flashcards enrich the concept map when they were requested; otherwise build it from the transcript alone.
+      const cards = flashcardsRaw ? flashcardsRaw.catch(() => undefined) : Promise.resolve(undefined);
+      tasks.push(cards
+        .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards as any))
+        .then((conceptMap) => savePart({ conceptMap })));
+    }
+
+    // One failed/slow task never aborts the others; whatever succeeded is already saved.
+    const results = await Promise.allSettled(tasks);
+    results.forEach((r) => { if (r.status === "rejected") console.warn("[runSelectedFeatures] task failed:", r.reason); });
+  };
+
+  const processAudioFile = async (lectureId: string, file: File, features: AnalysisFeature[]) => {
     try {
       if (!user?.uid) return;
 
@@ -50,45 +154,18 @@ export function useLectureProcessor() {
       const category = await classifyLecture({ title: file.name, transcript }, selectedModel);
       await updateLecture({ lectureId, updates: { progress: 40, transcript, category, modelType: selectedModel, geminiFileUri, geminiFileMimeType, extractedImages, transcriptChunks, sourceUrl, documentPageCount } });
 
-      await updateLecture({ lectureId, updates: { progress: 45 } });
-
-      const summary = await generateSummary(transcript, selectedModel);
-      await updateLecture({ lectureId, updates: { progress: 55, summary } });
-
-      const conceptMap = await generateConceptMap(transcript, selectedModel);
-      await updateLecture({ lectureId, updates: { progress: 65, conceptMap } });
-
-      const questions = await generateQuiz(transcript, selectedModel);
-      await updateLecture({ lectureId, updates: { progress: 75, questions } });
-
-      if (isProcessingStopped && processingLectureId === lectureId) return;
-
       const isPresentation = !!file.name.match(/\.(pptx?)$/i);
-      let slides: any[] = [];
-      if (!isPresentation) {
-        slides = await generateSlides(transcript, summary, extractedImages);
-      }
-      await updateLecture({ lectureId, updates: { progress: 90, slides } });
+      await runSelectedFeatures({
+        lectureId, transcript, category, features,
+        geminiFileUri, geminiFileMimeType, extractedImages,
+        title: file.name,
+        // A PPTX upload already IS a slide deck — don't regenerate one.
+        skipSlides: isPresentation,
+      });
 
       if (isProcessingStopped && processingLectureId === lectureId) return;
 
-      const flashcards = await generateFlashcards(transcript, selectedModel);
-      await updateLecture({ lectureId, updates: { progress: 92, flashcards } }); // show as soon as ready
-
-      if (isProcessingStopped && processingLectureId === lectureId) return;
-
-      const formulas = await extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType);
-      await updateLecture({ lectureId, updates: { progress: 95, formulas } });
-
-      // Medical Insights / Engineering Lab are only generated for their respective categories.
-      const medical = category === "medicine"
-        ? await generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-        : undefined;
-      const engineering = category === "engineering"
-        ? await generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-        : undefined;
-
-      await updateLecture({ lectureId, updates: { progress: 100, medical, engineering, status: "completed", modelType: selectedModel } });
+      await updateLecture({ lectureId, updates: { progress: 100, status: "completed", modelType: selectedModel } });
 
       setProcessingLectureId(null);
       setIsProcessingStopped(false);
@@ -111,7 +188,7 @@ export function useLectureProcessor() {
     }
   };
 
-  const processLecture = async (lectureId: string, videoId: string, videoInfo: any, startTimeSeconds?: number | null, endTimeSeconds?: number | null) => {
+  const processLecture = async (lectureId: string, videoId: string, videoInfo: any, features: AnalysisFeature[], startTimeSeconds?: number | null, endTimeSeconds?: number | null) => {
     try {
       if (!user?.uid) return;
 
@@ -169,53 +246,12 @@ export function useLectureProcessor() {
       const category = await classifyLecture({ title: videoInfo?.title || "Untitled Lecture", transcript }, selectedModel);
       await updateLecture({ lectureId, updates: { progress: 40, transcript, category, modelType: selectedModel, geminiFileUri, geminiFileMimeType, sourceUrl, transcriptChunks } });
 
-      await updateLecture({ lectureId, updates: { progress: 45 } });
-
-      // Step 2: AI processing — each task is saved to the lecture the MOMENT it finishes,
-      // so the UI reveals each module progressively (the poller picks it up within ~1.5s)
-      // instead of everything appearing at once at the end. Quiz is generated on-demand,
-      // so it starts empty.
-      await updateLecture({ lectureId, updates: { progress: 50, questions: [] } });
-
       const stopped = () => isProcessingStopped && processingLectureId === lectureId;
-      let progress = 50;
-      const savePart = async (fields: Record<string, any>) => {
-        if (stopped()) return;
-        progress = Math.min(95, progress + 6);
-        try {
-          await updateLecture({ lectureId, updates: { progress, ...fields } });
-        } catch (e) {
-          console.warn("[processLecture] partial save failed:", e);
-        }
-      };
-
-      // Independent tasks — run concurrently, each pushes its own result as soon as ready.
-      const summaryP = generateSummary(transcript, selectedModel)
-        .then(async (summary) => { await savePart({ summary }); return summary; });
-      const flashcardsP = generateFlashcards(transcript, selectedModel)
-        .then(async (flashcards) => { await savePart({ flashcards }); return flashcards; });
-      const formulasP = extractMathFormulas(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-        .then(async (formulas) => { await savePart({ formulas }); return formulas; });
-      const medicalP = category === "medicine"
-        ? generateMedicalInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-            .then(async (medical) => { await savePart({ medical }); return medical; })
-        : Promise.resolve(undefined);
-      const engineeringP = category === "engineering"
-        ? generateEngineeringInsights(transcript, selectedModel, geminiFileUri, geminiFileMimeType)
-            .then(async (engineering) => { await savePart({ engineering }); return engineering; })
-        : Promise.resolve(undefined);
-
-      // Dependent tasks — kick off as soon as their input is ready (don't wait for the rest).
-      const slidesP = summaryP
-        .then((summary) => generateSlides(transcript, summary))
-        .then(async (slides) => { await savePart({ slides }); return slides; });
-      const conceptMapP = flashcardsP
-        .then((flashcards) => generateConceptMap(transcript, selectedModel, flashcards))
-        .then(async (conceptMap) => { await savePart({ conceptMap }); return conceptMap; });
-
-      // Wait for everything to settle — one failed/slow task no longer aborts the others,
-      // and whatever succeeded is already saved and visible.
-      await Promise.allSettled([summaryP, flashcardsP, formulasP, medicalP, engineeringP, slidesP, conceptMapP]);
+      await runSelectedFeatures({
+        lectureId, transcript, category, features,
+        geminiFileUri, geminiFileMimeType,
+        title: videoInfo?.title || "Untitled Lecture",
+      });
 
       if (stopped()) return;
 
@@ -245,7 +281,7 @@ export function useLectureProcessor() {
     }
   };
 
-  const handleAnalyze = async (url: string, startTimeSeconds?: number | null, endTimeSeconds?: number | null) => {
+  const handleAnalyze = async (url: string, startTimeSeconds?: number | null, endTimeSeconds?: number | null, features: AnalysisFeature[] = ALL_ANALYSIS_FEATURES) => {
     if (!url) {
       toast({
         title: "Error",
@@ -274,6 +310,9 @@ export function useLectureProcessor() {
       const videoInfo = await getYouTubeVideoInfo(videoId);
       if (!videoInfo) throw new Error("Could not fetch video information");
 
+      // Only count the attempt once the link is known to be valid.
+      if (!(await claimAttempt())) return;
+
       const lectureData = {
         title: videoInfo.title,
         thumbnailUrl: videoInfo.thumbnailUrl,
@@ -281,6 +320,7 @@ export function useLectureProcessor() {
         status: "processing" as const,
         progress: 0,
         modelType: selectedModel,
+        requestedFeatures: features,
       };
       
       const newLecture = await createLecture(lectureData);
@@ -296,7 +336,7 @@ export function useLectureProcessor() {
         description: "Processing your lecture...",
       });
 
-      processLecture(lectureId, videoId, videoInfo, startTimeSeconds, endTimeSeconds);
+      processLecture(lectureId, videoId, videoInfo, features, startTimeSeconds, endTimeSeconds);
       setLocation(`/lecture/${lectureId}`);
     } catch (error: any) {
       toast({
@@ -309,7 +349,7 @@ export function useLectureProcessor() {
     }
   };
 
-  const handleFileAnalyze = async (file: File) => {
+  const handleFileAnalyze = async (file: File, features: AnalysisFeature[] = ALL_ANALYSIS_FEATURES) => {
     if (!user) {
       toast({
         title: "Sign in required",
@@ -331,6 +371,8 @@ export function useLectureProcessor() {
       const isDOCX = file.name.match(/\.docx?$/i);
       const sourceType: "pptx" | "pdf" | "docx" | "audio" = isPPTX ? "pptx" : isPDF ? "pdf" : isDOCX ? "docx" : "audio";
 
+      if (!(await claimAttempt())) return;
+
       const lectureData = {
         title: file.name,
         thumbnailUrl: uploadThumbnail,
@@ -339,6 +381,7 @@ export function useLectureProcessor() {
         progress: 0,
         modelType: selectedModel,
         sourceType,
+        requestedFeatures: features,
       };
       
       const newLecture = await createLecture(lectureData);
@@ -354,7 +397,7 @@ export function useLectureProcessor() {
         description: "Transcribing file...",
       });
 
-      processAudioFile(lectureId, file);
+      processAudioFile(lectureId, file, features);
       setLocation(`/lecture/${lectureId}`);
     } catch (error: any) {
       toast({
@@ -373,6 +416,9 @@ export function useLectureProcessor() {
     isAnalyzing,
     selectedModel,
     setSelectedModel,
-    isCreating
+    isCreating,
+    usage,
+    limitReached,
+    dismissLimit: () => setLimitReached(null),
   };
 }

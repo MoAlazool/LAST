@@ -302,3 +302,6 @@ export async function uploadDocumentToFirebase(
     throw error;
   }
 }
+
+/** The initialized Firebase Admin app (null when no credentials are configured). */
+export const getAdminApp = () => app || null;
