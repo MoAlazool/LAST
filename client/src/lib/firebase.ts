@@ -6,14 +6,17 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Values come from VITE_FIREBASE_* env vars (see .env.example); the defaults are this
+// project's public web config (not secret — access is enforced by Firestore rules).
+const env = import.meta.env;
 const firebaseConfig = {
-  apiKey: "AIzaSyAB26QpvSMFey43NgnbhEdg1hmVWipRrw0",
-  authDomain: "lecturemate-d0187.firebaseapp.com",
-  projectId: "lecturemate-d0187",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lecturemate-d0187.firebasestorage.app",
-  messagingSenderId: "236572081094",
-  appId: "1:236572081094:web:a109d4ac3e102bd07f90c7",
-  measurementId: "G-981T13LPV5"
+  apiKey: env.VITE_FIREBASE_API_KEY || "AIzaSyAB26QpvSMFey43NgnbhEdg1hmVWipRrw0",
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "lecturemate-d0187.firebaseapp.com",
+  projectId: env.VITE_FIREBASE_PROJECT_ID || "lecturemate-d0187",
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "lecturemate-d0187.firebasestorage.app",
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "236572081094",
+  appId: env.VITE_FIREBASE_APP_ID || "1:236572081094:web:a109d4ac3e102bd07f90c7",
+  measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || "G-981T13LPV5",
 };
 
 // Initialize Firebase

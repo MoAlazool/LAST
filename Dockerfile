@@ -1,11 +1,12 @@
-# Multi-stage Dockerfile for RunPod deployment
+# Multi-stage Dockerfile for RunPod (GPU) deployment.
+# For Render / Railway (CPU) use Dockerfile.railway instead — see render.yaml.
 # Base image with CUDA support for GPU acceleration
 FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04 as base
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV NODE_VERSION=20.x
+ENV NODE_VERSION=22.x
 ENV HF_HOME=/root/.cache/huggingface
 
 # Install system dependencies
@@ -58,8 +59,8 @@ FROM base as node-deps
 # Copy package files
 COPY package*.json ./
 
-# Install Node.js dependencies
-RUN npm ci --only=production
+# Install Node.js dependencies (dev deps are needed by the build stage: vite, tsx, esbuild)
+RUN npm ci --no-audit --no-fund
 
 # Build stage
 FROM base as builder

@@ -1,0 +1,26 @@
+# Render Blueprint — one Docker web service that serves both the website and the API.
+# Uses the CPU image (Dockerfile.railway: Node 22, Python, ffmpeg, LibreOffice, Chromium).
+# The root Dockerfile is the GPU/RunPod image and is NOT meant for Render.
+services:
+  - type: web
+    name: lecturemate
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.railway
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PYTHON_CMD
+        value: python3
+      - key: FIREBASE_PROJECT_ID
+        value: lecturemate-d0187
+      - key: FIREBASE_STORAGE_BUCKET
+        value: lecturemate-d0187.firebasestorage.app
+      # Secrets — Render asks for these when the Blueprint is created (never committed):
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_KEY
+        sync: false
